@@ -4,6 +4,6 @@ import { OcrService } from './ocr.service';
 
 @Module({
   controllers: [OcrController],
-  providers: [OcrService]
+  providers: [OcrService],
 })
 export class OcrModule {}

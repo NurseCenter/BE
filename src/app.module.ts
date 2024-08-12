@@ -12,11 +12,25 @@ import { ConfigModule } from './config/config.module';
 import { ScrapModule } from './scrap/scrap.module';
 import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
-import { OcrsController } from './ocrs/ocrs.controller';
+import { OcrController } from './ocr/ocr.controller';
+import { SearchModule } from './search/search.module';
 
 @Module({
-  imports: [AuthModule, HospitalsModule, PostsModule, CommentsModule, UsersModule, AdminModule, CommonModule, ConfigModule, ScrapModule, LikesModule, OcrModule],
-  controllers: [AppController, OcrsController],
+  imports: [
+    AuthModule,
+    HospitalsModule,
+    PostsModule,
+    CommentsModule,
+    UsersModule,
+    AdminModule,
+    CommonModule,
+    ConfigModule,
+    ScrapModule,
+    LikesModule,
+    OcrModule,
+    SearchModule,
+  ],
+  controllers: [AppController, OcrController],
   providers: [AppService],
 })
 export class AppModule {}

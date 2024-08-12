@@ -14,9 +14,12 @@ import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
 import { OcrController } from './ocr/ocr.controller';
 import { SearchModule } from './search/search.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ormConfig } from './config/orm.config';
 
 @Module({
   imports: [
+    TypeOrmModule.forRootAsync({ useFactory: ormConfig }),
     AuthModule,
     HospitalsModule,
     PostsModule,

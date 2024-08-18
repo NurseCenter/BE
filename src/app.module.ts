@@ -19,7 +19,7 @@ import { ormConfig } from './config/orm.config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({ useFactory: ormConfig }),
+    TypeOrmModule.forRoot(ormConfig()),
     AuthModule,
     HospitalsModule,
     PostsModule,

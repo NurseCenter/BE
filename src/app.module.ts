@@ -9,7 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule } from './config/config.module';
-import { ScrapModule } from './scrap/scrap.module';
+import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
 import { OcrController } from './ocr/ocr.controller';

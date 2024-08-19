@@ -14,7 +14,7 @@ export enum StudentStatus {
 }
 
 @Entity('users')
-export class User {
+export class UsersEntity {
   @PrimaryGeneratedColumn()
   // 회원 고유 ID 값
   id: number;

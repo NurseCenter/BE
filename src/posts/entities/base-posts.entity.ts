@@ -1,4 +1,4 @@
-import { CommentsEntity } from 'src/comments/entities/comment.entity';
+import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import {
   BaseEntity,
   Column,
@@ -19,7 +19,7 @@ import {
 [공지사항] notice.entity.ts -> NoticeEntity
 */
 
-export abstract class BasePostsEntity extends BaseEntity {
+export class BasePostsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -37,10 +37,11 @@ export abstract class BasePostsEntity extends BaseEntity {
 
   // 스크랩 횟수
   @Column({ type: 'int', default: 0 })
+  scrapCounts: number;
 
   // 조회수
   @Column({ type: 'int', default: 0 })
-  viewCount: number;
+  viewCounts: number;
 
   // 댓글
   // 하나의 게시글에 여러 개의 댓글이 가능함.

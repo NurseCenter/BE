@@ -14,7 +14,7 @@ import { RepliesEntity } from './replies.entity';
 @Entity('comments')
 export class CommentsEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  commentId: number;
 
   // 댓글 내용
   @Column('text')

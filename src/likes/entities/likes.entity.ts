@@ -14,11 +14,11 @@ export class LikeEntity {
   id: number;
 
   // 좋아요 누른 사람
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.userId)
   user: UsersEntity;
 
-  // 여러 개의 좋아요는 1개의 게시물에 달릴 수 있음.
-  @ManyToOne(() => BasePostsEntity, (post) => post.id)
+  // 좋아요가 달린 게시물 1개
+  @ManyToOne(() => BasePostsEntity, (post) => post.postId)
   post: BasePostsEntity;
 
   // 좋아요 누른 날짜

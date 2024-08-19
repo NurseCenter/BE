@@ -12,7 +12,7 @@ import { CommentsEntity } from './comments.entity';
 @Entity('replies')
 export class RepliesEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  repliesId: number;
 
   // 답글 내용
   @Column('text')

@@ -7,13 +7,13 @@ import {
   Column,
 } from 'typeorm';
 
-@Entity('report_comments')
+@Entity('report_posts')
 export class ReportPostsEntity {
   @PrimaryGeneratedColumn()
   reportPostId: number;
 
   // 신고자
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.userId)
   reporter: UsersEntity;
 
   // 신고된 글의 ID
@@ -25,7 +25,7 @@ export class ReportPostsEntity {
   reportedContent: string;
 
   // 신고된 글의 작성자
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.userId)
   reportedPerson: UsersEntity;
 
   // 신고일

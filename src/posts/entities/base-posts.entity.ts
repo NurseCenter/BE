@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  Entity,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -19,9 +20,10 @@ import {
 [공지사항] notice.entity.ts -> NoticeEntity
 */
 
+@Entity('base_posts')
 export class BasePostsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  postId: number;
 
   // 제목
   @Column({ type: 'varchar', length: 255 })

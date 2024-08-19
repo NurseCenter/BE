@@ -13,7 +13,7 @@ export class ReportCommentsEntity {
   reportCommentId: number;
 
   // 신고자
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.userId)
   reporter: UsersEntity;
 
   // 신고된 댓글의 ID
@@ -25,7 +25,7 @@ export class ReportCommentsEntity {
   reportedContent: string;
 
   // 신고된 댓글 작성자
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.userId)
   reportedPerson: UsersEntity;
 
   // 신고일

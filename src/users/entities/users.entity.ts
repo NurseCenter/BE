@@ -17,7 +17,7 @@ export enum StudentStatus {
 export class UsersEntity {
   @PrimaryGeneratedColumn()
   // 회원 고유 ID 값
-  id: number;
+  userId: number;
 
   // 이름
   @Column()
@@ -52,6 +52,6 @@ export class UsersEntity {
   studentStatus: StudentStatus;
 
   // 인증서류 (URL string)
-  @Column({ nullable: true })
+  @Column()
   certificationDocumentUrl: string;
 }

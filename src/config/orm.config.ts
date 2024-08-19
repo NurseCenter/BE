@@ -1,27 +1,20 @@
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-function ormConfig(): TypeOrmModuleOptions {
-  const commonConf = {
-    SYNCHRONIZE: false, // 데이터베이스 스키마를 자동으로 동기화할지 여부
-    ENTITIES: [__dirname + '/../entities/*{.ts,.js}'], // 엔티티 파일 경로 (TS 또는 JS 확장자를 가진 파일)
-    MIGRATIONS: [__dirname + '/../migrations/**/*{.ts,.js}'], // // 마이그레이션 파일 경로
-    MIGRATIONS_RUN: false, // 애플리케이션 실행 시 자동으로 마이그레이션을 적용할지 여부
-  };
+export function ormConfig(): TypeOrmModuleOptions {
+  const configService = new ConfigService();
 
   return {
-    name: 'Gannies',
     type: 'mysql',
-    database: process.env.DB_DATABASE,
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    logging: process.env.TYPEORM_LOGGING === 'true',
-    synchronize: commonConf.SYNCHRONIZE,
-    entities: commonConf.ENTITIES,
-    migrations: commonConf.MIGRATIONS,
-    migrationsRun: commonConf.MIGRATIONS_RUN,
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_DATABASE'),
+    synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE') || false, // 애플리케이션 실행 시 자동으로 스키마를 동기화하지 않도록 설정
+    entities: [__dirname + '/../entities/*{.ts,.js}'], // 엔티티 파일 경로
+    migrations: [__dirname + '/../migrations/**/*{.ts,.js}'], // 마이그레이션 파일 경로
+    migrationsTableName: 'migrations', // 마이그레이션을 기록할 테이블 이름
+    logging: configService.get<boolean>('TYPEORM_LOGGING') || false, // 선택 사항: 로그 설정
   };
 }
-
-export { ormConfig };

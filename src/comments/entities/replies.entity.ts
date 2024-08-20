@@ -4,8 +4,6 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
 } from 'typeorm';
 import { CommentsEntity } from './comments.entity';
 
@@ -15,10 +13,8 @@ export class RepliesEntity {
   repliesId: number;
 
   // 답글 내용
-  @Column()
-  content: number;
-  @Column()
-  string: number;
+  @Column({ type: 'varchar', length: 300 })
+  content: string;
 
   // 답글이 달린 댓글 1개
   @ManyToOne(() => CommentsEntity, (comment) => comment.replies)
@@ -29,10 +25,13 @@ export class RepliesEntity {
   createdAt: Date;
 
   // 답글 업데이트일
-  @UpdateDateColumn()
+  // 기본 상태는 null, 수정하면 날짜
+  // 수정 여부를 렌더링하기 위함.
+  @Column({ type: 'timestamp', nullable: true, default: null })
   updatedAt: Date;
 
   // 답글 삭제일
-  @DeleteDateColumn()
-  deletedAt?: Date;
+  // 기본 상태는 null, 삭제하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  deletedAt: Date;
 }

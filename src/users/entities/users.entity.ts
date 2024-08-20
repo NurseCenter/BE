@@ -1,17 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
-export enum MembershipStatus {
-  NON_MEMBER = 0, // 비회원
-  PENDING_VERIFICATION = 1, // 이메일 인증 대기
-  EMAIL_VERIFIED = 2, // 이메일 인증 완료 (관리자 승인 대기)
-  APPROVED_MEMBER = 3, // 정회원
-  REJECTED_MEMBER = 4, // 회원가입 거절
-}
-
-export enum StudentStatus {
-  CURRENT_STUDENT = 'current_student', // 재학생
-  ALUMNI = 'alumni', // 졸업생
-}
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { EMembershipStatus, EStudentStatus } from '../enums';
 
 @Entity('users')
 export class UsersEntity {
@@ -20,11 +13,12 @@ export class UsersEntity {
   userId: number;
 
   // 이름
-  @Column()
+  // 회원 실명 OCR에서 추출
+  @Column({ length: 8 })
   username: string;
 
   // 닉네임
-  @Column()
+  @Column({ length: 8 })
   nickname: string;
 
   // 이메일
@@ -32,26 +26,40 @@ export class UsersEntity {
   email: string;
 
   // 비밀번호
-  @Column()
+  @Column({ length: 16 })
   password: string;
 
   // 회원 가입 인증 상태
   @Column({
     type: 'enum',
-    enum: MembershipStatus,
-    default: MembershipStatus.NON_MEMBER,
+    enum: EMembershipStatus,
+    default: EMembershipStatus.NON_MEMBER,
   })
-  membershipStatus: MembershipStatus;
+  membershipStatus: EMembershipStatus;
 
   // 재학생 졸업생 여부
   @Column({
     type: 'enum',
-    enum: StudentStatus,
-    default: StudentStatus.CURRENT_STUDENT,
+    enum: EStudentStatus,
+    default: EStudentStatus.CURRENT_STUDENT,
   })
-  studentStatus: StudentStatus;
+  studentStatus: EStudentStatus;
 
   // 인증서류 (URL string)
   @Column()
   certificationDocumentUrl: string;
+
+  // 가입일
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  // 활동 정지 종료 날짜
+  // 기본 상태 null, 정지되었으면 정지가 종료되는 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  suspensionEndDate?: Date;
+
+  // 탈퇴일
+  // 탈퇴하지 않은 null, 탈퇴하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  deletedAt?: Date;
 }

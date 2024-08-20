@@ -14,21 +14,16 @@ import { OcrModule } from './ocr/ocr.module';
 import { OcrController } from './ocr/ocr.controller';
 import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormConfig } from './config/orm.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getTypeOrmConfig } from './config/orm.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: `.env`,
-    }),
     TypeOrmModule.forRootAsync({
-
-      imports:[ConfigModule],
-      useFactory : async (configService : ConfigService) => {
-        ormConfig(configService),
-      }
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) =>
+        getTypeOrmConfig(configService),
+      inject: [ConfigService],
     }),
     AuthModule,
     HospitalsModule,

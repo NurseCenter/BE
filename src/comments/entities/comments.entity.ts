@@ -6,7 +6,6 @@ import {
   ManyToOne,
   OneToMany,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { RepliesEntity } from './replies.entity';
 
@@ -16,12 +15,13 @@ export class CommentsEntity {
   commentId: number;
 
   // 댓글 내용
-  @Column('text')
+  @Column({ type: 'text', length: 300 })
   content: string;
 
-  // 댓글 신고 여부
-  @Column({ type: 'boolean', default: false })
-  isReported: boolean;
+  // 댓글 신고일
+  // 기본 상태는 null, 신고 당하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  reportedAt: Date;
 
   // 댓글이 달린 글 1개
   @ManyToOne(() => BasePostsEntity, (post) => post.comments)
@@ -36,7 +36,9 @@ export class CommentsEntity {
   createdAt: Date;
 
   // 댓글 업데이트일
-  @UpdateDateColumn()
+  // 기본 상태는 null, 수정하면 날짜
+  // 수정 여부를 렌더링하기 위함.
+  @Column({ type: 'timestamp', nullable: true, default: null })
   updatedAt: Date;
 
   // 댓글 삭제일

@@ -6,7 +6,6 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 /*
@@ -25,11 +24,11 @@ export class BasePostsEntity extends BaseEntity {
   postId: number;
 
   // 제목
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text', length: 50 })
   title: string;
 
   // 내용
-  @Column({ type: 'text' })
+  @Column({ type: 'text', length: 2000 })
   content: string;
 
   // 신고 여부
@@ -53,8 +52,10 @@ export class BasePostsEntity extends BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  // 업데이트일
-  @UpdateDateColumn()
+  // 게시물 업데이트일
+  // 기본 상태는 null, 수정하면 날짜
+  // 수정 여부를 렌더링하기 위함.
+  @Column({ type: 'timestamp', nullable: true, default: null })
   updatedAt: Date;
 
   // 게시물 삭제일

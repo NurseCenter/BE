@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -14,9 +15,8 @@ export class suspendedUsersEntity {
   id: number;
 
   // 정지된 회원 ID
-  // UsersEntity의 userId를 참조
   @OneToOne(() => UsersEntity, { eager: true })
-  @Column({})
+  @JoinColumn({ name: 'suspended_user_id' })
   userId: number;
 
   // 정지된 사유

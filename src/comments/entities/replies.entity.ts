@@ -13,7 +13,7 @@ export class RepliesEntity {
   repliesId: number;
 
   // 답글 내용
-  @Column({ type: 'text', length: 300 })
+  @Column({ type: 'varchar', length: 300 })
   content: string;
 
   // 답글이 달린 댓글 1개

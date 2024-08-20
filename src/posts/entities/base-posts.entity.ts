@@ -24,11 +24,11 @@ export class BasePostsEntity extends BaseEntity {
   postId: number;
 
   // 제목
-  @Column({ type: 'text', length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   title: string;
 
   // 내용
-  @Column({ type: 'text', length: 2000 })
+  @Column({ type: 'varchar', length: 2000 })
   content: string;
 
   // 신고 여부

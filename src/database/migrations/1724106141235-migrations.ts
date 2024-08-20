@@ -28,9 +28,7 @@ export class Migrations1724106141235 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE \`job\` (\`postId\` int NOT NULL AUTO_INCREMENT, \`title\` varchar(255) NOT NULL, \`content\` text NOT NULL, \`isReported\` tinyint NOT NULL DEFAULT 0, \`scrapCounts\` int NOT NULL DEFAULT '0', \`viewCounts\` int NOT NULL DEFAULT '0', \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updatedAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deletedAt\` datetime(6) NULL, PRIMARY KEY (\`postId\`)) ENGINE=InnoDB`,
     );
-    await queryRunner.query(
-      `CREATE TABLE \`notice\` (\`postId\` int NOT NULL AUTO_INCREMENT, \`title\` varchar(255) NOT NULL, \`content\` text NOT NULL, \`isReported\` tinyint NOT NULL DEFAULT 0, \`scrapCounts\` int NOT NULL DEFAULT '0', \`viewCounts\` int NOT NULL DEFAULT '0', \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updatedAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deletedAt\` datetime(6) NULL, PRIMARY KEY (\`postId\`)) ENGINE=InnoDB`,
-    );
+
     await queryRunner.query(
       `CREATE TABLE \`exam_prep\` (\`postId\` int NOT NULL AUTO_INCREMENT, \`title\` varchar(255) NOT NULL, \`content\` text NOT NULL, \`isReported\` tinyint NOT NULL DEFAULT 0, \`scrapCounts\` int NOT NULL DEFAULT '0', \`viewCounts\` int NOT NULL DEFAULT '0', \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updatedAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deletedAt\` datetime(6) NULL, PRIMARY KEY (\`postId\`)) ENGINE=InnoDB`,
     );

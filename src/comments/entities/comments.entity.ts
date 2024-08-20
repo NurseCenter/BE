@@ -15,7 +15,7 @@ export class CommentsEntity {
   commentId: number;
 
   // 댓글 내용
-  @Column({ type: 'text', length: 300 })
+  @Column({ type: 'varchar', length: 300 })
   content: string;
 
   // 댓글 신고일

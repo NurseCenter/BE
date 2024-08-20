@@ -3,8 +3,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
-  CreateDateColumn,
   Column,
+  CreateDateColumn,
 } from 'typeorm';
 
 @Entity('report_posts')

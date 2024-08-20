@@ -9,7 +9,6 @@ import {
 
 @Entity('scraps')
 export class ScrapsEntity {
-  // 스크랩 ID 값
   @PrimaryGeneratedColumn()
   scrapId: number;
 

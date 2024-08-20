@@ -3,7 +3,6 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -58,7 +57,8 @@ export class BasePostsEntity extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // 삭제일
-  @DeleteDateColumn()
+  // 게시물 삭제일
+  // 사용자가 게시물을 삭제하지 않으면 null, 삭제하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
 }

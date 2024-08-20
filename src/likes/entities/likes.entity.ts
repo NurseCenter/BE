@@ -9,7 +9,6 @@ import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
 
 @Entity('likes')
 export class LikeEntity {
-  // ID
   @PrimaryGeneratedColumn()
   id: number;
 

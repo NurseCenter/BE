@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum MembershipStatus {
   NON_MEMBER = 0, // 비회원
@@ -54,4 +59,13 @@ export class UsersEntity {
   // 인증서류 (URL string)
   @Column()
   certificationDocumentUrl: string;
+
+  // 가입일
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // 탈퇴일
+  // 사용자가 탈퇴하지 않으면 null, 탈퇴하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  deletedAt?: Date;
 }

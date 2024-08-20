@@ -8,7 +8,6 @@ import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
 import { CommonModule } from './common/common.module';
-import { ConfigModule } from './config/config.module';
 import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
@@ -16,10 +15,21 @@ import { OcrController } from './ocr/ocr.controller';
 import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormConfig } from './config/orm.config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(ormConfig()),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env`,
+    }),
+    TypeOrmModule.forRootAsync({
+
+      imports:[ConfigModule],
+      useFactory : async (configService : ConfigService) => {
+        ormConfig(configService),
+      }
+    }),
     AuthModule,
     HospitalsModule,
     PostsModule,

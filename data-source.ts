@@ -7,6 +7,9 @@ config(); // .env 파일에서 환경 변수를 불러옴.
 
 const configService = new ConfigService();
 
+console.log(configService.get<string>('DB_HOST'));
+console.log(1);
+
 const AppDataSource = new DataSource({
   type: 'mysql',
   host: configService.get<string>('DB_HOST'),
@@ -15,7 +18,7 @@ const AppDataSource = new DataSource({
   password: configService.get<string>('DB_PASSWORD'),
   database: configService.get<string>('DB_DATABASE'),
   logging: true,
-  synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE') || false, // 애플리케이션 실행 시 자동으로 스키마를 동기화하지 않도록 설정
+  synchronize: true, // 애플리케이션 실행 시 자동으로 스키마를 동기화하지 않도록 설정
   entities: [__dirname + '/src/**/*/entities/*{.ts,.js}'], // 엔티티 파일 경로
   migrations: [__dirname + '/src/database/migrations/**/*{.ts,.js}'], // 마이그레이션 파일 경로
   migrationsTableName: 'migrations', // 마이그레이션을 기록할 테이블 이름

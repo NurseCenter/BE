@@ -15,8 +15,10 @@ export class RepliesEntity {
   repliesId: number;
 
   // 답글 내용
-  @Column('text')
-  content: string;
+  @Column()
+  content: number;
+  @Column()
+  string: number;
 
   // 답글이 달린 댓글 1개
   @ManyToOne(() => CommentsEntity, (comment) => comment.replies)

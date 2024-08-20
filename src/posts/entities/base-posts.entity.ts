@@ -58,7 +58,7 @@ export class BasePostsEntity extends BaseEntity {
   updatedAt: Date;
 
   // 게시물 삭제일
-  // 사용자가 게시물을 삭제하지 않으면 null, 삭제하면 날짜
+  // 기본 상태는 null, 삭제하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
 }

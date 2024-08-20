@@ -33,7 +33,7 @@ export class ReportPostsEntity {
   dateReported: Date;
 
   // 신고 삭제일
-  // 게시글 신고 내역을 삭제하지 않으면 null, 삭제하면 날짜
+  // 기본 상태는 null, 삭제하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
-  deletedAt?: Date;
+  deletedAt: Date;
 }

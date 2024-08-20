@@ -30,7 +30,7 @@ export class RepliesEntity {
   updatedAt: Date;
 
   // 답글 삭제일
-  // 사용자가 답글을 삭제하지 않으면 null, 삭제하면 날짜
+  // 기본 상태는 null, 삭제하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
-  deletedAt?: Date;
+  deletedAt: Date;
 }

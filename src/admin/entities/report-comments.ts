@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   Column,
 } from 'typeorm';
+import { SuspensionReason } from '../enums';
 
 @Entity('report_comments')
 export class ReportCommentsEntity {
@@ -27,6 +28,20 @@ export class ReportCommentsEntity {
   // 신고된 댓글 작성자
   @ManyToOne(() => UsersEntity, (user) => user.userId)
   reportedPerson: UsersEntity;
+
+  // 신고된 이유
+  @Column({ type: 'enum', enum: SuspensionReason, nullable: true })
+  reportedReason: string;
+
+  // 기타 신고된 이유
+  // 기본 null, 프론트엔드에서 입력 받음.
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    default: null,
+  })
+  otherReportedReason?: string;
 
   // 신고일
   @CreateDateColumn()

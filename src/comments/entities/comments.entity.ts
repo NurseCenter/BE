@@ -18,6 +18,8 @@ export class CommentsEntity {
   @Column({ type: 'varchar', length: 300 })
   content: string;
 
+  @Column({ type: 'varchar', length: 300 })
+  content2: string;
 
   // 댓글 신고일
   // 기본 상태는 null, 신고 당하면 날짜

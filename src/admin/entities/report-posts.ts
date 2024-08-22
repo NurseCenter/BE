@@ -6,7 +6,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
-import { SuspensionReason } from '../enums';
+import { ESuspensionReason } from '../enums';
 
 @Entity('report_posts')
 export class ReportPostsEntity {
@@ -30,7 +30,7 @@ export class ReportPostsEntity {
   reportedPerson: UsersEntity;
 
   // 신고된 이유
-  @Column({ type: 'enum', enum: SuspensionReason, nullable: true })
+  @Column({ type: 'enum', enum: ESuspensionReason, nullable: true })
   reportedReason: string;
 
   // 기타 신고된 이유

@@ -4,9 +4,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { UsersEntity } from '../../users/entities/users.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -22,6 +25,9 @@ import {
 export class BasePostsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   postId: number;
+
+  @Column()
+  userId: number;
 
   // 제목
   @Column({ type: 'varchar', length: 50 })
@@ -62,4 +68,6 @@ export class BasePostsEntity extends BaseEntity {
   // 기본 상태는 null, 삭제하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
+
+  user: UsersEntity;
 }

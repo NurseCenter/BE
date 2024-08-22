@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EMembershipStatus, EStudentStatus } from '../enums';
+import { CommentsEntity } from '../../comments/entities/comments.entity';
+import { EmploymentEntity } from '../../posts/entities/employment.entity';
 
 @Entity('users')
 export class UsersEntity {
@@ -62,4 +65,21 @@ export class UsersEntity {
   // 탈퇴하지 않은 null, 탈퇴하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
+
+  @OneToMany(() => EmploymentEntity, (employment) => employment.userId)
+  employment: EmploymentEntity[];
+
+  @OneToMany(() => EmploymentEntity, (event) => event.userId)
+  event: EmploymentEntity[];
+  @OneToMany(() => EmploymentEntity, (exam) => exam.userId)
+  exam: EmploymentEntity[];
+
+  @OneToMany(() => EmploymentEntity, (job) => job.userId)
+  job: EmploymentEntity[];
+  @OneToMany(() => EmploymentEntity, (notice) => notice.userId)
+  notice: EmploymentEntity[];
+  @OneToMany(() => EmploymentEntity, (practice) => practice.userId)
+  practice: EmploymentEntity[];
+  @OneToMany(() => EmploymentEntity, (theory) => theory.userId)
+  theory: EmploymentEntity[];
 }

@@ -1,4 +1,4 @@
-export interface ValidationMessages {
+export interface IValidationMessages {
     nickname: string;
     email: string;
     password: string;

@@ -8,9 +8,9 @@ import { EMembershipStatus, EStudentStatus } from '../enums';
 
 @Entity('users')
 export class UsersEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   // 회원 고유 ID 값
-  userId: number;
+  userId: string;
 
   // 이름
   // 회원 실명 OCR에서 추출
@@ -44,6 +44,10 @@ export class UsersEntity {
     default: EStudentStatus.CURRENT_STUDENT,
   })
   studentStatus: EStudentStatus;
+
+  // 관리자 계정 여부
+  @Column({ default: false })
+  isAdmin: boolean;
 
   // 인증서류 (URL string)
   @Column()

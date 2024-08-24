@@ -16,9 +16,11 @@ import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
+import { RedisModule } from './common/redis.module';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) =>
@@ -37,6 +39,7 @@ import { getTypeOrmConfig } from './config/orm.config';
     LikesModule,
     OcrModule,
     SearchModule,
+    RedisModule
   ],
   controllers: [AppController, OcrController],
   providers: [AppService],

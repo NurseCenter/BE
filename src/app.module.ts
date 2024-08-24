@@ -20,7 +20,7 @@ import { RedisModule } from './common/redis.module';
 
 @Module({
   imports: [
-    ConfigModule,
+    ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) =>

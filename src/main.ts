@@ -17,6 +17,7 @@ async function bootstrap() {
 
   app.use(
     session(sessionOptions));
+    
   app.use(cookieParser());
 
   await app.listen(3000);

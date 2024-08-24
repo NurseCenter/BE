@@ -1,8 +1,6 @@
 import { Matches } from "class-validator";
 import { validationMessages } from "../interfaces/validation-messages";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*?_]).{8,16}$/;
+import { EMAIL_REGEX, PASSWORD_REGEX } from './index'
 
 export class SignInUserDto {
     @Matches(EMAIL_REGEX, { message : validationMessages.email })

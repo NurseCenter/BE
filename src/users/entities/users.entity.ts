@@ -14,7 +14,7 @@ export class UsersEntity {
 
   // 이름
   // 회원 실명 OCR에서 추출
-  @Column({ length: 8 })
+  @Column({ length: 8, default: null })
   username: string;
 
   // 닉네임
@@ -26,7 +26,7 @@ export class UsersEntity {
   email: string;
 
   // 비밀번호
-  @Column({ length: 16 })
+  @Column()
   password: string;
 
   // 회원 가입 인증 상태

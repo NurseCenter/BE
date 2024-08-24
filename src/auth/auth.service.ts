@@ -64,18 +64,25 @@ export class AuthService {
         })
     }
 
-    // 세션 ID에서 사용자 ID 찾기
-    async getUserIdFromSession(sessionId: string): Promise<UsersEntity | undefined> {
-        return this.userRepository.findOne({
-            where: { }
-        })
+    // // 세션 ID에서 사용자 ID 찾기
+    // async getUserIdFromSession(sessionId: string): Promise<UsersEntity | undefined> {
+    //     return this.userRepository.findOne({
+    //         where: { }
+    //     })
+    // }
+
+    // 입력받은 회원정보가 유효한지 확인
+    async validateUser(signInUserDto: SignInUserDto): Promise<boolean>{
+        // 이메일로 회원 찾기
+        const user = await this.findUserByEmail(signInUserDto.email)
+
+        if (!user) return false;
+
+        // 비밀번호 일치하는지 확인
+        const isPasswordMatched = await this.matchPassword(signInUserDto.password, user.password)
+
+        return isPasswordMatched;
     }
-
-    // 회원 유효성 검사 (?)
-    async validateUser(signInUserDto: SignInUserDto){
-
-    }
-
 
     // 회원 탈퇴
     async deleteUser(userId: string): Promise<void> {

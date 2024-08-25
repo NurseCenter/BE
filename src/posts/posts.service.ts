@@ -24,8 +24,9 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { BasePostsEntity } from './entities/base-posts.entity';
 import { create } from 'domain';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { GetPostsQueryDto } from './dto/get-post-query.dto';
+import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { BoardType } from './enum/boardType.enum';
+import { SortOrder, SortType } from './enum/sortType.enum';
 
 @Injectable()
 export class PostsService {
@@ -81,7 +82,7 @@ export class PostsService {
         case '23502':
           throw new BadRequestException('필수 필드가 누락되었습니다.');
         default:
-          console.error('데이터베이스 에러:', err.message);
+          console.error('데이터베이스 에러:', err.message, err.stack);
           throw new InternalServerErrorException(
             '데이터베이스 오류가 발생했습니다.',
           );
@@ -99,38 +100,67 @@ export class PostsService {
 
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
-  async getPosts(
-    boardType: BoardType,
-    sortType: SortType,
-    getPostsQueryDto: GetPostsQueryDto,
-  ) {
-    const { page, limit, search } = getPostsQueryDto;
-    let repository = this.getRepository(boardType);
-    let query = repository.createQueryBuilder('post');
+  async getPosts(boardType: BoardType, paginateQueryDto: PaginateQueryDto) {
+    let { page, limit, search, sortOrder, sortType } = paginateQueryDto;
 
-    if (search) {
-      query = query.where(
-        'post.title LIKE :search OR post.content LIKE :search',
-        { search: `%${search}%` },
-      );
+    page = page && Number(page) > 0 ? Number(page) : 1;
+    limit = limit && Number(limit) > 0 ? Number(limit) : 10;
+    console.log(sortOrder);
+    if (limit > 50) {
+      throw new BadRequestException('Limit은 50을 넘어갈 수 없습니다.');
     }
+    try {
+      let repository = this.getRepository(boardType);
+      let query = repository.createQueryBuilder('post');
 
-    // 칼럼 기준 조회
+      if (search) {
+        query = query.where(
+          'post.title LIKE :search OR post.content LIKE :search',
+          { search: `%${search}%` },
+        );
+      }
 
-    // 정렬 적용
+      sortType = Object.values(SortType).includes(sortType)
+        ? sortType
+        : SortType.DATE;
+      sortOrder = Object.values(SortOrder).includes(sortOrder)
+        ? sortOrder
+        : SortOrder.DESC;
 
-    // 페이지네이션 적용
-    query = query.skip((page - 1) * limit).take(limit);
+      switch (sortType) {
+        case SortType.DATE:
+          query = query
+            .orderBy('post.createdAt', sortOrder)
+            .addOrderBy('post.postId', sortOrder); // ID로 보조 정렬
+          break;
+        case SortType.LIKES:
+          query = query
+            .orderBy('post.likes', sortOrder)
+            .addOrderBy('post.createdAt', SortOrder.DESC) // 생성 날짜로 보조 정렬
+            .addOrderBy('post.postId', SortOrder.DESC); // ID로 추가 보조 정렬
+          break;
+        default:
+          query = query
+            .orderBy('post.createdAt', SortOrder.DESC)
+            .addOrderBy('post.postId', SortOrder.DESC);
+      }
 
-    const [posts, total] = await query.getManyAndCount();
+      // 페이지네이션 적용
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).take(limit);
 
-    return {
-      posts,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+      const [posts, total] = await query.getManyAndCount();
+
+      return {
+        posts,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (err) {
+      this.handleDatabaseError(err);
+    }
   }
 
   //게시글 생성

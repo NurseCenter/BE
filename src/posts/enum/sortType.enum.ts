@@ -1,8 +1,9 @@
-enum SortType {
+export enum SortType {
   DATE = 'date',
+  LIKES = 'likes',
 }
 
-enum SortOrder {
-  ASC = 'asc',
-  DESC = 'desc',
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
 }

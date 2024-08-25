@@ -1,9 +1,9 @@
 import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
-
-export class GetPostsQueryDto {
+import { SortType, SortOrder } from '../enum/sortType.enum';
+export class PaginateQueryDto {
   @IsOptional()
-  @IsString()
-  sort?: string = 'date';
+  @IsEnum(SortType)
+  sortType?: SortType = SortType.DATE;
 
   @IsOptional()
   @IsInt()

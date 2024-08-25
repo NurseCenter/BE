@@ -17,6 +17,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
 import { RedisModule } from './common/redis.module';
+import { HealthCheckModule } from './health-check/health-check.module';
 
 @Module({
   imports: [
@@ -39,7 +40,8 @@ import { RedisModule } from './common/redis.module';
     LikesModule,
     OcrModule,
     SearchModule,
-    RedisModule
+    RedisModule,
+    HealthCheckModule
   ],
   controllers: [AppController, OcrController],
   providers: [AppService],

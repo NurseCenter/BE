@@ -1,5 +1,5 @@
 import { EStudentStatus } from "src/users/enums";
-import { IsEnum, IsString, Length, Matches } from 'class-validator';
+import { IsEnum, IsString, Matches } from 'class-validator';
 import { validationMessages } from "../interfaces/validation-messages";
 import { NICKNAME_REGEX, EMAIL_REGEX, PASSWORD_REGEX } from "./index";
 

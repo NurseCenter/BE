@@ -3,7 +3,6 @@ import { randomBytes } from "crypto";
 import getCookieOptions from "./cookieOptions";
 import Redis from 'ioredis';
 import { Response } from 'express';
-import { async } from "rxjs";
 
 @Injectable()
 export class AuthSessionService {

@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { CreateUserDto, SignInUserDto } from "../dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthPasswordService } from "./auth.password.service";
+import { AuthSessionService } from "./auth.session.service";
 
 @Injectable()
 export class AuthUserService{
@@ -11,6 +12,7 @@ export class AuthUserService{
         @InjectRepository(UsersEntity)
         private readonly userRepository: Repository<UsersEntity>,
         private readonly authPasswordService: AuthPasswordService,
+        private readonly authSessionService: AuthSessionService,
     ){}
     
     // 회원 생성
@@ -59,7 +61,9 @@ export class AuthUserService{
     }
     
       // 회원 탈퇴
-      async deleteUser(userId: string): Promise<void> {
+      async deleteUser(sessionId: string): Promise<void> {
+        const userId = await this.authSessionService.getUserIdFromSession(sessionId);
+        
         const user = await this.userRepository.findOne({ where: { userId } });
     
         if (!user) {

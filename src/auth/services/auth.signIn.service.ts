@@ -14,7 +14,7 @@ export class AuthSignInService {
     ){}
 
     // MySQL에 로그인 기록을 저장하기
-    async saveLoginRecord(userId: string, req: Request): Promise<void> {
+    async saveLoginRecord(userId: string, req: Request): Promise<boolean> {
         const loggedInUser = await this.authUserService.findUserByUserId(userId);
         if (!loggedInUser) throw new Error('User not found');
 
@@ -24,7 +24,11 @@ export class AuthSignInService {
         loginRecord.isTemporaryPassword = null;
         loginRecord.updatedAt = new Date();
 
+        console.log("로그인 기록 저장", loginRecord)
+
         await this.loginRepository.save(loginRecord);
+
+        return true;
     }
 
     // 클라이언트 Request의 IP 주소 추출

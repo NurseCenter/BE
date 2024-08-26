@@ -5,6 +5,7 @@ import { CreateUserDto, SignInUserDto } from "../dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthPasswordService } from "./auth.password.service";
 import { AuthSessionService } from "./auth.session.service";
+import { IUser } from "../interfaces";
 
 @Injectable()
 export class AuthUserService{
@@ -47,23 +48,25 @@ export class AuthUserService{
         return this.userRepository.findOne({ where: { userId } });
       }
 
-          // 입력받은 회원정보가 유효한지 확인
-    async validateUser(signInUserDto: SignInUserDto): Promise<boolean>{
+    // 입력받은 회원정보가 유효한지 확인
+    async validateUser(signInUserDto: SignInUserDto): Promise<IUser | null>{
         // 이메일로 회원 찾기
         const user = await this.findUserByEmail(signInUserDto.email)
 
-        if (!user) return false;
+        if (!user) return null;
 
         // 비밀번호 일치하는지 확인
         const isPasswordMatched = await this.authPasswordService.matchPassword(signInUserDto.password, user.password)
 
-        return isPasswordMatched;
+        if (!isPasswordMatched) return null;
+
+        return user;
     }
     
       // 회원 탈퇴
       async deleteUser(sessionId: string): Promise<void> {
         const userId = await this.authSessionService.getUserIdFromSession(sessionId);
-        
+
         const user = await this.userRepository.findOne({ where: { userId } });
     
         if (!user) {

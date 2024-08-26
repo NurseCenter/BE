@@ -30,7 +30,8 @@ export class AuthController {
     @Post('sign-in')
     @HttpCode(HttpStatus.OK)
     async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
-        return await this.authService.signIn(signInUserDto, req, res);
+        await this.authService.signIn(signInUserDto, req, res);
+        return { message : "로그인에 성공하였습니다." };
     }
 
     // 로그아웃

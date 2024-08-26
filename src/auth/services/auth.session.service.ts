@@ -1,13 +1,15 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { randomBytes } from "crypto";
-import getCookieOptions from "./cookieOptions";
+import createCookieOptions from "./cookieOptions";
 import Redis from 'ioredis';
 import { Response } from 'express';
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthSessionService {
     constructor(
-        @Inject('REDIS_CLIENT') private readonly redisClient: Redis
+        @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+        private readonly configService: ConfigService
       ) {}
 
     // 세션 ID 생성하기
@@ -23,8 +25,10 @@ export class AuthSessionService {
     }
 
     // 쿠키 생성하기
-    async sendCookie(res: Response, sessionId: string) {
-        const returnedCookieOptions = await getCookieOptions();
+    async sendCookie(res: Response, sessionId: string): Promise<boolean> {
+        const returnedCookieOptions = await createCookieOptions();
+        console.log("returnedCookieOptions", returnedCookieOptions)
         res.cookie('sessionId', sessionId, returnedCookieOptions);
+        return true; 
     }
 }

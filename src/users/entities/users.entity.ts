@@ -8,6 +8,12 @@ import {
 import { EMembershipStatus, EStudentStatus } from '../enums';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { EmploymentEntity } from '../../posts/entities/employment.entity';
+import { EventEntity } from '../../posts/entities/event.entity';
+import { ExamPrepEntity } from '../../posts/entities/exam-prep.entity';
+import { JobEntity } from '../../posts/entities/job.entity';
+import { NoticeEntity } from '../../posts/entities/notice.entity';
+import { PracticeEntity } from '../../posts/entities/practice.entity';
+import { TheoryEntity } from '../../posts/entities/theory.entity';
 
 @Entity('users')
 export class UsersEntity {
@@ -66,20 +72,24 @@ export class UsersEntity {
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
 
-  @OneToMany(() => EmploymentEntity, (employment) => employment.userId)
+  @OneToMany('EmploymentEntity', 'user')
   employment: EmploymentEntity[];
 
-  @OneToMany(() => EmploymentEntity, (event) => event.userId)
-  event: EmploymentEntity[];
-  @OneToMany(() => EmploymentEntity, (exam) => exam.userId)
-  exam: EmploymentEntity[];
+  @OneToMany('EventEntity', 'user')
+  event: EventEntity[];
 
-  @OneToMany(() => EmploymentEntity, (job) => job.userId)
-  job: EmploymentEntity[];
-  @OneToMany(() => EmploymentEntity, (notice) => notice.userId)
-  notice: EmploymentEntity[];
-  @OneToMany(() => EmploymentEntity, (practice) => practice.userId)
-  practice: EmploymentEntity[];
-  @OneToMany(() => EmploymentEntity, (theory) => theory.userId)
-  theory: EmploymentEntity[];
+  @OneToMany('ExamPrepEntity', 'user')
+  exam: ExamPrepEntity[];
+
+  @OneToMany('JobEntity', 'user')
+  job: JobEntity[];
+
+  @OneToMany('NoticeEntity', 'user')
+  notice: NoticeEntity[];
+
+  @OneToMany('PracticeEntity', 'user')
+  practice: PracticeEntity[];
+
+  @OneToMany('TheoryEntity', 'user')
+  theory: TheoryEntity[];
 }

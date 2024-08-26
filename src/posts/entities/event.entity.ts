@@ -1,6 +1,7 @@
 import { Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BasePostsEntity } from './base-posts.entity';
+
 import { UsersEntity } from '../../users/entities/users.entity';
+import { BasePostsEntity } from './base-posts.entity';
 
 @Entity('event')
 export class EventEntity extends BasePostsEntity {

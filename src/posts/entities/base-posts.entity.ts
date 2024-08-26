@@ -3,13 +3,14 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
+import { LikeEntity } from '../../likes/entities/likes.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -49,10 +50,16 @@ export class BasePostsEntity extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   viewCounts: number;
 
+  @Column({ type: 'int', default: 0 })
+  likes: number;
+
   // 댓글
   // 하나의 게시글에 여러 개의 댓글이 가능함.
   @OneToMany(() => CommentsEntity, (comment) => comment.post)
   comments: CommentsEntity[];
+
+  @OneToMany(() => LikeEntity, (like) => like.post)
+  like: LikeEntity[];
 
   // 작성일
   @CreateDateColumn()
@@ -61,12 +68,12 @@ export class BasePostsEntity extends BaseEntity {
   // 게시물 업데이트일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   // 게시물 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @DeleteDateColumn()
   deletedAt?: Date;
 
   user: UsersEntity;

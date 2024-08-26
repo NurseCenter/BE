@@ -13,6 +13,7 @@ import {
   EntitySchema,
   QueryFailedError,
   Repository,
+  TypeORMError,
 } from 'typeorm';
 import { EventEntity } from './entities/event.entity';
 import { ExamPrepEntity } from './entities/exam-prep.entity';
@@ -27,6 +28,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { BoardType } from './enum/boardType.enum';
 import { SortOrder, SortType } from './enum/sortType.enum';
+import { DeletePostDto } from './dto/delete-post.dto';
 
 @Injectable()
 export class PostsService {
@@ -98,11 +100,45 @@ export class PostsService {
     }
   }
 
+  private isDatabaseError(err: any): boolean {
+    // TypeORM 관련 오류 확인
+    if (err instanceof TypeORMError) {
+      return true;
+    }
+
+    // 쿼리 실패 오류 확인
+    if (err instanceof QueryFailedError) {
+      return true;
+    }
+
+    // 데이터베이스 연결 오류 확인 (예시)
+    if (err.code === 'ECONNREFUSED' || err.code === 'ER_ACCESS_DENIED_ERROR') {
+      return true;
+    }
+
+    // 특정 데이터베이스 오류 코드 확인 (예: MySQL)
+    const databaseErrorCodes = [
+      'ER_DUP_ENTRY',
+      'ER_NO_SUCH_TABLE',
+      'ER_PARSE_ERROR',
+    ];
+    if (err.code && databaseErrorCodes.includes(err.code)) {
+      return true;
+    }
+
+    // PostgreSQL 오류 확인 (예시)
+    if (err.code && err.code.startsWith('57P')) {
+      return true;
+    }
+
+    // 그 외의 경우는 데이터베이스 오류가 아님
+    return false;
+  }
+
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
   async getPosts(boardType: BoardType, paginateQueryDto: PaginateQueryDto) {
     let { page, limit, search, sortOrder, sortType } = paginateQueryDto;
-
     page = page && Number(page) > 0 ? Number(page) : 1;
     limit = limit && Number(limit) > 0 ? Number(limit) : 10;
     console.log(sortOrder);
@@ -159,7 +195,11 @@ export class PostsService {
         totalPages: Math.ceil(total / limit),
       };
     } catch (err) {
-      this.handleDatabaseError(err);
+      if (this.isDatabaseError(err)) {
+        this.handleDatabaseError(err);
+      } else {
+        throw err;
+      }
     }
   }
 
@@ -178,19 +218,42 @@ export class PostsService {
 
       return savedPost;
     } catch (err) {
-      this.handleDatabaseError(err);
+      if (this.isDatabaseError(err)) {
+        this.handleDatabaseError(err);
+      } else {
+        throw err;
+      }
     }
   }
+
   //특정 게시글 조회
+  async getPostDetails(boardType: BoardType, postId: number) {
+    let repository = this.getRepository(boardType);
+    try {
+      const result = await repository.findOneBy({ postId });
+      if (!result)
+        throw new NotFoundException(
+          `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
+        );
+      return result;
+    } catch (err) {
+      if (this.isDatabaseError(err)) {
+        this.handleDatabaseError(err);
+      } else {
+        throw err;
+      }
+    }
+  }
+
   //특정 게시글 신고
   //게시글 수정
   async updatePost(
-    postId: number,
-    userId: number,
     boardType: BoardType,
+    postId: number,
     updatePostDto: UpdatePostDto,
   ) {
     let repository = this.getRepository(boardType);
+    const { userId } = updatePostDto;
     try {
       const post = await repository.findOneBy({ postId });
       if (!post)
@@ -216,9 +279,37 @@ export class PostsService {
       const updatedPost = await repository.save(post);
       return updatedPost;
     } catch (err) {
-      this.handleDatabaseError(err);
+      if (this.isDatabaseError(err)) {
+        this.handleDatabaseError(err);
+      } else {
+        throw err;
+      }
     }
   }
 
   //게시글 삭제
+  async deletePost(boardType: BoardType, postId: number) {
+    let repository = this.getRepository(boardType);
+    try {
+      let userId = 1; // 차후 변경
+      const post = await repository.findOneBy({ postId });
+      if (!post)
+        throw new NotFoundException(
+          `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
+        );
+
+      if (post.userId !== userId) {
+        throw new ForbiddenException('이 게시물을 수정할 권한이 없습니다.');
+      }
+
+      const updatedPost = await repository.softDelete(postId);
+      return updatedPost;
+    } catch (err) {
+      if (this.isDatabaseError(err)) {
+        this.handleDatabaseError(err);
+      } else {
+        throw err;
+      }
+    }
+  }
 }

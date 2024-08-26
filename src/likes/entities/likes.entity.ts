@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   Column,
+  JoinColumn,
 } from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
@@ -15,10 +16,12 @@ export class LikeEntity {
 
   // 좋아요 누른 사람
   @ManyToOne(() => UsersEntity, (user) => user.userId)
+  @JoinColumn({ name: 'userId' })
   user: UsersEntity;
 
   // 좋아요가 달린 게시물 1개
   @ManyToOne(() => BasePostsEntity, (post) => post.postId)
+  @JoinColumn({ name: 'postId' })
   post: BasePostsEntity;
 
   // 좋아요 누른 날짜

@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { CommentsEntity } from './comments.entity';
 
@@ -18,6 +19,7 @@ export class RepliesEntity {
 
   // 답글이 달린 댓글 1개
   @ManyToOne(() => CommentsEntity, (comment) => comment.replies)
+  @JoinColumn({ name: 'commentId' })
   comments: CommentsEntity;
 
   // 답글 작성일

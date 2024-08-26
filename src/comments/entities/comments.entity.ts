@@ -6,8 +6,10 @@ import {
   ManyToOne,
   OneToMany,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { RepliesEntity } from './replies.entity';
+import { BoardType } from '../../posts/enum/boardType.enum';
 
 @Entity('comments')
 export class CommentsEntity {
@@ -18,8 +20,11 @@ export class CommentsEntity {
   @Column({ type: 'varchar', length: 300 })
   content: string;
 
-  @Column({ type: 'varchar', length: 300 })
-  content2: string;
+  @Column({ type: 'int' })
+  userId: number;
+
+  @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
+  boardType: BoardType;
 
   // 댓글 신고일
   // 기본 상태는 null, 신고 당하면 날짜
@@ -28,6 +33,7 @@ export class CommentsEntity {
 
   // 댓글이 달린 글 1개
   @ManyToOne(() => BasePostsEntity, (post) => post.comments)
+  @JoinColumn({ name: 'postId' })
   post: BasePostsEntity;
 
   // 댓글에 대한 답글

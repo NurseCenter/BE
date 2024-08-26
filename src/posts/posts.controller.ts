@@ -2,10 +2,7 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -15,7 +12,6 @@ import { BoardType } from './enum/boardType.enum';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
-import { DeletePostDto } from './dto/delete-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('posts')
@@ -28,12 +24,16 @@ export class PostsController {
     @Query()
     paginateQueryDto: PaginateQueryDto,
   ) {
-    const result = await this.postsService.getPosts(
-      boardType,
-      paginateQueryDto,
-    );
+    try {
+      const result = await this.postsService.getPosts(
+        boardType,
+        paginateQueryDto,
+      );
 
-    return result;
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
   //특정 게시글 조회
   @Get(':boardType/:id')
@@ -56,10 +56,17 @@ export class PostsController {
     @Param('boardType') boardType: BoardType,
     @Body() createPostDto: CreatePostDto,
   ) {
-    //나중에 userId 추가
-    const result = await this.postsService.createPost(boardType, createPostDto);
+    try {
+      //나중에 userId 추가
+      const result = await this.postsService.createPost(
+        boardType,
+        createPostDto,
+      );
 
-    return result;
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
   //게시글 수정
   @Patch(':boardType/:postId')

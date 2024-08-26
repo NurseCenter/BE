@@ -35,6 +35,13 @@ export class AuthController {
     }
 
     // 로그아웃
+    // 로그인
+    @Post('sign-out')
+    @HttpCode(HttpStatus.OK)
+    async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+        await this.authService.signOut(req, res);
+        return { message : "로그아웃에 성공하였습니다." };
+    }
 
     // 이메일 인증
 

@@ -82,4 +82,15 @@ export class AuthService {
             });
         }); 
     }
+
+    // 로그아웃
+    async signOut(req: Request, res: Response): Promise<void> {
+        const sessionId = req.sessionID;
+
+        await this.redisClient.del(`sessionId:${sessionId}`);
+
+        res.clearCookie('connect.sid')
+
+        res.status(200).json({ message: "로그아웃이 성공적으로 완료되었습니다."})
+    }
 }

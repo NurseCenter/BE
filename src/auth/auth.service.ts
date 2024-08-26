@@ -1,107 +1,62 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import * as bcrypt from 'bcrypt';
-import { SignInUserDto } from './dto';
+import { CreateUserDto, SignInUserDto } from './dto';
+import Redis from 'ioredis';
+import { LoginsEntity } from './entities/logins.entity';
+import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectRepository(UsersEntity)
-        private readonly userRepository: Repository<UsersEntity>
+        @Inject('REDIS_CLIENT')
+        private readonly redisClient: Redis,
+
+        private readonly authUserService: AuthUserService,
+        private readonly authPasswordService: AuthPasswordService,
+        private readonly authSessionService: AuthSessionService,
+        private readonly authSignInService: AuthSignInService
     ){}
-    // 회원 생성
-    async createUser(createUserDto: CreateUserDto): Promise<void>{
-        // 입력받은 평문 비밀번호를 해시화
-        const hashedPassword = await this.createPassword(createUserDto.password);
 
-        // 이미 존재하는 회원인지 확인
-        const existingUser = await this.userRepository.findOne({ where: { email: createUserDto.email }})
-
-        if (existingUser) {
-            if (existingUser.deletedAt !== null) {
-                throw new ConflictException('이미 탈퇴한 회원입니다.')
-            } else {
-                throw new ConflictException('이미 가입된 회원입니다.');
-            }
-        }
-
-        // 새로운 회원 생성
-        const newUser = this.userRepository.create({
-            ...createUserDto,
-            password: hashedPassword,
-        })
-
-        // 생성한 회원을 DB에 저장
-        await this.userRepository.save(newUser);
+    // 회원가입
+    async signUp(createUserDto: CreateUserDto) {
+        await this.authUserService.createUser(createUserDto);
     }
 
-    // 비밀번호 생성
-    async createPassword(plainPassword: string): Promise<string> {
-        const hashedPassword = await bcrypt.hash(plainPassword, 15);
-        return hashedPassword;
+    // 회원탈퇴
+    async withDraw(sessionId: string) {
+        await this.authUserService.deleteUser(sessionId);
     }
 
-    // 비밀번호 일치 검사
-    async matchPassword(inputPassword: string, storedPassword: string): Promise<boolean>{
-        const isPasswordMatch = await bcrypt.compare(inputPassword, storedPassword);
-        return isPasswordMatch;
-    }
+    // 로그인
+    async signIn(signInUserDto: SignInUserDto, req: Request, res: Response) {
+        const { email, password } = signInUserDto;
 
-    // 이메일로 회원 찾기
-    async findUserByEmail(email: string): Promise<UsersEntity | undefined> {
-        return this.userRepository.findOne({
-            where: { email }
-        })
-    }
+        // 1. 이메일로 회원 찾기
+        const user = await this.authUserService.findUserByEmail(email);
 
-    // 회원 ID로 회원 찾기
-    async findUserByUserId(userId: string): Promise<UsersEntity | undefined> {
-        return this.userRepository.findOne({
-            where: { userId }
-        })
-    }
+        if (!user) throw new UnauthorizedException('User not exist');
 
-    // // 세션 ID에서 사용자 ID 찾기
-    // async getUserIdFromSession(sessionId: string): Promise<UsersEntity | undefined> {
-    //     return this.userRepository.findOne({
-    //         where: { }
-    //     })
-    // }
+        // 2. 비밀번호 검증
+        const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
 
-    // 입력받은 회원정보가 유효한지 확인
-    async validateUser(signInUserDto: SignInUserDto): Promise<boolean>{
-        // 이메일로 회원 찾기
-        const user = await this.findUserByEmail(signInUserDto.email)
+        if (!isPasswordMatch) throw new UnauthorizedException('Password not match');
 
-        if (!user) return false;
+        // 3. 세션 ID 생성
+        const sessionId = await this.authSessionService.generateSessionId();
 
-        // 비밀번호 일치하는지 확인
-        const isPasswordMatched = await this.matchPassword(signInUserDto.password, user.password)
+        // 4. 세션 ID와 회원 ID를 Redis에 저장
+        await this.redisClient.hmset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
 
-        return isPasswordMatched;
-    }
+        // 5. MySQL에 회원 로그인 기록을 저장
+        await this.authSignInService.saveLoginRecord(user.userId, req);
 
-    // 회원 탈퇴
-    async deleteUser(userId: string): Promise<void> {
-     const user = await this.userRepository.findOne({ where: {userId} });
+        // 6. 쿠키 발급
+        await this.authSessionService.sendCookie(res, sessionId);
 
-     // 사용자가 존재하지 않는 경우
-     if (!user) {
-        throw new NotFoundException('User not found');
-     }
-
-     // 이미 탈퇴한 사용자인지 확인
-     if (user.deletedAt !== null) {
-        throw new ConflictException('User is already removed');
-    }
-
-    // 탈퇴일자를 현재 날짜로 지정
-    user.deletedAt = new Date();
-
-    // 변경사항 저장
-    await this.userRepository.save(user);
+        // 7. 로그인 성공 메시지 리턴
+        return { message : "로그인에 성공하였습니다." }
     }
 }

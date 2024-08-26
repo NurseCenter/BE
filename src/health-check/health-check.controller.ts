@@ -10,7 +10,7 @@ export class HealthCheckController {
     async checkHealth() {
         const healthStatus = await this.healthService.checkHealth();
         return {
-            status: 'OK',
+            status: 'Healthy',
             ...healthStatus,
         }
     }

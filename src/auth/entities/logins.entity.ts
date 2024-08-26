@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,9 +15,9 @@ export class LoginsEntity {
   id: number;
 
   // 로그인한 회원
-  @OneToOne(() => UsersEntity, { eager: true })
-  @JoinColumn({ name: 'login_user_id' })
-  user: UsersEntity;
+  @ManyToOne(() => UsersEntity, user => user.logins)
+  @JoinColumn({ name: 'user_login_logs' })
+  loginUser: UsersEntity;
 
   // 로그인한 IP 주소
   @Column()

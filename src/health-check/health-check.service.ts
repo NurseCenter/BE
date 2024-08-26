@@ -31,9 +31,10 @@ export class HealthCheckService {
         }
     }
 
-    async checkHealth(): Promise<{ redis: boolean; mysql: boolean }>{
+    // Redis, MySQL과의 연결 상태를 모두 알려줌.
+    async checkHealth(): Promise<{ redis: string; mysql: string }>{
         const redisHealthy = await this.checkRedis();
         const mysqlHealthy = await this.checkMySQL();
-        return { redis: redisHealthy, mysql: mysqlHealthy }
+        return { redis: redisHealthy ? 'Normally Connected' : 'Connection Error Occured', mysql: mysqlHealthy ? 'Normally Connected' : 'Connection Error Occured' }
     }
 }

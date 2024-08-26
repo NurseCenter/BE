@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { Request as expReq } from 'express';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, SignInUserDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,20 +13,25 @@ export class AuthController {
     @Post('sign-up')
     @HttpCode(HttpStatus.CREATED)
     async postSignUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string}> {
-        await this.authService.createUser(createUserDto);
+        await this.authService.signUp(createUserDto);
         return { message: "회원가입이 성공적으로 완료되었습니다."}
     }
 
     // 회원탈퇴
     @Delete('withdrawal')
     @HttpCode(HttpStatus.NO_CONTENT)
-    async deleteUser(@Req() req: expReq): Promise<{ message: string }> {
+    async deleteWithdrawal(@Req() req: Request): Promise<{ message: string }> {
         const sessionId = req.cookies['sessionId'];
-        await this.authService.deleteUser(sessionId);
+        await this.authService.withDraw(sessionId);
         return { message: "회원탈퇴가 성공적으로 완료되었습니다."}
     }
 
     // 로그인
+    @Post('sign-in')
+    @HttpCode(HttpStatus.OK)
+    async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+        return await this.authService.signIn(signInUserDto, req, res);
+    }
 
     // 로그아웃
 

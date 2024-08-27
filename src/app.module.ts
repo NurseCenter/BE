@@ -18,6 +18,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
 import { RedisModule } from './common/redis.module';
 import { HealthCheckModule } from './health-check/health-check.module';
+import { SessionConfigService } from './config/session.config';
 
 @Module({
   imports: [
@@ -44,6 +45,6 @@ import { HealthCheckModule } from './health-check/health-check.module';
     HealthCheckModule
   ],
   controllers: [AppController, OcrController],
-  providers: [AppService],
+  providers: [AppService, SessionConfigService],
 })
 export class AppModule {}

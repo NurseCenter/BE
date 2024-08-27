@@ -3,17 +3,16 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import { createSessionOptions } from './config/session.config';
-import { ConfigService } from '@nestjs/config';
+import { SessionConfigService } from './config/session.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ConfigService 인스턴스 가져오기
-  const configService = app.get(ConfigService);
+  const sessionConfigService = app.get(SessionConfigService);
 
   // 인스턴스를 전달하여 sessionOptions 생성
-  const sessionOptions = createSessionOptions(configService);
+  const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(session(sessionOptions));
   app.use(cookieParser());

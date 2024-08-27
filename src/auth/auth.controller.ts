@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto, SignInUserDto } from './dto';
@@ -35,7 +35,6 @@ export class AuthController {
     }
 
     // 로그아웃
-    // 로그인
     @Post('sign-out')
     @HttpCode(HttpStatus.OK)
     async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
@@ -44,8 +43,20 @@ export class AuthController {
     }
 
     // 이메일 인증
+    @Get('sign-up/email')
+    @HttpCode(HttpStatus.OK)
+    async getSignUpEmail(@Body() createUserDto: CreateUserDto): Promise<{ message: string }> {
+        await this.authService.sendEmail(createUserDto);
+        return { message : "이메일 발송에 성공하였습니다." };
+    }
 
     // 이메일 인증 확인
+    @Get('sign-up/email-verification')
+    @HttpCode(HttpStatus.OK)
+    async getSignUpEmailVerification(@Query('token') token: string): Promise<{ message: string }>{
+        await this.authService.verifyEmail(token);
+        return { message : "이메일 인증에 성공하였습니다." };
+    }
 
     // 휴대폰번호 찾기
 

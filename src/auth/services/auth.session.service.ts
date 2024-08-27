@@ -24,6 +24,11 @@ export class AuthSessionService {
         return userId;
     }
 
+    // 세션 ID 삭제하기
+    async deleteSessionId(sessionId: string): Promise<void> {
+        await this.redisClient.del(`sessionId:${sessionId}`)
+    }
+
     // 쿠키 생성하기
     async sendCookie(res: Response, sessionId: string): Promise<boolean> {
         const returnedCookieOptions = await createCookieOptions();

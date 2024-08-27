@@ -9,9 +9,10 @@ import { LoginsEntity } from './entities/logins.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './session-serializer';
 import { ConfigModule } from '@nestjs/config';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule],
+  imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule],
   controllers: [AuthController],
   providers: [AuthService, AuthUserService, AuthPasswordService, AuthSignInService, AuthSessionService, LocalStrategy, SessionSerializer],
 })

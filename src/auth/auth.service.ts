@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto, SendEmailDto, SignInUserDto } from './dto';
+import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SignInUserDto } from './dto';
 import Redis from 'ioredis';
 import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
 import { Request, Response } from 'express';
@@ -143,5 +143,18 @@ export class AuthService {
         await this.authSessionService.deleteSessionId(token);
 
         return { message: "Email Verification success"}
+    }
+
+    // 이메일 찾기
+    async findEmail(findEmailDto: FindEmailDto) {
+        const { username, phoneNumber } = findEmailDto;
+        const user = await this.authUserService.findUserByUsernameAndPhone(username, phoneNumber);
+        const maskedEmail = await this.authUserService.maskingEmail(user.email);
+        return maskedEmail;
+    }
+
+    // 비밀번호 찾기
+    async findPassword(findPasswordDto: FindPasswordDto) {
+
     }
 }

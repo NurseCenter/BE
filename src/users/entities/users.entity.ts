@@ -23,6 +23,10 @@ export class UsersEntity {
   @Column({ length: 8 })
   nickname: string;
 
+  // 휴대폰 번호
+  @Column()
+  phoneNumber: string;
+
   // 이메일
   @Column()
   email: string;
@@ -30,6 +34,11 @@ export class UsersEntity {
   // 비밀번호
   @Column()
   password: string;
+
+  // 임시비밀번호 발급 여부
+  // 기본 null, 발급시 해당 날짜
+  @Column({ type: 'date', nullable: true, default: null })
+  isTempPassword: boolean;
 
   // 회원 가입 인증 상태
   @Column({

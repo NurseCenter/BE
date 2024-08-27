@@ -19,15 +19,17 @@ export class AuthUserService{
     
     // 회원 생성
     async createUser(createUserDto: CreateUserDto): Promise<void> {
-        const { email, password } = createUserDto;
+        const { email, password, nickname } = createUserDto;
     
-        const existingUser = await this.userRepository.findOne({ where: { email } });
+        const existingUser = await this.userRepository.findOne({ where: [{ email }, { nickname }] });
     
         if (existingUser) {
           if (existingUser.deletedAt !== null) {
             throw new ConflictException('이미 탈퇴한 회원입니다.');
-          } else {
+          } else if (existingUser.email === email) {
             throw new ConflictException('이미 가입된 회원입니다.');
+          } else if (existingUser.nickname === nickname) {
+            throw new ConflictException('이미 존재하는 닉네임입니다.');
           }
         }
     
@@ -47,6 +49,11 @@ export class AuthUserService{
       // 회원 ID로 회원 찾기
       async findUserByUserId(userId: string): Promise<UsersEntity | undefined> {
         return this.userRepository.findOne({ where: { userId } });
+      }
+
+      // 회원 실명과 휴대폰 번호로 회원 찾기
+      async findUserByUsernameAndPhone(username: string, phoneNumber: string):Promise<UsersEntity | undefined> {
+        return this.userRepository.findOne({ where: { username, phoneNumber }})
       }
 
     // 입력받은 회원정보가 유효한지 확인
@@ -71,9 +78,17 @@ export class AuthUserService{
       user.membershipStatus = status;
       await this.userRepository.save(user);
     }
+
+    // 이메일 마스킹
+    async maskingEmail(plainEmail: string) {
+      const [username, domain] = plainEmail.split('@');
+      const visiblePart = username.slice(0, 2);
+      const maskedPart = '*'.repeat(username.length - 2);
+      return `${visiblePart}${maskedPart}@${domain}`;
+   }
     
       // 회원 탈퇴
-      async deleteUser(sessionId: string): Promise<void> {
+     async deleteUser(sessionId: string): Promise<void> {
         const userId = await this.authSessionService.getUserIdFromSession(sessionId);
 
         const user = await this.userRepository.findOne({ where: { userId } });

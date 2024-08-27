@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto, SignInUserDto } from './dto';
+import { CreateUserDto, FindEmailDto, FindPasswordDto, SignInUserDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -58,11 +58,21 @@ export class AuthController {
         return { message : "이메일 인증에 성공하였습니다." };
     }
 
-    // 휴대폰번호 찾기
-
     // 이메일 찾기
+    @Get('email')
+    @HttpCode(HttpStatus.OK)
+    async getEmail(findEmailDto: FindEmailDto){
+        const email = await this.authService.findEmail(findEmailDto);
+        return { message : "이메일 찾기가 성공하였습니다.", email };
+    }
 
-    // 비밀번호 찾기
+    // 비밀번호 찾기 (임시 비밀번호 발급)
+    @Get('password')
+    @HttpCode(HttpStatus.OK)
+    async getPassword(findPasswordDto: FindPasswordDto){
+        await this.authService.findPassword(findPasswordDto)
+        return { message : "임시 비밀번호 발급이 성공하였습니다." };
+    }
 
-    // 임시 비밀번호 발급
+    // 휴대폰 인증
 }

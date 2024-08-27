@@ -21,7 +21,6 @@ export class AuthSignInService {
         const loginRecord = new LoginsEntity();
         loginRecord.loginUser = loggedInUser;
         loginRecord.loginIp = await this.getIpAddress(req);
-        loginRecord.isTemporaryPassword = null;
         loginRecord.updatedAt = new Date();
 
         console.log("로그인 기록 저장", loginRecord)

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import AppDataSource from '../data-source';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { DatabaseExceptionFilter } from './filters/database-exception.filter';
 
 async function bootstrap() {
   ConfigModule.forRoot({ isGlobal: true });
@@ -13,6 +14,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalFilters(new DatabaseExceptionFilter());
   await app.listen(3000);
 }
 bootstrap();

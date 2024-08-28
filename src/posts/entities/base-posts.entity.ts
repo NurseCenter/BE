@@ -7,6 +7,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  TableInheritance,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
@@ -55,8 +56,6 @@ export class BasePostsEntity extends BaseEntity {
 
   // 댓글
   // 하나의 게시글에 여러 개의 댓글이 가능함.
-  @OneToMany(() => CommentsEntity, (comment) => comment.post)
-  comments: CommentsEntity[];
 
   @OneToMany(() => LikeEntity, (like) => like.post)
   like: LikeEntity[];

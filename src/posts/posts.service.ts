@@ -23,57 +23,17 @@ import { PracticeEntity } from './entities/practice.entity';
 import { TheoryEntity } from './entities/theory.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { BasePostsEntity } from './entities/base-posts.entity';
-import { create } from 'domain';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { BoardType } from './enum/boardType.enum';
 import { SortOrder, SortType } from './enum/sortType.enum';
 import { DeletePostDto } from './dto/delete-post.dto';
+import { RepositoryService } from '../repository/repository.service';
 
 @Injectable()
 export class PostsService {
-  private repositoryMap: Map<BoardType, Repository<BasePostsEntity>>;
+  constructor(private repositoryService: RepositoryService) {}
 
-  constructor(
-    @InjectRepository(EmploymentEntity)
-    private employmentRepository: Repository<EmploymentEntity>,
-    @InjectRepository(EventEntity)
-    private eventRepository: Repository<EventEntity>,
-    @InjectRepository(ExamPrepEntity)
-    private examPrepRepository: Repository<ExamPrepEntity>,
-    @InjectRepository(JobEntity)
-    private jobRepository: Repository<JobEntity>,
-    @InjectRepository(NoticeEntity)
-    private noticeRepository: Repository<NoticeEntity>,
-    @InjectRepository(PracticeEntity)
-    private practiceRepository: Repository<PracticeEntity>,
-    @InjectRepository(TheoryEntity)
-    private theoryRepository: Repository<TheoryEntity>,
-  ) {
-    this.initRepositoryMap();
-  }
-  //현재 존재하는 Repository 맵핑
-  private initRepositoryMap() {
-    this.repositoryMap = new Map([
-      [BoardType.EMPLOYMENT, this.employmentRepository],
-      [BoardType.EVENT, this.eventRepository],
-      [BoardType.EXAM, this.examPrepRepository],
-      [BoardType.JOB, this.jobRepository],
-      [BoardType.NOTICE, this.noticeRepository],
-      [BoardType.PRACTICE, this.practiceRepository],
-      [BoardType.THEORY, this.theoryRepository],
-    ]);
-  }
-
-  //postType에 맞는 Repository 반환
-  private getRepository(postType: BoardType): Repository<BasePostsEntity> {
-    const repository = this.repositoryMap.get(postType);
-
-    if (!repository) {
-      throw new BadRequestException('존재 하지 않는 게시판 형식입니다.');
-    }
-    return repository;
-  }
   //데이터베이스 에러 헨들링
   private handleDatabaseError(err: unknown): never {
     if (err instanceof QueryFailedError) {
@@ -146,7 +106,7 @@ export class PostsService {
       throw new BadRequestException('Limit은 50을 넘어갈 수 없습니다.');
     }
     try {
-      let repository = this.getRepository(boardType);
+      let repository = this.repositoryService.getRepository(boardType);
       let query = repository.createQueryBuilder('post');
 
       if (search) {
@@ -209,7 +169,7 @@ export class PostsService {
     createpostDto: CreatePostDto,
   ): Promise<BasePostsEntity> {
     const { title, content } = createpostDto;
-    let repository = this.getRepository(boardType);
+    let repository = this.repositoryService.getRepository(boardType);
 
     try {
       const createdPost = repository.create({ title, content, userId: 1 });
@@ -228,7 +188,7 @@ export class PostsService {
 
   //특정 게시글 조회
   async getPostDetails(boardType: BoardType, postId: number) {
-    let repository = this.getRepository(boardType);
+    let repository = this.repositoryService.getRepository(boardType);
     try {
       const result = await repository.findOneBy({ postId });
       if (!result)
@@ -252,7 +212,7 @@ export class PostsService {
     postId: number,
     updatePostDto: UpdatePostDto,
   ) {
-    let repository = this.getRepository(boardType);
+    let repository = this.repositoryService.getRepository(boardType);
     const { userId } = updatePostDto;
     try {
       const post = await repository.findOneBy({ postId });
@@ -289,7 +249,7 @@ export class PostsService {
 
   //게시글 삭제
   async deletePost(boardType: BoardType, postId: number) {
-    let repository = this.getRepository(boardType);
+    let repository = this.repositoryService.getRepository(boardType);
     try {
       let userId = 1; // 차후 변경
       const post = await repository.findOneBy({ postId });

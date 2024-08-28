@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CommentsService } from './comments.service';
-import { CommentsController } from './comments.controller';
+import { RepositoryService } from './repository.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEntity } from '../posts/entities/event.entity';
 import { EmploymentEntity } from '../posts/entities/employment.entity';
@@ -9,8 +8,6 @@ import { JobEntity } from '../posts/entities/job.entity';
 import { NoticeEntity } from '../posts/entities/notice.entity';
 import { PracticeEntity } from '../posts/entities/practice.entity';
 import { TheoryEntity } from '../posts/entities/theory.entity';
-import { RepositoryModule } from '../repository/repository.module';
-import { CommentsEntity } from './entities/comments.entity';
 
 @Module({
   imports: [
@@ -22,11 +19,9 @@ import { CommentsEntity } from './entities/comments.entity';
       NoticeEntity,
       PracticeEntity,
       TheoryEntity,
-      CommentsEntity,
     ]),
-    RepositoryModule,
   ],
-  providers: [CommentsService],
-  controllers: [CommentsController],
+  providers: [RepositoryService],
+  exports: [RepositoryService],
 })
-export class CommentsModule {}
+export class RepositoryModule {}

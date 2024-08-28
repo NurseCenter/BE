@@ -9,6 +9,7 @@ import { JobEntity } from './entities/job.entity';
 import { NoticeEntity } from './entities/notice.entity';
 import { PracticeEntity } from './entities/practice.entity';
 import { TheoryEntity } from './entities/theory.entity';
+import { RepositoryModule } from '../repository/repository.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TheoryEntity } from './entities/theory.entity';
       PracticeEntity,
       TheoryEntity,
     ]),
+    RepositoryModule,
   ],
   controllers: [PostsController],
   providers: [PostsService],

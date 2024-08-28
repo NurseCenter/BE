@@ -1,10 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { SessionConfigService } from './config/session.config';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +14,6 @@ async function bootstrap() {
   const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(session(sessionOptions));
-  app.use(cookieParser());
   app.use(passport.initialize());
   app.use(passport.session());
 

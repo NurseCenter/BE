@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SignInUserDto } from './dto';
+import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SendPhoneVerificationDto, SignInUserDto, VerifyPhoneNumberDto } from './dto';
 import Redis from 'ioredis';
 import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
 import { Request, Response } from 'express';
@@ -8,6 +8,7 @@ import { EmailService } from 'src/email/email.service';
 import { Repository } from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuthSmsService } from './services/auth.sms.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
     private readonly emailService: EmailService,
+    private readonly authSmsService: AuthSmsService
   ) {}
 
   // 회원가입
@@ -143,5 +145,19 @@ export class AuthService {
     await this.userRepository.save(user);
 
     await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);
+  }
+
+  // 휴대폰 인증번호 발급
+  async sendPhoneVerificationCode(sendPhoneVerificationDto: SendPhoneVerificationDto): Promise<void> {
+    const { phoneNumber } = sendPhoneVerificationDto;
+    const formattedPhoneNumber = `+82${phoneNumber}`
+    await this.authSmsService.sendPhoneVerificationCode(formattedPhoneNumber);
+  }
+
+  // 휴대폰 인증번호 확인
+  async verifyPhoneNumberCode(verifyPhoneNumberDto: VerifyPhoneNumberDto): Promise<boolean> {
+    const { phoneNumber, code } = verifyPhoneNumberDto;
+    const formattedPhoneNumber = `+82${phoneNumber}`
+    return this.authSmsService.verifyAuthCode(formattedPhoneNumber, code);
   }
 }

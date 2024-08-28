@@ -4,3 +4,5 @@ export * from './Regex';
 export * from './send-email.dto';
 export * from './find-email.dto';
 export * from './find-password-dto';
+export * from './verity-phone-number.dto'
+export * from './send-phone-verification-dto'

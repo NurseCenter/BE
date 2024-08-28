@@ -6,17 +6,17 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
-import { RepositoryService } from '../repository/repository.service';
 import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { EmploymentEntity } from '../posts/entities/employment.entity';
 import { create } from 'domain';
+import { PostsEntity } from '../posts/entities/base-posts.entity';
 
 @Injectable()
 export class CommentsService {
+  @InjectRepository(PostsEntity)
+  private postRepository: Repository<PostsEntity>;
   @InjectRepository(CommentsEntity)
   private commentRepository: Repository<CommentsEntity>;
-  constructor(private repositoryService: RepositoryService) {}
 
   //작성
   async createComment(
@@ -25,12 +25,13 @@ export class CommentsService {
     userId: number,
     createCommentDto: CreateCommentDto,
   ) {
-    const repository = this.repositoryService.getRepository(boardType);
-    const post = await repository.findOne({
+    const post = await this.postRepository.findOne({
       where: {
         postId,
+        boardType,
       },
     });
+    console.log(post);
     if (!post)
       throw new NotFoundException(
         `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
@@ -41,15 +42,17 @@ export class CommentsService {
       postId,
       boardType,
     });
+    console.log(result);
 
     const createdComment = await this.commentRepository.save(result);
+    console.log(createdComment);
     return createdComment;
   }
   //조회
   async getComments(boardType: BoardType, postId: number) {
     const comments = await this.commentRepository.find({
       where: {
-        postId,
+        // postId,
         boardType,
       },
     });

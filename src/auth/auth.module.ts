@@ -10,6 +10,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './session-serializer';
 import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from 'src/email/email.module';
+import { EmailService } from 'src/email/email.service';
+import Redis from 'ioredis';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule],

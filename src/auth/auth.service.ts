@@ -12,15 +12,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject('REDIS_CLIENT')
-    @InjectRepository(UsersEntity)
-    private readonly redisClient: Redis,
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+    @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
     private readonly authUserService: AuthUserService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
     private readonly emailService: EmailService,
-    private userRepository: Repository<UsersEntity>,
   ) {}
 
   // 회원가입

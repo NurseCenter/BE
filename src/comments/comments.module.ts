@@ -2,31 +2,18 @@ import { Module } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EventEntity } from '../posts/entities/event.entity';
-import { EmploymentEntity } from '../posts/entities/employment.entity';
-import { ExamPrepEntity } from '../posts/entities/exam-prep.entity';
-import { JobEntity } from '../posts/entities/job.entity';
-import { NoticeEntity } from '../posts/entities/notice.entity';
-import { PracticeEntity } from '../posts/entities/practice.entity';
-import { TheoryEntity } from '../posts/entities/theory.entity';
-import { RepositoryModule } from '../repository/repository.module';
 import { CommentsEntity } from './entities/comments.entity';
+import { RepliesEntity } from './entities/replies.entity';
+import { PostsModule } from '../posts/posts.module';
+import { PostsEntity } from '../posts/entities/base-posts.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      EventEntity,
-      EmploymentEntity,
-      ExamPrepEntity,
-      JobEntity,
-      NoticeEntity,
-      PracticeEntity,
-      TheoryEntity,
-      CommentsEntity,
-    ]),
-    RepositoryModule,
+    TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity]),
+    PostsModule,
   ],
   providers: [CommentsService],
   controllers: [CommentsController],
+  exports: [CommentsModule],
 })
 export class CommentsModule {}

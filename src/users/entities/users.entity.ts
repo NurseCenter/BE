@@ -6,14 +6,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EMembershipStatus, EStudentStatus } from '../enums';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
-import { EmploymentEntity } from '../../posts/entities/employment.entity';
-import { EventEntity } from '../../posts/entities/event.entity';
-import { ExamPrepEntity } from '../../posts/entities/exam-prep.entity';
-import { JobEntity } from '../../posts/entities/job.entity';
-import { NoticeEntity } from '../../posts/entities/notice.entity';
-import { PracticeEntity } from '../../posts/entities/practice.entity';
-import { TheoryEntity } from '../../posts/entities/theory.entity';
+import { RepliesEntity } from '../../comments/entities/replies.entity';
+import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 
 @Entity('users')
 export class UsersEntity {
@@ -72,24 +68,13 @@ export class UsersEntity {
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt?: Date;
 
-  @OneToMany('EmploymentEntity', 'user')
-  employment: EmploymentEntity[];
+  @OneToMany(() => PostsEntity, (post) => post.user)
+  posts: PostsEntity[];
 
-  @OneToMany('EventEntity', 'user')
-  event: EventEntity[];
-
-  @OneToMany('ExamPrepEntity', 'user')
-  exam: ExamPrepEntity[];
-
-  @OneToMany('JobEntity', 'user')
-  job: JobEntity[];
-
-  @OneToMany('NoticeEntity', 'user')
-  notice: NoticeEntity[];
-
-  @OneToMany('PracticeEntity', 'user')
-  practice: PracticeEntity[];
-
-  @OneToMany('TheoryEntity', 'user')
-  theory: TheoryEntity[];
+  @OneToMany(() => CommentsEntity, (comment) => comment.user)
+  comments: CommentsEntity[];
+  @OneToMany(() => RepliesEntity, (reply) => reply.user)
+  replies: RepliesEntity[];
+  @OneToMany(() => ScrapsEntity, (scrap) => scrap.user)
+  scraps: ScrapsEntity[];
 }

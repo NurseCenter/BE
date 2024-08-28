@@ -5,6 +5,9 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   TableInheritance,
@@ -12,6 +15,8 @@ import {
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { LikeEntity } from '../../likes/entities/likes.entity';
+import { BoardType } from '../enum/boardType.enum';
+import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -22,11 +27,14 @@ import { LikeEntity } from '../../likes/entities/likes.entity';
 [이벤트] event.entity.ts -> EventEntity
 [공지사항] notice.entity.ts -> NoticeEntity
 */
-
-@Entity('base_posts')
-export class BasePostsEntity extends BaseEntity {
+// @Index('IDX_BOARD_TYPE_POST_ID', ['boardType', 'postId'])
+@Entity('posts')
+@Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
+export class PostsEntity {
   @PrimaryGeneratedColumn()
   postId: number;
+  @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
+  boardType: BoardType;
 
   @Column()
   userId: number;
@@ -52,13 +60,10 @@ export class BasePostsEntity extends BaseEntity {
   viewCounts: number;
 
   @Column({ type: 'int', default: 0 })
-  likes: number;
+  like: number;
 
   // 댓글
   // 하나의 게시글에 여러 개의 댓글이 가능함.
-
-  @OneToMany(() => LikeEntity, (like) => like.post)
-  like: LikeEntity[];
 
   // 작성일
   @CreateDateColumn()
@@ -75,5 +80,16 @@ export class BasePostsEntity extends BaseEntity {
   @DeleteDateColumn()
   deletedAt?: Date;
 
+  @ManyToOne(() => UsersEntity, (user) => user.posts)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   user: UsersEntity;
+
+  @OneToMany(() => CommentsEntity, (comment) => comment.post)
+  comments: CommentsEntity[];
+
+  @OneToMany(() => LikeEntity, (like) => like.post)
+  likes: LikeEntity[];
+
+  @OneToMany(() => ScrapsEntity, (scrap) => scrap.post)
+  scraps: ScrapsEntity[];
 }

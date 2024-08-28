@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
-import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
 @Entity('likes')
 export class LikeEntity {
@@ -19,11 +19,6 @@ export class LikeEntity {
   @JoinColumn({ name: 'userId' })
   user: UsersEntity;
 
-  // 좋아요가 달린 게시물 1개
-  @ManyToOne(() => BasePostsEntity, (post) => post.postId)
-  @JoinColumn({ name: 'postId' })
-  post: BasePostsEntity;
-
   // 좋아요 누른 날짜
   @CreateDateColumn()
   createdAt: Date;
@@ -32,4 +27,8 @@ export class LikeEntity {
   // 기본 상태 null, 정지가 해제되었으면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt: Date;
+
+  @ManyToOne(() => PostsEntity, (post) => post.likes)
+  @JoinColumn([{ name: 'postId', referencedColumnName: 'postId' }])
+  post: PostsEntity;
 }

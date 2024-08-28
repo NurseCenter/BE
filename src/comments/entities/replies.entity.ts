@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { CommentsEntity } from './comments.entity';
+import { UsersEntity } from '../../users/entities/users.entity';
 
 @Entity('replies')
 export class RepliesEntity {
@@ -17,10 +18,11 @@ export class RepliesEntity {
   @Column({ type: 'varchar', length: 300 })
   content: string;
 
-  // 답글이 달린 댓글 1개
-  @ManyToOne(() => CommentsEntity, (comment) => comment.replies)
-  @JoinColumn({ name: 'commentId' })
-  comments: CommentsEntity;
+  @Column()
+  userId: number;
+
+  @Column()
+  commentId: number;
 
   // 답글 작성일
   @CreateDateColumn()
@@ -36,4 +38,12 @@ export class RepliesEntity {
   // 기본 상태는 null, 삭제하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt: Date;
+
+  @ManyToOne(() => CommentsEntity, (comment) => comment.replies)
+  @JoinColumn({ name: 'commentId', referencedColumnName: 'commentId' })
+  comments: CommentsEntity;
+
+  @ManyToOne(() => UsersEntity, (user) => user.replies)
+  @JoinColumn([{ name: 'userId', referencedColumnName: 'userId' }])
+  user: UsersEntity;
 }

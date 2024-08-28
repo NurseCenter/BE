@@ -28,6 +28,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       statusCode: status,
       message: message,
+      reason: exception.message,
     });
   }
 }

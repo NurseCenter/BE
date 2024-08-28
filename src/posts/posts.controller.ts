@@ -72,7 +72,7 @@ export class PostsController {
   @Patch(':boardType/:postId')
   async updatePost(
     @Param('boardType') boardType: BoardType,
-    @Param('boardType') postId: number,
+    @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
     try {

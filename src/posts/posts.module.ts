@@ -2,29 +2,14 @@ import { Module } from '@nestjs/common';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EventEntity } from './entities/event.entity';
-import { EmploymentEntity } from './entities/employment.entity';
-import { ExamPrepEntity } from './entities/exam-prep.entity';
-import { JobEntity } from './entities/job.entity';
-import { NoticeEntity } from './entities/notice.entity';
-import { PracticeEntity } from './entities/practice.entity';
-import { TheoryEntity } from './entities/theory.entity';
-import { RepositoryModule } from '../repository/repository.module';
+import { CommentsEntity } from '../comments/entities/comments.entity';
+import { CommentsModule } from '../comments/comments.module';
+import { PostsEntity } from './entities/base-posts.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      EventEntity,
-      EmploymentEntity,
-      ExamPrepEntity,
-      JobEntity,
-      NoticeEntity,
-      PracticeEntity,
-      TheoryEntity,
-    ]),
-    RepositoryModule,
-  ],
+  imports: [TypeOrmModule.forFeature([CommentsEntity, PostsEntity])],
   controllers: [PostsController],
   providers: [PostsService],
+  exports: [PostsModule],
 })
 export class PostsModule {}

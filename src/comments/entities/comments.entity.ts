@@ -1,4 +1,4 @@
-import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
+import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -12,13 +12,7 @@ import {
 } from 'typeorm';
 import { RepliesEntity } from './replies.entity';
 import { BoardType } from '../../posts/enum/boardType.enum';
-import { EmploymentEntity } from '../../posts/entities/employment.entity';
-import { EventEntity } from '../../posts/entities/event.entity';
-import { ExamPrepEntity } from '../../posts/entities/exam-prep.entity';
-import { JobEntity } from '../../posts/entities/job.entity';
-import { NoticeEntity } from '../../posts/entities/notice.entity';
-import { PracticeEntity } from '../../posts/entities/practice.entity';
-import { TheoryEntity } from '../../posts/entities/theory.entity';
+import { UsersEntity } from '../../users/entities/users.entity';
 
 @Entity('comments')
 export class CommentsEntity {
@@ -32,19 +26,16 @@ export class CommentsEntity {
   @Column({ type: 'int' })
   userId: number;
 
-  @Column({ type: 'int' })
+  @Column()
   postId: number;
-  @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
+
+  @Column({ type: 'enum', enum: BoardType })
   boardType: BoardType;
 
   // 댓글 신고일
   // 기본 상태는 null, 신고 당하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })
   reportedAt: Date;
-
-  // 댓글에 대한 답글
-  @OneToMany(() => RepliesEntity, (reply) => reply.comments)
-  replies: RepliesEntity[];
 
   // 댓글 작성일
   @CreateDateColumn()
@@ -61,24 +52,18 @@ export class CommentsEntity {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToMany('EmploymentEntity', 'comment')
-  employment: EmploymentEntity[];
+  // 댓글에 대한 답글
+  @OneToMany(() => RepliesEntity, (reply) => reply.comments)
+  replies: RepliesEntity[];
 
-  @OneToMany('EventEntity', 'comment')
-  event: EventEntity[];
+  @ManyToOne(() => PostsEntity, (post) => post.comments)
+  @JoinColumn([
+    { name: 'postId', referencedColumnName: 'postId' },
+    { name: 'boardType', referencedColumnName: 'boardType' },
+  ])
+  post: PostsEntity;
 
-  @OneToMany('ExamPrepEntity', 'comment')
-  exam: ExamPrepEntity[];
-
-  @OneToMany('JobEntity', 'comment')
-  job: JobEntity[];
-
-  @OneToMany('NoticeEntity', 'comment')
-  notice: NoticeEntity[];
-
-  @OneToMany('PracticeEntity', 'comment')
-  practice: PracticeEntity[];
-
-  @OneToMany('TheoryEntity', 'comment')
-  theory: TheoryEntity[];
+  @ManyToOne(() => UsersEntity, (user) => user.comments)
+  @JoinColumn([{ name: 'userId', referencedColumnName: 'userId' }])
+  user: UsersEntity;
 }

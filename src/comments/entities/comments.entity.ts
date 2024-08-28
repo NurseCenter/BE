@@ -10,7 +10,7 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { RepliesEntity } from './replies.entity';
+import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { BoardType } from '../../posts/enum/boardType.enum';
 import { UsersEntity } from '../../users/entities/users.entity';
 

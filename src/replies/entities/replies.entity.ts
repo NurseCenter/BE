@@ -5,14 +5,16 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
-import { CommentsEntity } from './comments.entity';
+import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { UsersEntity } from '../../users/entities/users.entity';
 
 @Entity('replies')
 export class RepliesEntity {
   @PrimaryGeneratedColumn()
-  repliesId: number;
+  replyId: number;
 
   // 답글 내용
   @Column({ type: 'varchar', length: 300 })
@@ -31,12 +33,12 @@ export class RepliesEntity {
   // 답글 업데이트일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   // 답글 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @DeleteDateColumn()
   deletedAt: Date;
 
   @ManyToOne(() => CommentsEntity, (comment) => comment.replies)

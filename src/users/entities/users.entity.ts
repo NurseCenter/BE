@@ -8,7 +8,7 @@ import {
 import { EMembershipStatus, EStudentStatus } from '../enums';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
-import { RepliesEntity } from '../../comments/entities/replies.entity';
+import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 
 @Entity('users')

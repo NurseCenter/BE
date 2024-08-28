@@ -16,6 +16,7 @@ import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
+import { RepliesModule } from './replies/replies.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { getTypeOrmConfig } from './config/orm.config';
     LikesModule,
     OcrModule,
     SearchModule,
+    RepliesModule,
   ],
   controllers: [AppController, OcrController],
   providers: [AppService],

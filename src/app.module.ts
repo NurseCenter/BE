@@ -19,6 +19,8 @@ import { getTypeOrmConfig } from './config/orm.config';
 import { RedisModule } from './common/redis.module';
 import { HealthCheckModule } from './health-check/health-check.module';
 import { SessionConfigService } from './config/session.config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -42,6 +44,9 @@ import { SessionConfigService } from './config/session.config';
     SearchModule,
     RedisModule,
     HealthCheckModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public')
+    })
   ],
   controllers: [AppController, OcrController],
   providers: [AppService, SessionConfigService],

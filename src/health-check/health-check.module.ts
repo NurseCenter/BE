@@ -4,7 +4,7 @@ import { HealthCheckController } from './health-check.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-    imports: [TypeOrmModule.forFeature()],
+  imports: [TypeOrmModule.forFeature()],
   providers: [HealthCheckService],
   controllers: [HealthCheckController],
 })

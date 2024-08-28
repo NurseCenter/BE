@@ -1,3 +1,1 @@
-export enum EAuthExceptionCode {
-
-}
+export enum EAuthExceptionCode {}

@@ -11,12 +11,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // const res = exception instanceof BaseException ? exception : new UnCatchedException();
 
-    response
-      .status(status)
-      .json({
-        statusCode: status,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-      });
+    response.status(status).json({
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    });
   }
 }

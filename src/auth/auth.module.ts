@@ -14,6 +14,14 @@ import { EmailModule } from 'src/email/email.module';
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule],
   controllers: [AuthController],
-  providers: [AuthService, AuthUserService, AuthPasswordService, AuthSignInService, AuthSessionService, LocalStrategy, SessionSerializer],
+  providers: [
+    AuthService,
+    AuthUserService,
+    AuthPasswordService,
+    AuthSignInService,
+    AuthSessionService,
+    LocalStrategy,
+    SessionSerializer,
+  ],
 })
 export class AuthModule {}

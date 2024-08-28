@@ -1,6 +1,6 @@
 export interface IValidationMessages {
-    nickname: string;
-    email: string;
-    password: string;
-    studentStatus : string;
+  nickname: string;
+  email: string;
+  password: string;
+  studentStatus: string;
 }

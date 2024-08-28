@@ -1,13 +1,5 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('logins')
 export class LoginsEntity {
@@ -15,7 +7,7 @@ export class LoginsEntity {
   id: number;
 
   // 로그인한 회원
-  @ManyToOne(() => UsersEntity, user => user.logins)
+  @ManyToOne(() => UsersEntity, (user) => user.logins)
   @JoinColumn({ name: 'user_login_logs' })
   loginUser: UsersEntity;
 

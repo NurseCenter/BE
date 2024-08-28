@@ -1,11 +1,5 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  Column,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Column } from 'typeorm';
 import { ESuspensionReason } from '../enums';
 
 @Entity('report_comments')

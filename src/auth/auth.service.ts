@@ -5,156 +5,145 @@ import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserSer
 import { Request, Response } from 'express';
 import { EMembershipStatus } from 'src/users/enums';
 import { EmailService } from 'src/email/email.service';
+import { Repository } from 'typeorm';
+import { UsersEntity } from 'src/users/entities/users.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        @Inject('REDIS_CLIENT')
-        private readonly redisClient: Redis,
-        private readonly authUserService: AuthUserService,
-        private readonly authPasswordService: AuthPasswordService,
-        private readonly authSessionService: AuthSessionService,
-        private readonly authSignInService: AuthSignInService,
-        private readonly emailService: EmailService,
-    ){}
+  constructor(
+    @Inject('REDIS_CLIENT')
+    @InjectRepository(UsersEntity)
+    private readonly redisClient: Redis,
+    private readonly authUserService: AuthUserService,
+    private readonly authPasswordService: AuthPasswordService,
+    private readonly authSessionService: AuthSessionService,
+    private readonly authSignInService: AuthSignInService,
+    private readonly emailService: EmailService,
+    private userRepository: Repository<UsersEntity>,
+  ) {}
 
-    // 회원가입
-    async signUp(createUserDto: CreateUserDto) {
-        await this.authUserService.createUser(createUserDto);
-    }
+  // 회원가입
+  async signUp(createUserDto: CreateUserDto): Promise<void> {
+    await this.authUserService.createUser(createUserDto);
+    await this.sendVerificationEmail(createUserDto.email);
+  }
 
-    // 회원탈퇴
-    async withDraw(sessionId: string) {
-        await this.authUserService.deleteUser(sessionId);
-    }
+  // 회원탈퇴
+  async withDraw(sessionId: string): Promise<void> {
+    await this.authUserService.deleteUser(sessionId);
+  }
 
-    // 로그인
-    async signIn(signInUserDto: SignInUserDto, req: Request, res: Response) {
-        const { email, password } = signInUserDto;
+  // 로그인
+  async signIn(signInUserDto: SignInUserDto, req: Request, res: Response){
+    const { email, password } = signInUserDto;
 
-        // 1. 이메일로 회원 찾기
-        const user = await this.authUserService.findUserByEmail(email);
-        if (!user) throw new UnauthorizedException('User not exist');
+    // 1. 이메일로 회원 찾기
+    const user = await this.authUserService.findUserByEmail(email);
+    if (!user) throw new UnauthorizedException('User not exist');
 
-        console.log("service - user", user)
+    // 2. 비밀번호 검증
+    const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
+    if (!isPasswordMatch) throw new UnauthorizedException('Password not match');
 
-        // 2. 비밀번호 검증
-        const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
-        if (!isPasswordMatch) throw new UnauthorizedException('Password not match');
+    // 3. req.login을 통해 세션에 사용자 정보 저장
+    req.login(user, async (err) => {
+      if (err) {
+        console.error('Login failed', err);
+        return res.status(401).json({ message: 'Login failed' });
+      }
 
-        // 3. req.login을 통해 세션에 사용자 정보 저장
-        req.login(user, async (err) => {
-            // if (err) throw new UnauthorizedException('Login failed');
-            if (err) {
-                console.error("Login failed", err);
-                return res.status(401).json({ message: 'Login failed' });
-            }
+      // 4. 세션 ID 가져오기
+      const sessionId = req.sessionID;
 
-            // 4. 세션 ID 가져오기
-            const sessionId = req.sessionID;
+      // 5. 세션 ID와 회원 ID를 Redis에 저장
+      await this.redisClient.hset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
 
-            console.log("service - sessionId", sessionId);
+      // 6. MySQL에 회원 로그인 기록을 저장
+      await this.authSignInService.saveLoginRecord(user.userId, req);
 
-            // 5. 세션 ID와 회원 ID를 Redis에 저장
-            await this.redisClient.hset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
+      // 7. 응답 전송
+      return res.status(200).json({
+        message: 'Login successful',
+        user: {
+          userId: user.userId,
+          email: user.email,
+          nickname: user.nickname,
+        },
+      });
+    });
+  }
 
-            console.log("redis에 저장 완료");
+  // 로그아웃
+  async signOut(req: Request, res: Response): Promise<void> {
+    const sessionId = req.sessionID;
 
-            // Redis에서 확인
-            const result = await this.redisClient.hgetall(`sessionId:${sessionId}`);
-            console.log("redis에서 가져온 데이터", result);
+    await this.redisClient.del(`sessionId:${sessionId}`);
+    res.clearCookie('connect.sid');
 
-            // 6. MySQL에 회원 로그인 기록을 저장
-            await this.authSignInService.saveLoginRecord(user.userId, req);
+    res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
+  }
 
-            console.log("로그인 기록 저장 완료");
+  // 회원가입 후 이메일 발송
+  async sendVerificationEmail(email: string): Promise<void> {
+    // 사용자 상태 PENDING_VERIFICATION으로 변경
+    const user = await this.authUserService.findUserByEmail(email);
+    await this.authUserService.updateUserStatus(user.userId, EMembershipStatus.PENDING_VERIFICATION);
+    await this.userRepository.save(user);
 
-            // 8. 응답 전송
-            return res.status(200).json({
-                message: 'Login successful',
-                user: {
-                    userId: user.userId,
-                    email: user.email,
-                    nickname: user.nickname,
-                },
-            });
-        }); 
-    }
+    // 이메일 링크 생성
+    const token = await this.authSessionService.generateSessionId();
+    const emailVerificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
-    // 로그아웃
-    async signOut(req: Request, res: Response): Promise<void> {
-        const sessionId = req.sessionID;
+    // 이메일 발송 데이터 준비
+    const sendEmailDto: SendEmailDto = {
+      nickname: user.nickname,
+      email: user.email,
+      emailVerificationLink,
+    };
 
-        await this.redisClient.del(`sessionId:${sessionId}`);
+    // 이메일 전송
+    await this.emailService.sendVerificationEmail(sendEmailDto.email, sendEmailDto.nickname, sendEmailDto.emailVerificationLink);
+  }
 
-        res.clearCookie('connect.sid')
+  // 회원가입 이메일 인증 확인
+  async verifyEmail(token: string): Promise<{message: string}> {
+    if (!token) throw new UnauthorizedException('토큰이 없습니다');
 
-        res.status(200).json({ message: "로그아웃이 성공적으로 완료되었습니다."})
-    }
+    const userId = await this.authSessionService.getUserIdFromSession(token);
+    if (!userId) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-    // 회원가입 후 이메일 발송
-    async sendEmail(createUserDto: CreateUserDto): Promise<void> {
-        const { email } = createUserDto;
+    await this.authUserService.updateUserStatus(userId, EMembershipStatus.EMAIL_VERIFIED);
+    await this.authSessionService.deleteSessionId(token);
 
-        // 사용자 상태 PENDING_VERIFICATION으로 변경
-        const user = await this.authUserService.findUserByEmail(email);
-        await this.authUserService.updateUserStatus(user.userId, EMembershipStatus.PENDING_VERIFICATION);
+    return { message: 'Email Verification success' };
+  }
 
-        // 이메일 링크 생성
-        const token = await this.authSessionService.generateSessionId();
-        const emailVerificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`; // 프론트엔드 리액트 라우터
+  // 이메일 찾기
+  async findEmail(findEmailDto: FindEmailDto) {
+    const { username, phoneNumber } = findEmailDto;
+    const user = await this.authUserService.findUserByUsernameAndPhone(username, phoneNumber);
+    return await this.authUserService.maskingEmail(user.email);
+  }
 
-        // Redis에 저장 (TTL 1시간 설정)
-        // await this.redisClient.hmset(`emailVerification:${token}`, {
-        //     userId: user.userId,
-        //     emailVerificationLink,
-        // });
-        // await this.redisClient.expire(`emailVerification:${token}`, 3600); 
+  // 비밀번호 찾기
+  async findPassword(findPasswordDto: FindPasswordDto): Promise<void> {
+    const { username, email } = findPasswordDto;
 
-        // 이메일 발송 데이터 준비
-        const sendEmailDto: SendEmailDto = {
-            nickname: user.nickname,
-            email: user.email,
-            emailVerificationLink
-        }
+    const user = await this.authUserService.findUserByUsernameAndEmail(username, email);
+    if (!user) throw new Error('User not found');
 
-        // 이메일 전송 데이터 준비
-        const sendEmailConfig = {
-            to: user.email, 
-            subject: "중간이들 회원가입을 환영합니다. 인증 링크를 눌러주세요.", 
-            templateName: 'sign-up-email', 
-            data: sendEmailDto
-        }
+    const tempPassword = await this.authPasswordService.createTempPassword();
 
-        // 이메일 전송
-        await this.emailService.sendEmail(sendEmailConfig.to, sendEmailConfig.subject, sendEmailConfig.templateName, sendEmailConfig.data);
-    }
+    await this.redisClient.hmset(`tempPassword:${user.userId}`, {
+      userId: user.userId,
+      tempPassword,
+    });
+    await this.redisClient.expire(`tempPassword:${user.userId}`, 7200);
 
-    // 회원가입 이메일 인증
-    async verifyEmail(token: string) {
-        if (!token) throw new UnauthorizedException("토큰이 없습니다")
+    user.isTempPassword = true;
+    await this.userRepository.save(user);
 
-        const userId = await this.authSessionService.getUserIdFromSession(token);
-
-        if (!userId) throw new NotFoundException("해당 회원이 존재하지 않습니다.")
-
-        await this.authUserService.updateUserStatus(userId, EMembershipStatus.EMAIL_VERIFIED);
-
-        await this.authSessionService.deleteSessionId(token);
-
-        return { message: "Email Verification success"}
-    }
-
-    // 이메일 찾기
-    async findEmail(findEmailDto: FindEmailDto) {
-        const { username, phoneNumber } = findEmailDto;
-        const user = await this.authUserService.findUserByUsernameAndPhone(username, phoneNumber);
-        const maskedEmail = await this.authUserService.maskingEmail(user.email);
-        return maskedEmail;
-    }
-
-    // 비밀번호 찾기
-    async findPassword(findPasswordDto: FindPasswordDto) {
-
-    }
+    await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);
+  }
 }

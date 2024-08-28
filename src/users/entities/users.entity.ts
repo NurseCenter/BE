@@ -1,10 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EMembershipStatus, EStudentStatus } from '../enums';
 import { LoginsEntity } from 'src/auth/entities/logins.entity';
 
@@ -79,6 +73,6 @@ export class UsersEntity {
   deletedAt?: Date;
 
   // 여러 로그인 기록
-  @OneToMany(() => LoginsEntity, login => login.loginUser)
+  @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
 }

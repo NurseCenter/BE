@@ -25,8 +25,7 @@ import { SessionConfigService } from './config/session.config';
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        getTypeOrmConfig(configService),
+      useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
     AuthModule,
@@ -42,7 +41,7 @@ import { SessionConfigService } from './config/session.config';
     OcrModule,
     SearchModule,
     RedisModule,
-    HealthCheckModule
+    HealthCheckModule,
   ],
   controllers: [AppController, OcrController],
   providers: [AppService, SessionConfigService],

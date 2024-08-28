@@ -1,5 +1,5 @@
 export interface IRedisOptions {
-    host: string
-    port: number
-    password: string
-};
+  host: string;
+  port: number;
+  password: string;
+}

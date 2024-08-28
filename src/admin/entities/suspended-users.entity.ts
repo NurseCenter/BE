@@ -1,12 +1,5 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ESuspensionDuration } from '../enums';
 
 @Entity('suspended_users')

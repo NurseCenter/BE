@@ -10,7 +10,7 @@
 //   let service: AuthService;
 //   let userRepository: Repository<UsersEntity>
 
-//   // 테스트 모듈 설정, AuthService와 UsersEntity의 Repository를 Mocking 
+//   // 테스트 모듈 설정, AuthService와 UsersEntity의 Repository를 Mocking
 //   beforeEach(async () => {
 //     const module: TestingModule = await Test.createTestingModule({
 //       providers: [AuthService,
@@ -40,7 +40,7 @@
 //       email: 'gildong@example.com',
 //       password: 'Aa1!secure',
 //       status: EStudentStatus.CURRENT_STUDENT,
-//       certificationDocumentUrl : 'http://example.com/cert',  
+//       certificationDocumentUrl : 'http://example.com/cert',
 //     }
 
 //     const hashedPassword = await bcrypt.hash(createUserDto.password, 15);

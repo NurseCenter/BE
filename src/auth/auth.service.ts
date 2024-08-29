@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SendPhoneVerificationDto, SignInUserDto, VerifyPhoneNumberDto } from './dto';
+import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SignInUserDto, VerifyEmailDto } from './dto';
 import Redis from 'ioredis';
 import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
 import { Request, Response } from 'express';
@@ -9,10 +9,6 @@ import { Repository } from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthTwilioService } from './services/auth.twilio.service';
-// import { AuthSmsService } from './services/auth.sms.service';
-// import { Twilio } from './services/auth.twilio.service';
-// import { TwilioService } from 'nestjs-twilio';
-// import { TwilioService } from './twilio';
 
 @Injectable()
 export class AuthService {
@@ -25,14 +21,12 @@ export class AuthService {
     private readonly authSignInService: AuthSignInService,
     private readonly emailService: EmailService,
     private readonly authTwilioService: AuthTwilioService
-    // private readonly authSmsService: AuthSmsService,
-    // private readonly twilio: Twilio, 
   ) {}
 
   // 회원가입
-  async signUp(createUserDto: CreateUserDto): Promise<void> {
+  async signUp( 
+  createUserDto: CreateUserDto): Promise<void> {
     await this.authUserService.createUser(createUserDto);
-    await this.sendVerificationEmail(createUserDto.email);
   }
 
   // 회원탈퇴
@@ -91,15 +85,22 @@ export class AuthService {
   }
 
   // 회원가입 후 이메일 발송
-  async sendVerificationEmail(email: string): Promise<void> {
+  async sendVerificationEmail(verifyEmailDto: VerifyEmailDto): Promise<void> {
     // 사용자 상태 PENDING_VERIFICATION으로 변경
-    const user = await this.authUserService.findUserByEmail(email);
-    await this.authUserService.updateUserStatus(user.userId, EMembershipStatus.PENDING_VERIFICATION);
+    const user = await this.authUserService.findUserByEmail(verifyEmailDto.email);
+    await this.authUserService.updateUserStatusByUserId(user.userId, EMembershipStatus.PENDING_VERIFICATION);
     await this.userRepository.save(user);
+
+    console.log("회원가입 후 이메일 발송 user.membershipStatus", user.membershipStatus)
 
     // 이메일 링크 생성
     const token = await this.authSessionService.generateSessionId();
-    const emailVerificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    const emailVerificationLink = `${process.env.FRONTEND_URL}?token=${token}`;
+
+    console.log("이메일 링크 생성 emailVerificationLink", emailVerificationLink)
+
+    // Redis에 사용자 이메일과 토큰 저장
+    await this.redisClient.set(`emailVerificationToken:${token}`, user.email); 
 
     // 이메일 발송 데이터 준비
     const sendEmailDto: SendEmailDto = {
@@ -107,6 +108,8 @@ export class AuthService {
       email: user.email,
       emailVerificationLink,
     };
+
+    console.log("이메일 발송 데이터 endEmailDto", sendEmailDto)
 
     // 이메일 전송
     await this.emailService.sendVerificationEmail(sendEmailDto.email, sendEmailDto.nickname, sendEmailDto.emailVerificationLink);
@@ -116,11 +119,24 @@ export class AuthService {
   async verifyEmail(token: string): Promise<{message: string}> {
     if (!token) throw new UnauthorizedException('토큰이 없습니다');
 
-    const userId = await this.authSessionService.getUserIdFromSession(token);
-    if (!userId) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    // Redis에서 이메일 조회
+    const email = await this.redisClient.get(`emailVerificationToken:${token}`);
+    if (!email) throw new NotFoundException('Invalid or expired token');
 
-    await this.authUserService.updateUserStatus(userId, EMembershipStatus.EMAIL_VERIFIED);
+    // 사용자 찾기
+    const user = await this.authUserService.findUserByEmail(email);
+    if (!user) throw new NotFoundException('User not found');
+
+    // 사용자 상태를 EMAIL_VERIFIED으로 변경
+    await this.authUserService.updateUserStatusByEmail(email, EMembershipStatus.EMAIL_VERIFIED);
     await this.authSessionService.deleteSessionId(token);
+
+    // 추가) 이미 사용자 상태가 email_verified = 2면 에러터지게 함.
+
+    console.log("토큰", token)
+
+    // Redis에서 토큰 삭제
+    await this.redisClient.del(`emailVerificationToken:${token}`);
 
     return { message: 'Email Verification success' };
   }

@@ -23,6 +23,9 @@ export class CreateUserDto {
   @Matches(PASSWORD_REGEX, { message: validationMessages.password })
   readonly password: string;
 
+  @IsString()
+  readonly phoneNumber: string;
+
   // 졸업생/재학생 여부
   @IsEnum(EStudentStatus, { message: validationMessages.studentStatus })
   readonly status: EStudentStatus;

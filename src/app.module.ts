@@ -26,6 +26,9 @@ import { join } from 'path';
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'views'),
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
@@ -46,7 +49,7 @@ import { join } from 'path';
     RedisModule,
     HealthCheckModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public')
+      rootPath: join(__dirname, '..')
     }),
     // TwilioModule.forRootAsync({
     //   imports: [ConfigModule],

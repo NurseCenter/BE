@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { SessionConfigService } from './config/session.config';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // ConfigService 인스턴스 가져오기
   const sessionConfigService = app.get(SessionConfigService);
@@ -17,6 +19,12 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // app.useStaticAssets(join(__dirname, '..', 'public'));
+  app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
+  app.setViewEngine('ejs');
+
+  app.enableCors();
+  
   await app.listen(3000);
 }
 bootstrap();

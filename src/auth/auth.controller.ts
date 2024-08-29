@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto, FindEmailDto, FindPasswordDto, SendPhoneVerificationDto, SignInUserDto, VerifyPhoneNumberDto } from './dto';
+import { CreateUserDto, FindEmailDto, FindPasswordDto, SendPhoneVerificationDto, SignInUserDto, VerifyEmailDto, VerifyPhoneNumberDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +19,7 @@ export class AuthController {
   @Delete('withdrawal')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteWithdrawal(@Req() req: Request): Promise<{ message: string }> {
-    const sessionId = req.cookies['sessionId'];
+    const sessionId = req.cookies['connect.sid'];
     await this.authService.withDraw(sessionId);
     return { message: '회원탈퇴가 성공적으로 완료되었습니다.' };
   }
@@ -44,10 +44,19 @@ export class AuthController {
     return { message: '로그아웃에 성공하였습니다.' };
   }
 
-  // 이메일 인증 확인
-  @Get('sign-up/email-verification')
+  // 이메일 인증 발송
+  @Post('sign-up/email')
   @HttpCode(HttpStatus.OK)
-  async getSignUpEmailVerification(@Query('token') token: string): Promise<{ message: string }> {
+  async postSignUpEmail(@Body() verifyEmailDto: VerifyEmailDto): Promise<{ message: string }> {
+    await this.authService.sendVerificationEmail(verifyEmailDto);
+    return { message: '회원가입 인증용 이메일을 발송하였습니다.' };
+  }
+
+  // 이메일 인증 확인
+  @Post('sign-up/email-verification')
+  @HttpCode(HttpStatus.OK)
+  async postSignUpEmailVerification(@Body() body: { token: string }): Promise<{ message: string }> {
+    const { token } = body;
     await this.authService.verifyEmail(token);
     return { message: '이메일 인증에 성공하였습니다.' };
   }
@@ -83,6 +92,6 @@ export class AuthController {
   async postPhoneVerificationConfirm(verifyPhoneNumberDto: VerifyPhoneNumberDto) {
     const { phoneNumber, code } = verifyPhoneNumberDto;
     await this.authService.verifyPhoneNumberCode(phoneNumber, code);
-    return { message: '임시 비밀번호 발급이 성공하였습니다.' };
+    return { message: '휴대폰 인증이 성공하였습니다.' };
   }
 }

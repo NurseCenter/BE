@@ -77,8 +77,16 @@ export class AuthUserService {
   }
 
   // 회원 ID로 회원 상태 변경
-  async updateUserStatus(userId: string, status: EMembershipStatus) {
+  async updateUserStatusByUserId(userId: string, status: EMembershipStatus) {
     const user = await this.findUserByUserId(userId);
+    if (!user) throw new Error('User not found');
+    user.membershipStatus = status;
+    await this.userRepository.save(user);
+  }
+
+  // 회원 ID로 회원 상태 변경
+  async updateUserStatusByEmail(email: string, status: EMembershipStatus) {
+    const user = await this.findUserByEmail(email);
     if (!user) throw new Error('User not found');
     user.membershipStatus = status;
     await this.userRepository.save(user);

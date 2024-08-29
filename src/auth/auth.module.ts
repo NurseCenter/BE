@@ -19,6 +19,7 @@ import { TwilioModule } from 'nestjs-twilio';
     useFactory: async (configService: ConfigService) => ({
       accountSid: configService.get<string>('TWILIO_ACCOUNT_SID'),
       authToken: configService.get<string>('TWILIO_AUTH_TOKEN'),
+      phoneNumber: configService.get<string>('TWILIO_PHONE_NUMBER'),
     }),
     inject: [ConfigService],
   }), ],

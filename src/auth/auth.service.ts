@@ -8,7 +8,11 @@ import { EmailService } from 'src/email/email.service';
 import { Repository } from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthSmsService } from './services/auth.sms.service';
+import { AuthTwilioService } from './services/auth.twilio.service';
+// import { AuthSmsService } from './services/auth.sms.service';
+// import { Twilio } from './services/auth.twilio.service';
+// import { TwilioService } from 'nestjs-twilio';
+// import { TwilioService } from './twilio';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +24,9 @@ export class AuthService {
     private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
     private readonly emailService: EmailService,
-    private readonly authSmsService: AuthSmsService
+    private readonly authTwilioService: AuthTwilioService
+    // private readonly authSmsService: AuthSmsService,
+    // private readonly twilio: Twilio, 
   ) {}
 
   // 회원가입
@@ -147,17 +153,14 @@ export class AuthService {
     await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);
   }
 
-  // 휴대폰 인증번호 발급
-  async sendPhoneVerificationCode(sendPhoneVerificationDto: SendPhoneVerificationDto): Promise<void> {
-    const { phoneNumber } = sendPhoneVerificationDto;
-    const formattedPhoneNumber = `+82${phoneNumber}`
-    await this.authSmsService.sendPhoneVerificationCode(formattedPhoneNumber);
+  // 휴대폰 번호 인증 메시지 보내기
+  // +821012341234 로 파싱 필요함.
+  async sendPhoneVerificationCode(to: string){
+    return this.authTwilioService.sendVerificationCode({ to });
   }
-
-  // 휴대폰 인증번호 확인
-  async verifyPhoneNumberCode(verifyPhoneNumberDto: VerifyPhoneNumberDto): Promise<boolean> {
-    const { phoneNumber, code } = verifyPhoneNumberDto;
-    const formattedPhoneNumber = `+82${phoneNumber}`
-    return this.authSmsService.verifyAuthCode(formattedPhoneNumber, code);
+  
+  // 휴대폰 번호 인증 확인
+  async verifyPhoneNumberCode(to: string, code: string){
+    return this.authTwilioService.checkVerificationCode({ to, code });
   }
 }

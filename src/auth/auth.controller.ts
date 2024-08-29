@@ -72,7 +72,8 @@ export class AuthController {
   @Post('phone')
   @HttpCode(HttpStatus.OK)
   async postPhoneVerificationCode(@Body() sendPhoneVerificationDto: SendPhoneVerificationDto) {
-    await this.authService.sendPhoneVerificationCode(sendPhoneVerificationDto);
+    const { phoneNumber } = sendPhoneVerificationDto;
+    await this.authService.sendPhoneVerificationCode(phoneNumber);
     return { message: '휴대폰 인증번호가 발급되었습니다.' };
   }
 
@@ -80,7 +81,8 @@ export class AuthController {
   @Post('phone-verification')
   @HttpCode(HttpStatus.OK)
   async postPhoneVerificationConfirm(verifyPhoneNumberDto: VerifyPhoneNumberDto) {
-    await this.authService.verifyPhoneNumberCode(verifyPhoneNumberDto);
+    const { phoneNumber, code } = verifyPhoneNumberDto;
+    await this.authService.verifyPhoneNumberCode(phoneNumber, code);
     return { message: '임시 비밀번호 발급이 성공하였습니다.' };
   }
 }

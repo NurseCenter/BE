@@ -4,7 +4,7 @@ import { LoginsEntity } from 'src/auth/entities/logins.entity';
 
 @Entity('users')
 export class UsersEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   // 회원 고유 ID 값
   userId: string;
 

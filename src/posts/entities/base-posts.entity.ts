@@ -1,12 +1,5 @@
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity

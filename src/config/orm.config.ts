@@ -2,9 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
 
-export const getTypeOrmConfig = (
-  configService: ConfigService,
-): TypeOrmModuleOptions =>
+export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions =>
   ({
     type: 'mysql',
     entities: [join(__dirname, '../**/*/*.entity.{ts,js}')],

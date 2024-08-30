@@ -1,12 +1,5 @@
 import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
 import { RepliesEntity } from './replies.entity';
 
 @Entity('comments')
@@ -17,7 +10,6 @@ export class CommentsEntity {
   // 댓글 내용
   @Column({ type: 'varchar', length: 300 })
   content: string;
-
 
   // 댓글 신고일
   // 기본 상태는 null, 신고 당하면 날짜

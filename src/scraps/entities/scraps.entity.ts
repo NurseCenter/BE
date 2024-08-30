@@ -1,12 +1,6 @@
 import { BasePostsEntity } from 'src/posts/entities/base-posts.entity';
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  Column,
-} from 'typeorm';
+import { Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, Column } from 'typeorm';
 
 @Entity('scraps')
 export class ScrapsEntity {

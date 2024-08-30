@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { ConfigService } from '@nestjs/config';
-import { join, resolve } from 'path';
+import { join } from 'path';
 
 // TypeORM CLI와 직접 상호작용을 위해 사용
 config(); // .env 파일에서 환경 변수를 불러옴.

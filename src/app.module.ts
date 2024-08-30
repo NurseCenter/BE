@@ -17,13 +17,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
 import { RepliesModule } from './replies/replies.module';
+import { RedisModule } from './common/redis.module';
+import { HealthCheckModule } from './health-check/health-check.module';
+import { SessionConfigService } from './config/session.config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        getTypeOrmConfig(configService),
+      useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
     AuthModule,
@@ -39,8 +47,10 @@ import { RepliesModule } from './replies/replies.module';
     OcrModule,
     SearchModule,
     RepliesModule,
+    RedisModule,
+    HealthCheckModule,
   ],
   controllers: [AppController, OcrController],
-  providers: [AppService],
+  providers: [AppService, SessionConfigService],
 })
 export class AppModule {}

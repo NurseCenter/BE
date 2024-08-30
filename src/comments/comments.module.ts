@@ -8,10 +8,7 @@ import { PostsModule } from '../posts/posts.module';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity]),
-    PostsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity]), PostsModule],
   providers: [CommentsService],
   controllers: [CommentsController],
   exports: [CommentsModule],

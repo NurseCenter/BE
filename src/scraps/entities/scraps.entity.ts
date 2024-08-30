@@ -1,12 +1,5 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  Column,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, Column, JoinColumn } from 'typeorm';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
 @Entity('scraps')

@@ -8,14 +8,15 @@ import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserSer
 import { LoginsEntity } from './entities/logins.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './session-serializer';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from 'src/email/email.module';
 import { AuthTwilioService } from './services/auth.twilio.service';
+import { TestController } from './test.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, TestController],
   providers: [
     AuthService,
     AuthUserService,

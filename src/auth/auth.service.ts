@@ -56,11 +56,17 @@ export class AuthService {
       // 4. 세션 ID 가져오기
       const sessionId = req.sessionID;
 
+      console.log("로그인 메서드 sessionId", sessionId)
+
       // 5. 세션 ID와 회원 ID를 Redis에 저장
-      await this.redisClient.hset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
+      // const storedSession = await this.redisClient.hset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
+      // await this.redisClient.hset(`sessionId:${sessionId}`, 'sessionId', sessionId);
+      // await this.redisClient.hset(`sessionId:${sessionId}`, 'userId', user.userId.toString());
 
       // 6. MySQL에 회원 로그인 기록을 저장
-      await this.authSignInService.saveLoginRecord(user.userId, req);
+      const savedLoginLog = await this.authSignInService.saveLoginRecord(user.userId, req);
+
+      console.log("savedLoginLog", savedLoginLog)
 
       // 7. 응답 전송
       return res.status(200).json({

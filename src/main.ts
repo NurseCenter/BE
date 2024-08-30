@@ -5,6 +5,7 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import { SessionConfigService } from './config/session.config';
 import { join } from 'path';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -18,6 +19,8 @@ async function bootstrap() {
   app.use(session(sessionOptions));
   app.use(passport.initialize());
   app.use(passport.session());
+
+  app.use(cookieParser());
 
   app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
   app.setViewEngine('ejs');

@@ -104,7 +104,7 @@ export class AuthUserService {
   async deleteUser(sessionId: string): Promise<void> {
     const userId = await this.authSessionService.findUserIdFromSession(sessionId);
     const user = await this.userRepository.findOne({ where: { userId } });
-
+    console.log("user", user)
     if (!user) {
       throw new NotFoundException('회원을 찾을 수 없습니다.');
     }

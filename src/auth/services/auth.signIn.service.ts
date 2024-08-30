@@ -14,7 +14,7 @@ export class AuthSignInService {
   ) {}
 
   // MySQL에 로그인 기록을 저장하기
-  async saveLoginRecord(userId: string, req: Request): Promise<boolean> {
+  async saveLoginRecord(userId: number, req: Request): Promise<boolean> {
     const loggedInUser = await this.authUserService.findUserByUserId(userId);
     if (!loggedInUser) throw new Error('User not found');
 

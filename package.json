@@ -7,13 +7,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "build:ejs": "tsc && npm run copy",
-    "copy": "copyfiles -u 1 src/email/templates/**/* dist/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:watch": "nest start --watch",
-    "build:watch": "npm run start:watch && npm run build:ejs",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource ./data-source.ts",

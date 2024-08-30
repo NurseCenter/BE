@@ -47,7 +47,7 @@ export class AuthUserService {
   }
 
   // 회원 ID로 회원 찾기
-  async findUserByUserId(userId: string): Promise<UsersEntity | undefined> {
+  async findUserByUserId(userId: number): Promise<UsersEntity | undefined> {
     return this.userRepository.findOne({ where: { userId } });
   }
 
@@ -77,7 +77,7 @@ export class AuthUserService {
   }
 
   // 회원 ID로 회원 상태 변경
-  async updateUserStatusByUserId(userId: string, status: EMembershipStatus) {
+  async updateUserStatusByUserId(userId: number, status: EMembershipStatus) {
     const user = await this.findUserByUserId(userId);
     if (!user) throw new Error('User not found');
     user.membershipStatus = status;
@@ -103,7 +103,6 @@ export class AuthUserService {
   // 회원 탈퇴
   async deleteUser(sessionId: string): Promise<void> {
     const userId = await this.authSessionService.findUserIdFromSession(sessionId);
-
     const user = await this.userRepository.findOne({ where: { userId } });
 
     if (!user) {
@@ -119,7 +118,7 @@ export class AuthUserService {
   }
 
   // 회원 ID로 회원 상태 확인
-  async checkStatusByUserId(userId: string): Promise<IMembershipStatusResponse> {
+  async checkStatusByUserId(userId: number): Promise<IMembershipStatusResponse> {
     const user = await this.findUserByUserId(userId);
     const status = user.membershipStatus;
 

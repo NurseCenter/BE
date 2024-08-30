@@ -6,7 +6,7 @@ import { LoginsEntity } from 'src/auth/entities/logins.entity';
 export class UsersEntity {
   @PrimaryGeneratedColumn()
   // 회원 고유 ID 값
-  userId: string;
+  userId: number;
 
   // 이름
   // 회원 실명 OCR에서 추출

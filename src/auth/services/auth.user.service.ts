@@ -122,18 +122,16 @@ export class AuthUserService {
     const user = await this.findUserByUserId(userId);
     const status = user.membershipStatus;
 
-    // 사용자 상태에 따른 응답
-    switch(status) {
-      case EMembershipStatus.PENDING_VERIFICATION:
-        return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
-      case EMembershipStatus.EMAIL_VERIFIED:
-        return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.'}
-      case EMembershipStatus.APPROVED_MEMBER:
-        return { status: 'approved_member', message: '회원가입 승인이 완료된 상태입니다.'}
-      case EMembershipStatus.REJECTED_MEMBER:
-        return { status: 'rejected', message : '회원가입 승인이 반려되었습니다. 제출한 회원가입 양식과 업로드한 파일을 확인해서 회원가입 요청을 다시해주세요.'};
-      default:
-          throw new Error('존재하지 않는 사용자 상태입니다.');
-      }
+  // 사용자 상태에 따른 응답
+  switch(status) {
+    case EMembershipStatus.PENDING_VERIFICATION:
+      return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
+    case EMembershipStatus.EMAIL_VERIFIED:
+      return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.'}
+    case EMembershipStatus.APPROVED_MEMBER:
+      return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.'}
+    default:
+        throw new Error('존재하지 않는 사용자 상태입니다.');
     }
+  }
 }

@@ -131,7 +131,7 @@ export class AuthService {
     await this.authUserService.updateUserStatusByEmail(email, EMembershipStatus.EMAIL_VERIFIED);
     await this.authSessionService.deleteSessionId(token);
 
-    // 추가) 이미 사용자 상태가 email_verified = 2면 에러터지게 함.
+    // 추가) 이미 사용자 상태가 email_verified = 2면 메일 요청이 계속 가지 않도록 해야함. => 주기를 정할 것
 
     console.log("토큰", token)
 

@@ -58,6 +58,10 @@ export class UsersEntity {
   @Column()
   certificationDocumentUrl: string;
 
+  // 가입 보류 여부
+  @Column({ type: 'boolean', default: false })
+  rejected: boolean;
+
   // 가입일
   @CreateDateColumn()
   createdAt?: Date;

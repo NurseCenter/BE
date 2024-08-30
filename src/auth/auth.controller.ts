@@ -94,4 +94,14 @@ export class AuthController {
     await this.authService.verifyPhoneNumberCode(phoneNumber, code);
     return { message: '휴대폰 인증이 성공하였습니다.' };
   }
+
+  // 사용자 상태 확인
+  // 프론트엔드의 리다이렉션을 위함.
+  @Get('status')
+  @HttpCode(HttpStatus.OK)
+  async getStatus(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+    const sessionId = req.cookies['connect.sid'];
+    await this.authService.sendStatus(sessionId);
+    return { message: '로그아웃에 성공하였습니다.' };
+  }
 }

@@ -5,7 +5,7 @@ import { CreateUserDto, SignInUserDto } from '../dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthPasswordService } from './auth.password.service';
 import { AuthSessionService } from './auth.session.service';
-import { IUser } from '../interfaces';
+import { IMembershipStatusResponse, IUser } from '../interfaces';
 import { EMembershipStatus } from 'src/users/enums';
 
 @Injectable()
@@ -102,7 +102,7 @@ export class AuthUserService {
 
   // 회원 탈퇴
   async deleteUser(sessionId: string): Promise<void> {
-    const userId = await this.authSessionService.getUserIdFromSession(sessionId);
+    const userId = await this.authSessionService.findUserIdFromSession(sessionId);
 
     const user = await this.userRepository.findOne({ where: { userId } });
 
@@ -117,4 +117,24 @@ export class AuthUserService {
     user.deletedAt = new Date();
     await this.userRepository.save(user);
   }
+
+  // 회원 ID로 회원 상태 확인
+  async checkStatusByUserId(userId: string): Promise<IMembershipStatusResponse> {
+    const user = await this.findUserByUserId(userId);
+    const status = user.membershipStatus;
+
+    // 사용자 상태에 따른 응답
+    switch(status) {
+      case EMembershipStatus.PENDING_VERIFICATION:
+        return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
+      case EMembershipStatus.EMAIL_VERIFIED:
+        return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.'}
+      case EMembershipStatus.APPROVED_MEMBER:
+        return { status: 'approved_member', message: '회원가입 승인이 완료된 상태입니다.'}
+      case EMembershipStatus.REJECTED_MEMBER:
+        return { status: 'rejected', message : '회원가입 승인이 반려되었습니다. 제출한 회원가입 양식과 업로드한 파일을 확인해서 회원가입 요청을 다시해주세요.'};
+      default:
+          throw new Error('존재하지 않는 사용자 상태입니다.');
+      }
+    }
 }

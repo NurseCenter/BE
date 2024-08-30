@@ -179,4 +179,10 @@ export class AuthService {
   async verifyPhoneNumberCode(to: string, code: string){
     return this.authTwilioService.checkVerificationCode({ to, code });
   }
+
+  // 로그인한 사용자의 회원 상태 확인
+  async sendStatus(sessionId: string) {
+    const userId = await this.authSessionService.findUserIdFromSession(sessionId);
+    return this.authUserService.checkStatusByUserId(userId);
+  }
 }

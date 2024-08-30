@@ -18,7 +18,7 @@ export class AuthSessionService {
   }
 
   // 세션 ID에서 사용자 ID 찾기
-  async getUserIdFromSession(sessionId: string): Promise<string | null> {
+  async findUserIdFromSession(sessionId: string): Promise<string | null> {
     const userIdInRedis = await this.redisClient.hmget(`sessionId:${sessionId}`, 'userId');
     const userId = userIdInRedis[0] || null;
     return userId;

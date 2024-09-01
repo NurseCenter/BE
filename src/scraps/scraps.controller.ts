@@ -8,7 +8,7 @@ export class ScrapController {
   constructor(private readonly scrapsService: ScrapService) {}
   // 게시물 스크랩
   // @UseGuards(JwtGuard)
-  @Post('/:postId')
+  @Post('/posts/:postId')
   async scrapPost(@Param('postId') postId: number) {
     const result = await this.scrapsService.scrapPost(postId, userId);
     return result;

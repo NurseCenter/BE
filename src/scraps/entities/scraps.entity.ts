@@ -1,8 +1,19 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import { Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, Column, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Column,
+  JoinColumn,
+  Unique,
+  Index,
+  DeleteDateColumn,
+} from 'typeorm';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
 @Entity('scraps')
+@Unique(['postId', 'userId'])
 export class ScrapsEntity {
   @PrimaryGeneratedColumn()
   scrapId: number;
@@ -20,7 +31,7 @@ export class ScrapsEntity {
 
   // 스크랩 취소한 날짜
   // 기본 상태 null, 정지가 해제되었으면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @DeleteDateColumn()
   deletedAt: Date;
 
   // 해당 게시물

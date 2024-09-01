@@ -1,7 +1,7 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
 
 @Injectable()
@@ -11,9 +11,14 @@ export class ScrapService {
   @InjectRepository(ScrapsEntity)
   private scrapRepository: Repository<ScrapsEntity>;
 
-  async scrapPost(postId: number, userId: number) {
+  async scrapPost(postId: number, userId: number): Promise<ScrapsEntity> {
     const post = await this.postRepository.findOneBy({ postId });
+    console.log(post);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
+
+    const isAlreadyScraped = await this.scrapRepository.exists({ where: { userId, postId } });
+
+    if (isAlreadyScraped) throw new ConflictException(`이미 ${postId}번 게시글을 스크랩했습니다.`);
 
     const scrapedPost = this.scrapRepository.create({ userId, postId });
 
@@ -23,15 +28,17 @@ export class ScrapService {
   }
 
   async getScrapPosts(userId: number) {
-    const result = await this.scrapRepository.find({ where: { userId } });
-    return result;
+    return await this.scrapRepository.find({ where: { userId }, relations: ['post'] });
   }
-  async deleteScrapPost(scrapId: number, userId: number) {
+
+  async deleteScrapPost(scrapId: number, userId: number): Promise<DeleteResult> {
     const scrapPost = await this.scrapRepository.findOneBy({ scrapId });
 
     if (!scrapPost) throw new NotFoundException(`스크랩한 게시물을 찾을 수 없습니다.`);
+
     if (scrapPost.userId !== userId) throw new ForbiddenException(`삭제한 권한이 없습니다.`);
-    const result = await this.scrapRepository.softDelete({ scrapId });
+
+    const result = await this.scrapRepository.delete({ scrapId });
 
     return result;
   }

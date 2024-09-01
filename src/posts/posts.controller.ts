@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { BoardType } from './enum/boardType.enum';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
@@ -19,16 +10,14 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
   //게시글 전체 및 검색 조회
   @Get(':boardType')
+  @HttpCode(200)
   async getPosts(
     @Param('boardType') boardType: BoardType,
     @Query()
     paginateQueryDto: PaginateQueryDto,
   ) {
     try {
-      const result = await this.postsService.getPosts(
-        boardType,
-        paginateQueryDto,
-      );
+      const result = await this.postsService.getPosts(boardType, paginateQueryDto);
 
       return result;
     } catch (err) {
@@ -37,10 +26,8 @@ export class PostsController {
   }
   //특정 게시글 조회
   @Get(':boardType/:id')
-  async getPostDetails(
-    @Param('boardType') boardType: BoardType,
-    @Param('id') id: number,
-  ) {
+  @HttpCode(200)
+  async getPostDetails(@Param('boardType') boardType: BoardType, @Param('id') id: number) {
     try {
       const result = await this.postsService.getPostDetails(boardType, id);
 
@@ -52,16 +39,11 @@ export class PostsController {
 
   //게시글 생성
   @Post(':boardType')
-  async createPost(
-    @Param('boardType') boardType: BoardType,
-    @Body() createPostDto: CreatePostDto,
-  ) {
+  @HttpCode(201)
+  async createPost(@Param('boardType') boardType: BoardType, @Body() createPostDto: CreatePostDto) {
     try {
       //나중에 userId 추가
-      const result = await this.postsService.createPost(
-        boardType,
-        createPostDto,
-      );
+      const result = await this.postsService.createPost(boardType, createPostDto);
 
       return result;
     } catch (err) {
@@ -70,17 +52,14 @@ export class PostsController {
   }
   //게시글 수정
   @Patch(':boardType/:postId')
+  @HttpCode(200)
   async updatePost(
     @Param('boardType') boardType: BoardType,
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
     try {
-      const result = await this.postsService.updatePost(
-        boardType,
-        postId,
-        updatePostDto,
-      );
+      const result = await this.postsService.updatePost(boardType, postId, updatePostDto);
 
       return result;
     } catch (err) {
@@ -88,12 +67,10 @@ export class PostsController {
     }
     //나중에 userId 추가
   }
-
+  //게시글 삭제
   @Delete(':boardType/:postId')
-  async softDeletePost(
-    @Param('boardType') boardType: BoardType,
-    @Param('postId') postId: number,
-  ) {
+  @HttpCode(200)
+  async softDeletePost(@Param('boardType') boardType: BoardType, @Param('postId') postId: number) {
     //나중에 userId 추가
     try {
       const result = await this.postsService.deletePost(boardType, postId);

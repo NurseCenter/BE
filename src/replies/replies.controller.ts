@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
 import { BoardType } from '../posts/enum/boardType.enum';
+import { User } from '../auth/interfaces/session-decorator.interface';
+import { SessionUser } from '../auth/decorators/get-user.decorator';
+import { SignInGuard } from '../auth/guards';
 
 @Controller()
 export class RepliesController {
@@ -10,9 +13,13 @@ export class RepliesController {
   // @UseGuards(JwtGuard)
   @Post('comments/:commentId/replies')
   @HttpCode(201)
-  async createReply(@Param('commentId') commentId: number, @Body() replyDto: ReplyDto) {
-    const userId = 1;
-    const result = await this.repliesService.createReply(commentId, userId, replyDto);
+  @UseGuards(SignInGuard)
+  async createReply(
+    @Param('commentId') commentId: number,
+    @Body() replyDto: ReplyDto,
+    @SessionUser() sessionUser: User,
+  ) {
+    const result = await this.repliesService.createReply(commentId, sessionUser, replyDto);
     return result;
   }
   //특정 게시물 댓글 전체 조회
@@ -26,18 +33,18 @@ export class RepliesController {
   // @UseGuards(JwtGuard)
   @Patch('replies/:replyId')
   @HttpCode(200)
-  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto) {
-    const userId = 1;
-    const result = await this.repliesService.updateReplies(replyId, userId, replyDto);
+  @UseGuards(SignInGuard)
+  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto, @SessionUser() sessionUser: User) {
+    const result = await this.repliesService.updateReplies(replyId, sessionUser, replyDto);
     return result;
   }
   //댓글 삭제
   // @UseGuards(JwtGuard)
   @Delete('replies/:replyId')
   @HttpCode(200)
-  async deleteComment(@Param('replyId') replyId: number) {
-    const userId = 1;
-    const result = await this.repliesService.deleteReplies(replyId, userId);
+  @UseGuards(SignInGuard)
+  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: User) {
+    const result = await this.repliesService.deleteReplies(replyId, sessionUser);
     return result;
   }
 }

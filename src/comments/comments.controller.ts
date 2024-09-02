@@ -2,6 +2,9 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards 
 import { CommentsService } from './comments.service';
 import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { SessionUser } from '../auth/decorators/get-user.decorator';
+import { User } from '../auth/interfaces/session-decorator.interface';
+import { SignInGuard } from '../auth/guards';
 
 @Controller()
 export class CommentsController {
@@ -10,13 +13,14 @@ export class CommentsController {
   // @UseGuards(JwtGuard)
   @Post('posts/:boardType/:postId/comments')
   @HttpCode(201)
+  @UseGuards(SignInGuard)
   async createComment(
     @Param('boardType') boardType: BoardType,
     @Param('postId') postId: number,
     @Body() createCommentDto: CreateCommentDto,
+    @SessionUser() sessionUser: User,
   ) {
-    const userId = 1;
-    const result = await this.commentsService.createComment(boardType, postId, userId, createCommentDto);
+    const result = await this.commentsService.createComment(boardType, postId, sessionUser, createCommentDto);
     return result;
   }
   //특정 게시물 댓글 전체 조회
@@ -30,18 +34,22 @@ export class CommentsController {
   // @UseGuards(JwtGuard)
   @Patch('comments/:commentId')
   @HttpCode(200)
-  async updateComment(@Param('commentId') commentId: number, @Body() updateCommentDto: CreateCommentDto) {
-    const userId = 1;
-    const result = await this.commentsService.updateComment(commentId, updateCommentDto, userId);
+  @UseGuards(SignInGuard)
+  async updateComment(
+    @Param('commentId') commentId: number,
+    @Body() updateCommentDto: CreateCommentDto,
+    @SessionUser() sessionUser: User,
+  ) {
+    const result = await this.commentsService.updateComment(commentId, updateCommentDto, sessionUser);
     return result;
   }
   //댓글 삭제
   // @UseGuards(JwtGuard)
   @Delete('comments/:commentId')
   @HttpCode(200)
-  async deleteComment(@Param('commentId') commentId: number) {
-    const userId = 1;
-    const result = await this.commentsService.deleteComment(commentId, userId);
+  @UseGuards(SignInGuard)
+  async deleteComment(@Param('commentId') commentId: number, @SessionUser() sessionUser: User) {
+    const result = await this.commentsService.deleteComment(commentId, sessionUser);
     return result;
   }
 }

@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { CreatePostDto } from './dto/create-post.dto';
 
@@ -14,6 +9,7 @@ import { SortOrder, SortType } from './enum/sortType.enum';
 import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from '../auth/interfaces/session-decorator.interface';
 
 @Injectable()
 export class PostsService {
@@ -35,24 +31,15 @@ export class PostsService {
       query = query.where('post.boardType = :boardType', { boardType });
 
       if (search) {
-        query = query.where(
-          'post.title LIKE :search OR post.content LIKE :search',
-          { search: `%${search}%` },
-        );
+        query = query.where('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
       }
 
-      sortType = Object.values(SortType).includes(sortType)
-        ? sortType
-        : SortType.DATE;
-      sortOrder = Object.values(SortOrder).includes(sortOrder)
-        ? sortOrder
-        : SortOrder.DESC;
+      sortType = Object.values(SortType).includes(sortType) ? sortType : SortType.DATE;
+      sortOrder = Object.values(SortOrder).includes(sortOrder) ? sortOrder : SortOrder.DESC;
 
       switch (sortType) {
         case SortType.DATE:
-          query = query
-            .orderBy('post.createdAt', sortOrder)
-            .addOrderBy('post.postId', sortOrder); // ID로 보조 정렬
+          query = query.orderBy('post.createdAt', sortOrder).addOrderBy('post.postId', sortOrder); // ID로 보조 정렬
           break;
         case SortType.LIKES:
           query = query
@@ -61,9 +48,7 @@ export class PostsService {
             .addOrderBy('post.postId', SortOrder.DESC); // ID로 추가 보조 정렬
           break;
         default:
-          query = query
-            .orderBy('post.createdAt', SortOrder.DESC)
-            .addOrderBy('post.postId', SortOrder.DESC);
+          query = query.orderBy('post.createdAt', SortOrder.DESC).addOrderBy('post.postId', SortOrder.DESC);
       }
 
       // 페이지네이션 적용
@@ -85,17 +70,15 @@ export class PostsService {
   }
 
   //게시글 생성
-  async createPost(
-    boardType: BoardType,
-    createpostDto: CreatePostDto,
-  ): Promise<PostsEntity> {
+  async createPost(boardType: BoardType, createpostDto: CreatePostDto, sessionUser: User): Promise<PostsEntity> {
     const { title, content } = createpostDto;
+    const { userId } = sessionUser;
 
     try {
       const createdPost = this.postRepository.create({
         title,
         content,
-        userId: 1,
+        userId,
         boardType,
       });
 
@@ -111,10 +94,7 @@ export class PostsService {
   async getPostDetails(boardType: BoardType, postId: number) {
     try {
       const result = await this.postRepository.findOneBy({ postId });
-      if (!result)
-        throw new NotFoundException(
-          `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
-        );
+      if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
       return result;
     } catch (err) {
       throw err;
@@ -123,31 +103,21 @@ export class PostsService {
 
   //특정 게시글 신고
   //게시글 수정
-  async updatePost(
-    boardType: BoardType,
-    postId: number,
-    updatePostDto: UpdatePostDto,
-  ) {
-    const { userId } = updatePostDto;
+  async updatePost(boardType: BoardType, postId: number, updatePostDto: UpdatePostDto, sessionUser: User) {
+    const { userId } = sessionUser;
     try {
       const post = await this.postRepository.findOneBy({ postId });
-      if (!post)
-        throw new NotFoundException(
-          `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
-        );
+      if (!post) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
 
       if (post.userId !== userId) {
         throw new ForbiddenException('이 게시물을 수정할 권한이 없습니다.');
       }
-      const updatePostFields = Object.entries(updatePostDto).reduce(
-        (acc, [key, value]) => {
-          if (value !== null && value !== undefined) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {},
-      );
+      const updatePostFields = Object.entries(updatePostDto).reduce((acc, [key, value]) => {
+        if (value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
 
       Object.assign(post, updatePostFields);
 
@@ -159,14 +129,11 @@ export class PostsService {
   }
 
   //게시글 삭제
-  async deletePost(boardType: BoardType, postId: number) {
+  async deletePost(boardType: BoardType, postId: number, sessionUser: User) {
     try {
-      let userId = 1; // 차후 변경
+      const { userId } = sessionUser;
       const post = await this.postRepository.findOneBy({ postId });
-      if (!post)
-        throw new NotFoundException(
-          `${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`,
-        );
+      if (!post) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
 
       if (post.userId !== userId) {
         throw new ForbiddenException('이 게시물을 수정할 권한이 없습니다.');

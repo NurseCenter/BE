@@ -6,6 +6,7 @@ import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { LoginsEntity } from 'src/auth/entities/logins.entity';
 import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
+import { ReportCommentsEntity } from '../../admin/entities/report-comments.entity';
 
 @Entity('users')
 export class UsersEntity {
@@ -94,7 +95,11 @@ export class UsersEntity {
   @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportingUser)
-  submittedReports: LoginsEntity[];
+  submittedPostReports: LoginsEntity[];
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportedUser)
-  receivedReports: LoginsEntity[];
+  receivedPostReports: LoginsEntity[];
+  @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
+  submittedCommentReports: LoginsEntity[];
+  @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
+  receivedCommentReports: LoginsEntity[];
 }

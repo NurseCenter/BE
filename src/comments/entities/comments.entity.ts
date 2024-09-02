@@ -13,6 +13,8 @@ import {
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { BoardType } from '../../posts/enum/boardType.enum';
 import { UsersEntity } from '../../users/entities/users.entity';
+import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
+import { ReportCommentsEntity } from '../../admin/entities/report-comments.entity';
 
 @Entity('comments')
 export class CommentsEntity {
@@ -66,4 +68,7 @@ export class CommentsEntity {
   @ManyToOne(() => UsersEntity, (user) => user.comments)
   @JoinColumn([{ name: 'userId', referencedColumnName: 'userId' }])
   user: UsersEntity;
+
+  @OneToMany(() => ReportCommentsEntity, (reportComment) => reportComment.comments)
+  reportComments: ReportCommentsEntity[];
 }

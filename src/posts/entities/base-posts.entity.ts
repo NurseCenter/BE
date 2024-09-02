@@ -95,5 +95,5 @@ export class PostsEntity {
   scraps: ScrapsEntity[];
 
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
-  reportPosts: ScrapsEntity[];
+  reportPosts: ReportPostsEntity[];
 }

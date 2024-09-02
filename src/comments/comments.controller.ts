@@ -5,6 +5,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
+import { ReportPostDto } from '../posts/dto/report-post.dto';
 
 @Controller()
 export class CommentsController {
@@ -50,6 +51,20 @@ export class CommentsController {
   @UseGuards(SignInGuard)
   async deleteComment(@Param('commentId') commentId: number, @SessionUser() sessionUser: User) {
     const result = await this.commentsService.deleteComment(commentId, sessionUser);
+    return result;
+  }
+
+  //특정 댓글 신고
+  @Post('comments/:commentId/reports')
+  @HttpCode(200)
+  @UseGuards(SignInGuard)
+  async reportComment(
+    @Param('commentId') commentId: number,
+    @SessionUser() sessionUser: User,
+    @Body() reportPostDto: ReportPostDto,
+  ) {
+    console.log(commentId);
+    const result = await this.commentsService.reportComment(commentId, sessionUser, reportPostDto);
     return result;
   }
 }

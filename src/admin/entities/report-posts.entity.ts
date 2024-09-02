@@ -58,7 +58,7 @@ export class ReportPostsEntity {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @ManyToOne(() => UsersEntity, (user) => user.submittedReports)
+  @ManyToOne(() => UsersEntity, (user) => user.submittedPostReports)
   @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   reportingUser: UsersEntity;
 
@@ -67,7 +67,7 @@ export class ReportPostsEntity {
   posts: PostsEntity;
 
   // 신고된 글의 작성자
-  @ManyToOne(() => UsersEntity, (user) => user.receivedReports)
+  @ManyToOne(() => UsersEntity, (user) => user.receivedPostReports)
   @JoinColumn({ name: 'reportedUserId', referencedColumnName: 'userId' })
   reportedUser: UsersEntity;
 }

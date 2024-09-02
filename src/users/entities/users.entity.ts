@@ -5,6 +5,7 @@ import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { LoginsEntity } from 'src/auth/entities/logins.entity';
+import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
 
 @Entity('users')
 export class UsersEntity {
@@ -92,4 +93,8 @@ export class UsersEntity {
   // 여러 로그인 기록
   @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
+  @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportingUser)
+  submittedReports: LoginsEntity[];
+  @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportedUser)
+  receivedReports: LoginsEntity[];
 }

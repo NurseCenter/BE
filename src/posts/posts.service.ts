@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { CreatePostDto } from './dto/create-post.dto';
 
@@ -10,11 +16,18 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../auth/interfaces/session-decorator.interface';
+import { session } from 'passport';
+import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
+import { BasePostDto } from './dto/base-post.dto';
+import { ReportPostDto } from './dto/report-post.dto';
+import { ESuspensionReason } from '../admin/enums';
 
 @Injectable()
 export class PostsService {
   @InjectRepository(PostsEntity)
   private postRepository: Repository<PostsEntity>;
+  @InjectRepository(ReportPostsEntity)
+  private reportPostRepository: Repository<ReportPostsEntity>;
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
   async getPosts(boardType: BoardType, paginateQueryDto: PaginateQueryDto) {
@@ -101,7 +114,6 @@ export class PostsService {
     }
   }
 
-  //특정 게시글 신고
   //게시글 수정
   async updatePost(boardType: BoardType, postId: number, updatePostDto: UpdatePostDto, sessionUser: User) {
     const { userId } = sessionUser;
@@ -144,5 +156,38 @@ export class PostsService {
     } catch (err) {
       throw err;
     }
+  }
+
+  //특정 게시글 신고
+  async reportPost(basePostDto: BasePostDto, sessionUser: User, reportPostDto: ReportPostDto) {
+    const { userId } = sessionUser;
+    const { boardType, postId } = basePostDto;
+    const post = await this.postRepository.findOneBy(basePostDto);
+    if (!post) throw new NotFoundException(`${boardType}게시판의 ${postId}번 게시물을 찾을 수 없습니다.`);
+    if (post.userId === userId) {
+      throw new ForbiddenException(`자기 자신의 게시물을 신고할 수 없습니다.`);
+    }
+    console.log(reportPostDto.otherReportedReason);
+    if (reportPostDto.reportedReason === ESuspensionReason.OTHER && !reportPostDto.otherReportedReason) {
+      throw new BadRequestException(`신고 사유를 기입해주세요.`);
+    }
+    const existingReport = await this.reportPostRepository.findOne({
+      where: {
+        postId,
+        userId,
+      },
+    });
+    if (existingReport) {
+      throw new ConflictException(`이미 신고한 게시물입니다.`);
+    }
+    const reportedPostDto = this.reportPostRepository.create({
+      postId,
+      userId,
+      ...reportPostDto,
+      reportedUserId: post.userId,
+    });
+    const result = await this.reportPostRepository.save(reportedPostDto);
+
+    return result;
   }
 }

@@ -1,11 +1,5 @@
 import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  Column,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, Column } from 'typeorm';
 import { ESuspensionReason } from '../enums';
 
 @Entity('report_comments')
@@ -13,17 +7,21 @@ export class ReportCommentsEntity {
   @PrimaryGeneratedColumn()
   reportCommentId: number;
 
+  //신고한 사용자
+  @Column()
+  userId: number;
+
+  //신고당한 사용자
+  @Column()
+  reportedUserId: number;
+
   // 신고자
   @ManyToOne(() => UsersEntity, (user) => user.userId)
   reporter: UsersEntity;
 
   // 신고된 댓글의 ID
   @Column('int')
-  reportedCommentId: number;
-
-  // 신고된 댓글의 내용
-  @Column('text')
-  reportedContent: string;
+  commentId: number;
 
   // 신고된 댓글 작성자
   @ManyToOne(() => UsersEntity, (user) => user.userId)

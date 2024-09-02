@@ -7,6 +7,8 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
+import { BasePostDto } from './dto/base-post.dto';
+import { ReportPostDto } from './dto/report-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -93,5 +95,18 @@ export class PostsController {
     } catch (err) {
       throw err;
     }
+  }
+
+  //특정 게시글 신고
+  @Post(':boardType/:postId/reports')
+  @HttpCode(200)
+  @UseGuards(SignInGuard)
+  async reportPost(
+    @Param() basePostDto: BasePostDto,
+    @SessionUser() sessionUser: User,
+    @Body() reportPostDto: ReportPostDto,
+  ) {
+    const result = await this.postsService.reportPost(basePostDto, sessionUser, reportPostDto);
+    return result;
   }
 }

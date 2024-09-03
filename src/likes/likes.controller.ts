@@ -3,7 +3,9 @@ import { LikesService } from './likes.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('likes')
 @Controller()
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
@@ -12,6 +14,11 @@ export class LikesController {
   @Post('/posts/:postId/like')
   @HttpCode(200)
   @UseGuards(SignInGuard)
+  @ApiOperation({ summary: '게시글 좋아요 토글' })
+  @ApiParam({ name: 'postId', description: '좋아요를 토글할 게시글의 ID', type: 'number' })
+  @ApiResponse({ status: 200, description: '성공적으로 좋아요를 토글했습니다.' })
+  @ApiResponse({ status: 404, description: '게시글을 찾을 수 없습니다.' })
+  @ApiResponse({ status: 401, description: '인증되지 않았습니다.' })
   async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: User) {
     const result = await this.likesService.toggleLike(postId, sessionUser);
     return result;

@@ -27,13 +27,13 @@ export class UsersController {
     }
 
     // 본인 게시글 전체 조회
-    @Get('/posts')
+    @Get('posts')
     async getMyPosts(@SessionUser() user: IUserWithoutPassword){
         return this.usersService.fetchMyPosts(user);
     }
 
     // 본인 댓글 전체 조회
-    @Get('/comments')
+    @Get('comments')
     async getMyComments(@SessionUser() user: IUserWithoutPassword){
         return this.usersService.fetchMyComments(user);
     }

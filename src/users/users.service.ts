@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { IUserInfoResponse } from './interfaces/user-info-response.interface';
 import { Repository } from 'typeorm';
@@ -59,10 +59,14 @@ export class UsersService {
             throw new NotFoundException('해당 회원이 존재하지 않습니다.');
         }
 
-        const isOldPasswordValid = this.authPasswordService.matchPassword(oldPassword, newPassword);
+        const isOldPasswordValid = this.authPasswordService.matchPassword(oldPassword, user.password);
 
         if (!isOldPasswordValid) {
-            throw new Error("비밀번호가 일치하지 않습니다.")
+            throw new BadRequestException('현재 비밀번호가 저장된 비밀번호와 일치하지 않습니다.');
+        }
+
+        if (oldPassword === newPassword) {
+            throw new BadRequestException('현재 비밀번호와 새 비밀번호는 서로 달라야 합니다.');
         }
 
         const newHashedPassword = await this.authPasswordService.createPassword(newPassword);
@@ -75,6 +79,10 @@ export class UsersService {
 
     // 내가 쓴 게시물 전체 조회
     async fetchMyPosts(sessionUser: IUserWithoutPassword) {
+        if (!sessionUser?.userId) {
+            throw new BadRequestException('회원 ID가 존재하지 않습니다.');
+        }
+
         const { userId } = sessionUser;
 
         // userId와 일치하는 게시물 조회
@@ -90,18 +98,19 @@ export class UsersService {
     async fetchMyComments(sessionUser: IUserWithoutPassword) {
         const { userId } = sessionUser;
 
+        if (!sessionUser?.userId) {
+            throw new BadRequestException('회원 ID가 존재하지 않습니다.');
+        }
+
         // userId와 일치하는 댓글과 대댓글을 최신순으로 조회
         const comments = await this.commentsRepository.find({
-            where: { userId },
-            order: { createdAt: 'DESC' }
+            where: { userId }
         })
         const replies = await this.repliesRepository.find({
-            where: { userId },
-            order: { createdAt: 'DESC' }
+            where: { userId }
         })
 
         const commentsAndReplies = [...comments, ...replies];
-
         return commentsAndReplies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 }

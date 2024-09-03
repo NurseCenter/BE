@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { IUserInfoResponse } from './interfaces/user-info-response.interface';
 import { Repository } from 'typeorm';
@@ -40,13 +40,11 @@ export class UsersService {
         const user = await this.authUserService.findUserByUserId(userId);
 
         if (!user) {
-            throw new Error('해당 회원이 존재하지 않습니다.');
+            throw new NotFoundException('해당 회원이 존재하지 않습니다.');
         }
 
         user.nickname = newNickname;
-
         await this.usersRepository.save(user);
-
         return { message: '닉네임이 수정되었습니다.' }
     }
 
@@ -58,7 +56,7 @@ export class UsersService {
         const user = await this.usersRepository.findOne({ where: { userId } });
 
         if (!user) {
-            throw new Error('해당 회원이 존재하지 않습니다.');
+            throw new NotFoundException('해당 회원이 존재하지 않습니다.');
         }
 
         const isOldPasswordValid = this.authPasswordService.matchPassword(oldPassword, newPassword);
@@ -68,9 +66,7 @@ export class UsersService {
         }
 
         const newHashedPassword = await this.authPasswordService.createPassword(newPassword);
-
         user.password = newHashedPassword;
-
         await this.usersRepository.save(user);
 
         return { message: '비밀번호가 수정되었습니다.' };
@@ -94,14 +90,18 @@ export class UsersService {
     async fetchMyComments(sessionUser: IUserWithoutPassword) {
         const { userId } = sessionUser;
 
-        // userId와 일치하는 댓글과 대댓글 조회
+        // userId와 일치하는 댓글과 대댓글을 최신순으로 조회
         const comments = await this.commentsRepository.find({
-            where: { userId }
+            where: { userId },
+            order: { createdAt: 'DESC' }
         })
         const replies = await this.repliesRepository.find({
-            where: { userId }
+            where: { userId },
+            order: { createdAt: 'DESC' }
         })
 
-        return [ ...comments, ...replies ];
+        const commentsAndReplies = [...comments, ...replies];
+
+        return commentsAndReplies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 }

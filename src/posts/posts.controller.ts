@@ -5,7 +5,7 @@ import { PostsService } from './posts.service';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
@@ -49,7 +49,7 @@ export class PostsController {
   async createPost(
     @Param('boardType') boardType: BoardType,
     @Body() createPostDto: CreatePostDto,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     try {
       const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
@@ -67,7 +67,7 @@ export class PostsController {
     @Param('boardType') boardType: BoardType,
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     try {
       const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
@@ -85,7 +85,7 @@ export class PostsController {
   async softDeletePost(
     @Param('boardType') boardType: BoardType,
     @Param('postId') postId: number,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     //나중에 userId 추가
     try {
@@ -103,7 +103,7 @@ export class PostsController {
   @UseGuards(SignInGuard)
   async reportPost(
     @Param() basePostDto: BasePostDto,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
     @Body() reportPostDto: ReportPostDto,
   ) {
     const result = await this.postsService.reportPost(basePostDto, sessionUser, reportPostDto);

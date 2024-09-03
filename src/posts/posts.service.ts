@@ -15,7 +15,7 @@ import { SortOrder, SortType } from './enum/sortType.enum';
 import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { session } from 'passport';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
@@ -83,7 +83,7 @@ export class PostsService {
   }
 
   //게시글 생성
-  async createPost(boardType: BoardType, createpostDto: CreatePostDto, sessionUser: User): Promise<PostsEntity> {
+  async createPost(boardType: BoardType, createpostDto: CreatePostDto, sessionUser: IUserWithoutPassword): Promise<PostsEntity> {
     const { title, content } = createpostDto;
     const { userId } = sessionUser;
 
@@ -115,7 +115,7 @@ export class PostsService {
   }
 
   //게시글 수정
-  async updatePost(boardType: BoardType, postId: number, updatePostDto: UpdatePostDto, sessionUser: User) {
+  async updatePost(boardType: BoardType, postId: number, updatePostDto: UpdatePostDto, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     try {
       const post = await this.postRepository.findOneBy({ postId });
@@ -141,7 +141,7 @@ export class PostsService {
   }
 
   //게시글 삭제
-  async deletePost(boardType: BoardType, postId: number, sessionUser: User) {
+  async deletePost(boardType: BoardType, postId: number, sessionUser: IUserWithoutPassword) {
     try {
       const { userId } = sessionUser;
       const post = await this.postRepository.findOneBy({ postId });
@@ -159,7 +159,7 @@ export class PostsService {
   }
 
   //특정 게시글 신고
-  async reportPost(basePostDto: BasePostDto, sessionUser: User, reportPostDto: ReportPostDto) {
+  async reportPost(basePostDto: BasePostDto, sessionUser: IUserWithoutPassword, reportPostDto: ReportPostDto) {
     const { userId } = sessionUser;
     const { boardType, postId } = basePostDto;
     const post = await this.postRepository.findOneBy(basePostDto);

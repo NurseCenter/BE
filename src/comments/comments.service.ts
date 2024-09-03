@@ -10,9 +10,8 @@ import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
 import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { create } from 'domain';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ESuspensionReason } from '../admin/enums';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
@@ -28,7 +27,7 @@ export class CommentsService {
   private reportCommentRepository: Repository<ReportCommentsEntity>;
 
   //작성
-  async createComment(boardType: BoardType, postId: number, sessionUser: User, createCommentDto: CreateCommentDto) {
+  async createComment(boardType: BoardType, postId: number, sessionUser: IUserWithoutPassword, createCommentDto: CreateCommentDto) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOne({
       where: {
@@ -62,7 +61,7 @@ export class CommentsService {
     return comments;
   }
   //수정
-  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: User) {
+  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const comment = await this.commentRepository.findOne({
       where: {
@@ -86,7 +85,7 @@ export class CommentsService {
     return updateComment;
   }
   //삭제
-  async deleteComment(commentId: number, sessionUser: User) {
+  async deleteComment(commentId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const comment = await this.commentRepository.findOne({
       where: {
@@ -103,7 +102,7 @@ export class CommentsService {
     return deletedComment;
   }
   //특정 댓글 신고
-  async reportComment(commentId: number, sessionUser: User, reportPostDto: ReportPostDto) {
+  async reportComment(commentId: number, sessionUser: IUserWithoutPassword, reportPostDto: ReportPostDto) {
     const { userId } = sessionUser;
     console.log(commentId);
     const comment = await this.commentRepository.findOneBy({ commentId });

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards 
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
 import { BoardType } from '../posts/enum/boardType.enum';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword} from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { SignInGuard } from '../auth/guards';
 
@@ -17,7 +17,7 @@ export class RepliesController {
   async createReply(
     @Param('commentId') commentId: number,
     @Body() replyDto: ReplyDto,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     const result = await this.repliesService.createReply(commentId, sessionUser, replyDto);
     return result;
@@ -34,7 +34,7 @@ export class RepliesController {
   @Patch('replies/:replyId')
   @HttpCode(200)
   @UseGuards(SignInGuard)
-  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto, @SessionUser() sessionUser: User) {
+  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto, @SessionUser() sessionUser: IUserWithoutPassword) {
     const result = await this.repliesService.updateReplies(replyId, sessionUser, replyDto);
     return result;
   }
@@ -43,7 +43,7 @@ export class RepliesController {
   @Delete('replies/:replyId')
   @HttpCode(200)
   @UseGuards(SignInGuard)
-  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: User) {
+  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
     const result = await this.repliesService.deleteReplies(replyId, sessionUser);
     return result;
   }

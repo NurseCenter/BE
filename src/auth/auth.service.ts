@@ -42,31 +42,29 @@ export class AuthService {
     const user = await this.authUserService.findUserByEmail(email);
     if (!user) throw new UnauthorizedException('User not exist');
 
-    // 2. 비밀번호 검증
+    // 2. 이미 탈퇴한 유저인지 확인
+    await this.authUserService.checkDeletedByUserId(user.userId);
+
+    // 3. 비밀번호 검증
     const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
     if (!isPasswordMatch) throw new UnauthorizedException('Password not match');
 
-    // 3. req.login을 통해 세션에 사용자 정보 저장
+    // 4. req.login을 통해 세션에 사용자 정보 저장
     req.login(user, async (err) => {
       if (err) {
         console.error('Login failed', err);
         return res.status(401).json({ message: 'Login failed' });
       }
 
-      // 4. 세션 ID 가져오기
+      // 5. 세션 ID 가져오기
       const sessionId = req.sessionID;
 
-      console.log("로그인 메서드 sessionId", sessionId)
-
-      // 5. 세션 ID와 회원 ID를 Redis에 저장
-      // const storedSession = await this.redisClient.hset(`sessionId:${sessionId}`, { sessionId: sessionId, userId: user.userId });
-      // await this.redisClient.hset(`sessionId:${sessionId}`, 'sessionId', sessionId);
-      // await this.redisClient.hset(`sessionId:${sessionId}`, 'userId', user.userId.toString());
+      // console.log("로그인 메서드 sessionId", sessionId)
 
       // 6. MySQL에 회원 로그인 기록을 저장
       const savedLoginLog = await this.authSignInService.saveLoginRecord(user.userId, req);
 
-      console.log("savedLoginLog", savedLoginLog)
+      // console.log("savedLoginLog", savedLoginLog)
 
       // 7. 응답 전송
       return res.status(200).json({

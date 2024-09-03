@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
 
 @Controller()
@@ -12,7 +12,7 @@ export class LikesController {
   @Post('/posts/:postId/like')
   @HttpCode(200)
   @UseGuards(SignInGuard)
-  async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: User) {
+  async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
     const result = await this.likesService.toggleLike(postId, sessionUser);
     return result;
   }

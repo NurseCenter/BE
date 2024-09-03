@@ -5,8 +5,9 @@ import { CreateUserDto, SignInUserDto } from '../dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthPasswordService } from './auth.password.service';
 import { AuthSessionService } from './auth.session.service';
-import { IMembershipStatusResponse, IUser } from '../interfaces';
+import { IMembershipStatusResponse, IUser, IUserWithoutPassword } from '../interfaces';
 import { EMembershipStatus } from 'src/users/enums';
+import { dateToISOString } from 'src/common/utils/data-utils';
 
 @Injectable()
 export class AuthUserService {
@@ -62,7 +63,7 @@ export class AuthUserService {
   }
 
   // 입력받은 회원정보가 유효한지 확인
-  async validateUser(signInUserDto: SignInUserDto): Promise<IUser | null> {
+  async validateUser(signInUserDto: SignInUserDto): Promise<IUserWithoutPassword | null> {
     // 이메일로 회원 찾기
     const user = await this.findUserByEmail(signInUserDto.email);
 
@@ -73,7 +74,18 @@ export class AuthUserService {
 
     if (!isPasswordMatched) return null;
 
-    return user;
+    // 비밀번호를 제외한 사용자 정보 반환
+    const { password, ...userWithoutPassword } = user;
+
+    const returnedUser = {
+      ...userWithoutPassword,
+      // 날짜 데이터타입 ISOstring으로 변환해줌.
+      createdAt: dateToISOString(user.createdAt),
+      deletedAt: dateToISOString(user.deletedAt),
+      suspensionEndDate: dateToISOString(user.suspensionEndDate)
+    }
+
+    return returnedUser;
   }
 
   // 회원 ID로 회원 상태 변경
@@ -115,6 +127,14 @@ export class AuthUserService {
 
     user.deletedAt = new Date();
     await this.userRepository.save(user);
+  }
+
+  // 회원 ID로 이미 탈퇴한 회원인지 확인
+  async checkDeletedByUserId(userId: number): Promise<void>{
+    const user = await this.findUserByUserId(userId);
+    if (user && user.deletedAt !== null) {
+      throw new ConflictException("이미 탈퇴한 회원입니다.")
+    }
   }
 
   // 회원 ID로 회원 상태 확인

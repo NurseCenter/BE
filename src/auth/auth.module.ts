@@ -27,5 +27,6 @@ import { TestController } from './test.controller';
     LocalStrategy,
     SessionSerializer,
   ],
+  exports: [AuthUserService, AuthPasswordService], 
 })
 export class AuthModule {}

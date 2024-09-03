@@ -14,4 +14,7 @@ export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOpt
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_DATABASE'),
     synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_unicode_ci',
+    version: '5.7',
   }) as TypeOrmModuleOptions;

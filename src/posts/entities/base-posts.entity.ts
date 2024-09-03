@@ -1,5 +1,23 @@
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
-import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  TableInheritance,
+  UpdateDateColumn,
+} from 'typeorm';
+import { UsersEntity } from '../../users/entities/users.entity';
+import { LikeEntity } from '../../likes/entities/likes.entity';
+import { BoardType } from '../enum/boardType.enum';
+import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
+import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -10,11 +28,17 @@ import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGenerat
 [이벤트] event.entity.ts -> EventEntity
 [공지사항] notice.entity.ts -> NoticeEntity
 */
-
-@Entity('base_posts')
-export class BasePostsEntity extends BaseEntity {
+// @Index('IDX_BOARD_TYPE_POST_ID', ['boardType', 'postId'])
+@Entity('posts')
+@Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
+export class PostsEntity {
   @PrimaryGeneratedColumn()
   postId: number;
+  @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
+  boardType: BoardType;
+
+  @Column()
+  userId: number;
 
   // 제목
   @Column({ type: 'varchar', length: 50 })
@@ -36,10 +60,11 @@ export class BasePostsEntity extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   viewCounts: number;
 
+  @Column({ type: 'int', default: 0 })
+  like: number;
+
   // 댓글
   // 하나의 게시글에 여러 개의 댓글이 가능함.
-  @OneToMany(() => CommentsEntity, (comment) => comment.post)
-  comments: CommentsEntity[];
 
   // 작성일
   @CreateDateColumn()
@@ -48,11 +73,27 @@ export class BasePostsEntity extends BaseEntity {
   // 게시물 업데이트일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   // 게시물 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @DeleteDateColumn()
   deletedAt?: Date;
+
+  @ManyToOne(() => UsersEntity, (user) => user.posts)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
+  user: UsersEntity;
+
+  @OneToMany(() => CommentsEntity, (comment) => comment.post)
+  comments: CommentsEntity[];
+
+  @OneToMany(() => LikeEntity, (like) => like.post)
+  likes: LikeEntity[];
+
+  @OneToMany(() => ScrapsEntity, (scrap) => scrap.post)
+  scraps: ScrapsEntity[];
+
+  @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
+  reportPosts: ReportPostsEntity[];
 }

@@ -63,7 +63,6 @@ export class CommentsController {
     @SessionUser() sessionUser: User,
     @Body() reportPostDto: ReportPostDto,
   ) {
-    console.log(commentId);
     const result = await this.commentsService.reportComment(commentId, sessionUser, reportPostDto);
     return result;
   }

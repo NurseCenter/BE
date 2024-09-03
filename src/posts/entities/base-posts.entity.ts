@@ -18,6 +18,7 @@ import { LikeEntity } from '../../likes/entities/likes.entity';
 import { BoardType } from '../enum/boardType.enum';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
+import { ImageEntity } from '../../images/entities/image.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -96,4 +97,7 @@ export class PostsEntity {
 
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
   reportPosts: ReportPostsEntity[];
+
+  @OneToMany(() => ImageEntity, (image) => image.post)
+  images: ImageEntity[];
 }

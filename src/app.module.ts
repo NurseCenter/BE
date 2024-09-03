@@ -22,6 +22,7 @@ import { HealthCheckModule } from './health-check/health-check.module';
 import { SessionConfigService } from './config/session.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { join } from 'path';
     RepliesModule,
     RedisModule,
     HealthCheckModule,
+    ImagesModule,
   ],
   controllers: [AppController, OcrController],
   providers: [AppService, SessionConfigService],

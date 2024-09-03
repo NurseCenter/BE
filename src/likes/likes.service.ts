@@ -16,7 +16,6 @@ export class LikesService {
   async toggleLike(postId: number, sessionUser: User) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
-    console.log(post);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

@@ -1,4 +1,4 @@
-import { IsString, Length } from 'class-validator';
+import { IsArray, IsString, Length } from 'class-validator';
 
 export class CreatePostDto {
   @Length(1, 50)
@@ -8,4 +8,7 @@ export class CreatePostDto {
   @Length(1, 2000)
   @IsString()
   content: string;
+  @IsArray()
+  @IsString({ each: true })
+  imageTypes?: string[];
 }

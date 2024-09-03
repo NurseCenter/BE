@@ -16,6 +16,7 @@ import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
+import { RepliesModule } from './replies/replies.module';
 import { RedisModule } from './common/redis.module';
 import { HealthCheckModule } from './health-check/health-check.module';
 import { SessionConfigService } from './config/session.config';
@@ -45,6 +46,7 @@ import { join } from 'path';
     LikesModule,
     OcrModule,
     SearchModule,
+    RepliesModule,
     RedisModule,
     HealthCheckModule,
   ],

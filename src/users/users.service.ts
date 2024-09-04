@@ -7,14 +7,15 @@ import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
-import { AuthPasswordService, AuthUserService } from 'src/auth/services';
+import { AuthPasswordService } from 'src/auth/services';
 import { UsersEntity } from './entities/users.entity';
+import { UsersDAO } from './dao/users.dao';
 
 @Injectable()
 export class UsersService {
     constructor(
-        private readonly authUserService: AuthUserService,
         private readonly authPasswordService: AuthPasswordService,
+        private readonly userDAO: UsersDAO,
         @InjectRepository(UsersEntity)
         private readonly usersRepository:
         Repository<UsersEntity>, 
@@ -37,7 +38,7 @@ export class UsersService {
         const { userId } = sessionUser;
         const { newNickname } = updateNicknameDto;
         
-        const user = await this.authUserService.findUserByUserId(userId);
+        const user = await this.userDAO.findUserByUserId(userId);
 
         if (!user) {
             throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -75,7 +76,6 @@ export class UsersService {
 
         return { message: '비밀번호가 수정되었습니다.' };
     }
-
 
     // 내가 쓴 게시물 전체 조회
     async fetchMyPosts(sessionUser: IUserWithoutPassword) {

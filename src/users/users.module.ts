@@ -9,14 +9,16 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { UsersEntity } from './entities/users.entity';
 import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { DataAccessModule } from './dao/data-access.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UsersEntity, PostsEntity, CommentsEntity, RepliesEntity, ScrapsEntity]),
     ScrapModule,
-    AuthModule
+    AuthModule,
+    DataAccessModule
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService]
 })
 export class UsersModule {}

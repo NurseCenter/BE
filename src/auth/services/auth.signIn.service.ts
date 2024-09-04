@@ -1,29 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { LoginsEntity } from '../entities/logins.entity';
 import { Request } from 'express';
-import { AuthUserService } from './auth.user.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UsersDAO } from 'src/users/dao/users.dao';
 
 @Injectable()
 export class AuthSignInService {
   constructor(
     @InjectRepository(LoginsEntity)
     private readonly loginRepository: Repository<LoginsEntity>,
-    private readonly authUserService: AuthUserService,
+    private readonly usersDAO: UsersDAO
   ) {}
 
   // MySQL에 로그인 기록을 저장하기
   async saveLoginRecord(userId: number, req: Request): Promise<boolean> {
-    const loggedInUser = await this.authUserService.findUserByUserId(userId);
-    if (!loggedInUser) throw new Error('User not found');
+    const loggedInUser = await this.usersDAO.findUserByUserId(userId);
+    if (!loggedInUser) throw new NotFoundException("해당 회원이 존재하지 않습니다.")
 
     const loginRecord = new LoginsEntity();
     loginRecord.loginUser = loggedInUser;
     loginRecord.loginIp = await this.getIpAddress(req);
     loginRecord.updatedAt = new Date();
-
-    console.log('로그인 기록 저장', loginRecord);
 
     await this.loginRepository.save(loginRecord);
 

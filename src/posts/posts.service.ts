@@ -5,9 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-
 import { CreatePostDto } from './dto/create-post.dto';
-
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { BoardType } from './enum/boardType.enum';
@@ -16,7 +14,6 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
-import { session } from 'passport';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';

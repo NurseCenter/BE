@@ -9,6 +9,8 @@ import { AdminDAO } from './admin.dao';
 import { ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
+import { PaginationDto } from './dto/pagination.dto';
+import { UserListDto } from './dto/user-list.dto';
 
 @Injectable()
 export class AdminService {
@@ -77,7 +79,39 @@ export class AdminService {
     }
 
     // 모든 회원 조회
-    async fetchAllUsersByAdmin() {}
+    async fetchAllUsersByAdmin(page: number, pageSize: number = 10): Promise<PaginationDto<UserListDto>> {
+        const [users, total] = await this.adminDAO.findUsersWithDetails(page, pageSize);
+        const suspendedUsers = await this.adminDAO.findSuspendedUsers();
+        const deletedUsers = await this.adminDAO.findDeletedUsers();
+
+        const userList = users.map(user => {
+            const suspendedUser = suspendedUsers.find(su => su.userId === user.userId);
+            const deletedUser = deletedUsers.find(du => du.userId === user.userId);
+
+            return {
+                userId: user.userId,
+                nickname: user.nickname,
+                email: user.email,
+                postCount: Number(user.postCount) || 0,
+                commentCount: Number(user.commentCount) || 0,
+                createdAt: user.createdAt,
+                suspensionStatus: user.suspensionEndDate ? "정지" : "해당없음",
+                deletionStatus: user.deletedAt ? "탈퇴" : "해당없음",
+                managementReason: suspendedUser?.suspensionReason || deletedUser?.deletionReason || "없음"
+            };
+        });
+
+        // 전체 페이지 수 계산
+        const totalPages = Math.ceil(total / pageSize);
+
+        return {
+            totalItems: total,
+            totalPages,
+            currentPage: page,
+            pageSize,
+            items: userList
+        }
+    }
 
     // 회원 정보 (닉네임, 이메일) 조회
     async fetchUserInfoByAdmin(userId: number){

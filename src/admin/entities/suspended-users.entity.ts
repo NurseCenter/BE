@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGenerate
 import { ESuspensionDuration } from '../enums';
 
 @Entity('suspended_users')
-export class suspendedUsersEntity {
+export class SuspendedUsersEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

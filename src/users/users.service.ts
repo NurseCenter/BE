@@ -9,7 +9,7 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { AuthPasswordService } from 'src/auth/services';
 import { UsersEntity } from './entities/users.entity';
-import { UsersDAO } from './dao/users.dao';
+import { UsersDAO } from './users.dao';
 
 @Injectable()
 export class UsersService {

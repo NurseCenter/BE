@@ -10,7 +10,7 @@ import { UsersEntity } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { maskEmail } from 'src/common/utils/email.utils';
-import { UsersDAO } from 'src/users/dao/users.dao';
+import { UsersDAO } from 'src/users/users.dao';
 
 @Injectable()
 export class AuthService {
@@ -33,8 +33,8 @@ export class AuthService {
   }
 
   // 회원탈퇴
-  async withDraw(sessionId: string): Promise<void> {
-    await this.authUserService.deleteUser(sessionId);
+  async withDraw(userId: number): Promise<void> {
+    await this.authUserService.deleteUser(userId);
   }
 
   // 로그인

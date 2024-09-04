@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, 
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto, FindEmailDto, FindPasswordDto, SendPhoneVerificationDto, SignInUserDto, VerifyEmailDto, VerifyPhoneNumberDto } from './dto';
+import { SessionUser } from './decorators/get-user.decorator';
+import { IUserWithoutPassword } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -18,9 +20,9 @@ export class AuthController {
   // 회원탈퇴
   @Delete('withdrawal')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteWithdrawal(@Req() req: Request): Promise<{ message: string }> {
-    const sessionId = req.sessionID;
-    await this.authService.withDraw(sessionId);
+  async deleteWithdrawal(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+    const { userId } = sessionUser;
+    await this.authService.withDraw(userId);
     return { message: '회원탈퇴가 성공적으로 완료되었습니다.' };
   }
 

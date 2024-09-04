@@ -9,7 +9,7 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { UsersEntity } from './entities/users.entity';
 import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { AuthModule } from 'src/auth/auth.module';
-import { DataAccessModule } from './dao/data-access.module';
+import { DataAccessModule } from '../common/data-access.module';
 
 @Module({
   imports: [

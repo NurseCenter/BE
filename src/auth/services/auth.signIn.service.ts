@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { LoginsEntity } from '../entities/logins.entity';
 import { Request } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UsersDAO } from 'src/users/dao/users.dao';
+import { UsersDAO } from 'src/users/users.dao';
 
 @Injectable()
 export class AuthSignInService {

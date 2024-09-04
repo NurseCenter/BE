@@ -12,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from 'src/email/email.module';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { TestController } from './test.controller';
-import { DataAccessModule } from 'src/users/dao/data-access.module';
+import { DataAccessModule } from 'src/common/data-access.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule, DataAccessModule],

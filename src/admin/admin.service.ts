@@ -4,21 +4,20 @@ import { UsersEntity } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { UserInfoDto } from './dto';
+import { AuthUserService } from 'src/auth/services';
+import { UsersDAO } from 'src/users/users.dao';
 
 @Injectable()
 export class AdminService {
     constructor (
         @InjectRepository(UsersEntity)
-        private readonly usersRepository: Repository<UsersEntity>) {}
+        private readonly authUserService: AuthUserService,
+        private readonly usersDAO: UsersDAO    
+    ) {}
 
     // 회원 계정 탈퇴 처리
     async withdrawUserByAdmin(userId: number){
-        const user = await this.usersRepository.findOne({ where: { userId }});
-        
-        if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-
-        user.deletedAt = new Date();
-        await this.usersRepository.save(user);
+        await this.authUserService.deleteUser(userId);
     }
 
     // 회원 계정 정지 처리
@@ -30,12 +29,10 @@ export class AdminService {
 
     // 회원 정보 (닉네임, 이메일) 조회
     async fetchUserInfoByAdmin(userId: number){
-        const user = await this.usersRepository.findOne({ where: { userId }});
+        const user = await this.usersDAO.findUserByUserId(userId);
         if (!user) throw new NotFoundException("해당 회원이 존재하지 않습니다.")
 
         const returnUserInfo = { nickname: user.nickname, email: user.email }
         return returnUserInfo as UserInfoDto;
     }
-
-
 }

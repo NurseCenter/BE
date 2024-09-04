@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { UsersDAO } from './users.dao';
+import { UsersDAO } from '../users/users.dao';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersEntity } from '../entities/users.entity';
+import { UsersEntity } from '../users/entities/users.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity])],

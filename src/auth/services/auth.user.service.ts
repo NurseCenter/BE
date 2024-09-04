@@ -3,7 +3,7 @@ import { UsersEntity } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EMembershipStatus } from 'src/users/enums';
 import { dateToISOString } from 'src/common/utils/data.utils';
-import { UsersDAO } from 'src/users/dao/users.dao';
+import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
 import { AuthSessionService } from './auth.session.service';
@@ -85,11 +85,9 @@ export class AuthUserService {
   }
 
   // 회원 탈퇴
-  async deleteUser(sessionId: string): Promise<void> {
-    const userId = await this.authSessionService.findUserIdFromSession(sessionId);
+  async deleteUser(userId: number): Promise<void> {
     const user = await this.usersDAO.findUserByUserId(userId);
-
-    if (!user) throw new NotFoundException('회원을 찾을 수 없습니다.');
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
     if (user.deletedAt !== null) throw new ConflictException('이미 탈퇴한 회원입니다.');
 

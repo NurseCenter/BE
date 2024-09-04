@@ -1,2 +1,3 @@
 export * from './suspension-duration-enum';
-export * from './suspension-reason';
+export * from './report-reason-enum';
+export * from './report-status.enum';

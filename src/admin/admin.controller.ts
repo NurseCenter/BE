@@ -1,20 +1,41 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, Param } from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards';
+import { AdminService } from './admin.service';
+import { SuspensionUserDto } from './dto/suspension-user.dto';
+import { UserInfoDto } from './dto';
 
 @Controller('admin')
 @UseGuards(AdminGuard)
 export class AdminController {
-    constructor () {}
+    constructor (private readonly adminService: AdminService) {}
 
     // 관리자 회원 탈퇴 처리
     @Delete('withdrawal')
     @HttpCode(HttpStatus.OK)
-    async deleteUserByAdmin(){}
+    async deleteUserByAdmin(@Body() userId: number){
+        await this.adminService.withdrawUserByAdmin(userId);
+    }
 
     // 관리자 회원 정지 처리
     @Post('suspension')
     @HttpCode(HttpStatus.OK)
-    async postSuspensionByAdmin(){}
+    async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto){
+        await this.adminService.suspendUserByAdmin(suspensionUserDto);
+    }
+
+    // 관리자 전체 회원 조회
+    @Get('users')
+    @HttpCode(HttpStatus.OK)
+    async getAllUsers(){
+        await this.adminService.fetchAllUsersByAdmin();
+    }
+
+    // 관리자 특정 회원 정보 조회
+    @Get('user/:userId')
+    @HttpCode(HttpStatus.OK)
+    async getUserInfoByAdmin(@Param('userId') userId: number){
+        await this.adminService.fetchUserInfoByAdmin(userId);
+    }
 
     // 관리자 회원 가입 승인
     @Post('approval')
@@ -45,6 +66,4 @@ export class AdminController {
     @Get('comments/:commentId')
     @HttpCode(HttpStatus.OK)
     async deleteComment(){}
-        
-
 }

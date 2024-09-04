@@ -20,7 +20,7 @@ import { session } from 'passport';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
-import { ESuspensionReason } from '../admin/enums';
+import { EReportReason } from '../admin/enums';
 
 @Injectable()
 export class PostsService {
@@ -168,7 +168,7 @@ export class PostsService {
       throw new ForbiddenException(`자기 자신의 게시물을 신고할 수 없습니다.`);
     }
     console.log(reportPostDto.otherReportedReason);
-    if (reportPostDto.reportedReason === ESuspensionReason.OTHER && !reportPostDto.otherReportedReason) {
+    if (reportPostDto.reportedReason === EReportReason.OTHER && !reportPostDto.otherReportedReason) {
       throw new BadRequestException(`신고 사유를 기입해주세요.`);
     }
     const existingReport = await this.reportPostRepository.findOne({

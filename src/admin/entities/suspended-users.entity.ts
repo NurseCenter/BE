@@ -8,7 +8,7 @@ export class suspendedUsersEntity {
   id: number;
 
   // 정지된 회원 ID
-  @OneToOne(() => UsersEntity, { eager: true })
+  @OneToOne(() => UsersEntity)
   @JoinColumn({ name: 'suspended_user_id' })
   userId: number;
 

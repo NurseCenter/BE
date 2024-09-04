@@ -8,9 +8,9 @@ import {
   JoinColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { ESuspensionReason } from '../enums';
+import { EReportReason } from '../enums';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
-import { ReportStatus } from '../enums/report-status.enum';
+import { EReportStatus } from '../enums/report-status.enum';
 
 @Entity('report_posts')
 export class ReportPostsEntity {
@@ -29,7 +29,7 @@ export class ReportPostsEntity {
   postId: number;
 
   // 신고된 이유
-  @Column({ type: 'enum', enum: ESuspensionReason, nullable: true })
+  @Column({ type: 'enum', enum: EReportReason, nullable: true })
   reportedReason: string;
 
   // 기타 신고된 이유
@@ -44,10 +44,10 @@ export class ReportPostsEntity {
 
   @Column({
     type: 'enum',
-    enum: ReportStatus,
-    default: ReportStatus.PENDING,
+    enum: EReportStatus,
+    default: EReportStatus.PENDING,
   })
-  status: ReportStatus;
+  status: EReportStatus;
 
   // 신고일
   @CreateDateColumn()

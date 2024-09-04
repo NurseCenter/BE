@@ -8,9 +8,9 @@ import {
   JoinColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { ESuspensionReason } from '../enums';
+import { EReportReason } from '../enums';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
-import { ReportStatus } from '../enums/report-status.enum';
+import { EReportStatus } from '../enums/report-status.enum';
 
 @Entity('report_comments')
 export class ReportCommentsEntity {
@@ -30,7 +30,7 @@ export class ReportCommentsEntity {
   commentId: number;
 
   // 신고된 이유
-  @Column({ type: 'enum', enum: ESuspensionReason, nullable: true })
+  @Column({ type: 'enum', enum: EReportReason, nullable: true })
   reportedReason: string;
 
   // 기타 신고된 이유
@@ -45,10 +45,10 @@ export class ReportCommentsEntity {
 
   @Column({
     type: 'enum',
-    enum: ReportStatus,
-    default: ReportStatus.PENDING,
+    enum: EReportStatus,
+    default: EReportStatus.PENDING,
   })
-  status: ReportStatus;
+  status: EReportStatus;
 
   // 신고일
   @CreateDateColumn()

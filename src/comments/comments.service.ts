@@ -13,8 +13,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
-import { ESuspensionReason } from '../admin/enums';
-import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
+import { EReportReason } from '../admin/enums';
 import { ReportCommentsEntity } from '../admin/entities/report-comments.entity';
 
 @Injectable()
@@ -111,7 +110,7 @@ export class CommentsService {
     if (comment.userId === userId) {
       throw new ForbiddenException(`자신이 작성한 댓글을 신고할 수 없습니다.`);
     }
-    if (reportPostDto.reportedReason === ESuspensionReason.OTHER && !reportPostDto.otherReportedReason) {
+    if (reportPostDto.reportedReason === EReportReason.OTHER && !reportPostDto.otherReportedReason) {
       throw new BadRequestException(`신고 사유를 기입해주세요.`);
     }
     const existingReport = await this.reportCommentRepository.findOne({

@@ -11,7 +11,7 @@ export class DeletedUsersEntity {
 
   // 탈퇴처리된 사유
   @Column()
-  reason: string;
+  deletionReason: string;
 
   // 탈퇴처리된 날짜
   @CreateDateColumn()

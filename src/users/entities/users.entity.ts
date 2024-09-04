@@ -87,19 +87,26 @@ export class UsersEntity {
 
   @OneToMany(() => CommentsEntity, (comment) => comment.user)
   comments: CommentsEntity[];
+
   @OneToMany(() => RepliesEntity, (reply) => reply.user)
   replies: RepliesEntity[];
+
   @OneToMany(() => ScrapsEntity, (scrap) => scrap.user)
   scraps: ScrapsEntity[];
+
   // 여러 로그인 기록
   @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
+
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportingUser)
   submittedPostReports: LoginsEntity[];
+
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportedUser)
   receivedPostReports: LoginsEntity[];
+
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
   submittedCommentReports: LoginsEntity[];
+  
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
   receivedCommentReports: LoginsEntity[];
 }

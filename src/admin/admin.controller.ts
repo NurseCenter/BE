@@ -2,7 +2,7 @@ import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, P
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { UserInfoDto } from './dto';
+import { DeletionUserDto, UserInfoDto } from './dto';
 
 @Controller('admin')
 @UseGuards(AdminGuard)
@@ -12,8 +12,8 @@ export class AdminController {
     // 관리자 회원 탈퇴 처리
     @Delete('withdrawal')
     @HttpCode(HttpStatus.OK)
-    async deleteUserByAdmin(@Body() userId: number){
-        await this.adminService.withdrawUserByAdmin(userId);
+    async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto){
+        await this.adminService.withdrawUserByAdmin(deleteUserDto);
     }
 
     // 관리자 회원 정지 처리

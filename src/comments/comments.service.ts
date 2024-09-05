@@ -10,12 +10,10 @@ import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
 import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { create } from 'domain';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ESuspensionReason } from '../admin/enums';
-import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { ReportCommentsEntity } from '../admin/entities/report-comments.entity';
 
 @Injectable()
@@ -36,7 +34,6 @@ export class CommentsService {
         boardType,
       },
     });
-    console.log(post);
     if (!post) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
     const result = this.commentRepository.create({
       ...createCommentDto,
@@ -44,10 +41,8 @@ export class CommentsService {
       postId,
       boardType,
     });
-    console.log(result);
 
     const createdComment = await this.commentRepository.save(result);
-    console.log(createdComment);
     return createdComment;
   }
   //조회
@@ -105,9 +100,7 @@ export class CommentsService {
   //특정 댓글 신고
   async reportComment(commentId: number, sessionUser: User, reportPostDto: ReportPostDto) {
     const { userId } = sessionUser;
-    console.log(commentId);
     const comment = await this.commentRepository.findOneBy({ commentId });
-    console.log(comment);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
     if (comment.userId === userId) {
       throw new ForbiddenException(`자신이 작성한 댓글을 신고할 수 없습니다.`);

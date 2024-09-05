@@ -12,7 +12,6 @@ import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
 import { OcrController } from './ocr/ocr.controller';
-import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
@@ -22,6 +21,7 @@ import { HealthCheckModule } from './health-check/health-check.module';
 import { SessionConfigService } from './config/session.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -45,10 +45,10 @@ import { join } from 'path';
     ScrapModule,
     LikesModule,
     OcrModule,
-    SearchModule,
     RepliesModule,
     RedisModule,
     HealthCheckModule,
+    ImagesModule,
   ],
   controllers: [AppController, OcrController],
   providers: [AppService, SessionConfigService],

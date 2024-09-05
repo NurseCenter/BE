@@ -16,25 +16,31 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { session } from 'passport';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
 import { ESuspensionReason } from '../admin/enums';
+import { ImageEntity } from '../images/entities/image.entity';
+import { ImagesService } from '../images/images.service';
 
 @Injectable()
 export class PostsService {
-  @InjectRepository(PostsEntity)
-  private postRepository: Repository<PostsEntity>;
-  @InjectRepository(ReportPostsEntity)
-  private reportPostRepository: Repository<ReportPostsEntity>;
+  constructor(
+    private imagesService: ImagesService,
+    @InjectRepository(PostsEntity)
+    private postRepository: Repository<PostsEntity>,
+    @InjectRepository(ReportPostsEntity)
+    private reportPostRepository: Repository<ReportPostsEntity>,
+    @InjectRepository(ImageEntity)
+    private imageRepository: Repository<ImageEntity>,
+  ) {}
+
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
   async getPosts(boardType: BoardType, paginateQueryDto: PaginateQueryDto) {
     let { page, limit, search, sortOrder, sortType } = paginateQueryDto;
     page = page && Number(page) > 0 ? Number(page) : 1;
     limit = limit && Number(limit) > 0 ? Number(limit) : 10;
-    console.log(sortOrder);
     if (limit > 50) {
       throw new BadRequestException('Limit은 50을 넘어갈 수 없습니다.');
     }
@@ -83,10 +89,13 @@ export class PostsService {
   }
 
   //게시글 생성
-  async createPost(boardType: BoardType, createpostDto: CreatePostDto, sessionUser: User): Promise<PostsEntity> {
-    const { title, content } = createpostDto;
+  async createPost(
+    boardType: BoardType,
+    createPostDto: CreatePostDto,
+    sessionUser: User,
+  ): Promise<PostsEntity & { presignedPostData: Array<{ url: string; fields: Record<string, string>; key: string }> }> {
+    const { title, content, imageTypes } = createPostDto;
     const { userId } = sessionUser;
-
     try {
       const createdPost = this.postRepository.create({
         title,
@@ -97,7 +106,27 @@ export class PostsService {
 
       const savedPost = await this.postRepository.save(createdPost);
 
-      return savedPost;
+      let presignedPostData = [];
+      if (imageTypes && imageTypes.length > 0) {
+        presignedPostData = await Promise.all(
+          imageTypes.map((fileType) => this.imagesService.generatePresignedUrl(fileType)),
+        );
+
+        const imageEntities = presignedPostData.map((data) =>
+          this.imageRepository.create({
+            url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${data.key}`,
+            post: savedPost,
+          }),
+        );
+
+        await this.imageRepository.save(imageEntities);
+        savedPost.images = imageEntities;
+      }
+
+      return {
+        ...savedPost,
+        presignedPostData,
+      };
     } catch (err) {
       throw err;
     }
@@ -106,7 +135,12 @@ export class PostsService {
   //특정 게시글 조회
   async getPostDetails(boardType: BoardType, postId: number) {
     try {
-      const result = await this.postRepository.findOneBy({ postId });
+      const result = await this.postRepository.findOne({
+        where: {
+          postId,
+        },
+        relations: ['images'],
+      });
       if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
       return result;
     } catch (err) {
@@ -167,7 +201,6 @@ export class PostsService {
     if (post.userId === userId) {
       throw new ForbiddenException(`자기 자신의 게시물을 신고할 수 없습니다.`);
     }
-    console.log(reportPostDto.otherReportedReason);
     if (reportPostDto.reportedReason === ESuspensionReason.OTHER && !reportPostDto.otherReportedReason) {
       throw new BadRequestException(`신고 사유를 기입해주세요.`);
     }

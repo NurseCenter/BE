@@ -6,11 +6,11 @@ import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { SignInGuard } from '../auth/guards';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { SortOrder, SortType } from './enum/sortType.enum';
+import { RegularMemberGuard } from '../auth/guards';
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
@@ -61,7 +61,7 @@ export class PostsController {
   //게시글 생성
   @Post(':boardType')
   @HttpCode(201)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '게시글 생성' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiBody({ type: CreatePostDto })
@@ -84,7 +84,7 @@ export class PostsController {
   //게시글 수정
   @Patch(':boardType/:postId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '게시글 수정' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })
@@ -112,7 +112,7 @@ export class PostsController {
   //게시글 삭제
   @Delete(':boardType/:postId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })
@@ -138,7 +138,7 @@ export class PostsController {
   //특정 게시글 신고
   @Post(':boardType/:postId/reports')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '특정 게시글 신고' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })

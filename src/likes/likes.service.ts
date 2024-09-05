@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { DataSource, getConnection, Like, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { LikeEntity } from './entities/likes.entity';
 import { User } from '../auth/interfaces/session-decorator.interface';
 

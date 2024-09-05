@@ -1,20 +1,18 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
-import { BoardType } from '../posts/enum/boardType.enum';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { SignInGuard } from '../auth/guards';
+import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 @ApiTags('replies')
 @Controller()
 export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}
   // 답글 작성
-  // @UseGuards(JwtGuard)
   @Post('comments/:commentId/replies')
   @HttpCode(201)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '답글 작성' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
   @ApiBody({ type: ReplyDto })
@@ -42,10 +40,9 @@ export class RepliesController {
     return result;
   }
   //답글 수정
-  // @UseGuards(JwtGuard)
   @Patch('replies/:replyId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '답글 수정' })
   @ApiParam({ name: 'replyId', type: 'number', description: '답글 ID' })
   @ApiBody({ type: ReplyDto })
@@ -59,10 +56,9 @@ export class RepliesController {
     return result;
   }
   //댓글 삭제
-  // @UseGuards(JwtGuard)
   @Delete('replies/:replyId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '답글 삭제' })
   @ApiParam({ name: 'replyId', type: 'number', description: '답글 ID' })
   @ApiResponse({ status: 200, description: '답글 삭제 성공' })

@@ -1,8 +1,8 @@
-import { Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { SignInGuard } from '../auth/guards';
+import { RegularMemberGuard } from '../auth/guards';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('likes')
@@ -13,7 +13,7 @@ export class LikesController {
   // @UseGuards(JwtGuard)
   @Post('/posts/:postId/like')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '게시글 좋아요 토글' })
   @ApiParam({ name: 'postId', description: '좋아요를 토글할 게시글의 ID', type: 'number' })
   @ApiResponse({ status: 200, description: '성공적으로 좋아요를 토글했습니다.' })

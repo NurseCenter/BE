@@ -1,6 +1,6 @@
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { SortType, SortOrder } from '../enum/sortType.enum';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { SortOrder, SortType } from '../enum/sortType.enum';
 export class PaginateQueryDto {
   @IsOptional()
   @IsEnum(SortType)

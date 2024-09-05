@@ -1,6 +1,5 @@
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -10,7 +9,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  TableInheritance,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';

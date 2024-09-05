@@ -2,7 +2,7 @@ import { Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nest
 import { ScrapService } from './scraps.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { SignInGuard } from '../auth/guards';
+import { RegularMemberGuard, SignInGuard } from '../auth/guards';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Scraps')
@@ -39,7 +39,7 @@ export class ScrapController {
   // @UseGuards(JwtGuard)
   @Delete('/:scrapId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '스크랩한 게시물 삭제' })
   @ApiParam({ name: 'scrapId', type: 'number', description: '삭제할 스크랩 ID' })
   @ApiResponse({ status: 200, description: '스크랩 삭제 성공' })

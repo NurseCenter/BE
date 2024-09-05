@@ -16,7 +16,6 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { session } from 'passport';
 import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';

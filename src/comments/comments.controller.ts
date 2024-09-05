@@ -4,9 +4,9 @@ import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { User } from '../auth/interfaces/session-decorator.interface';
-import { SignInGuard } from '../auth/guards';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RegularMemberGuard } from '../auth/guards';
 
 @ApiTags('comments')
 @Controller()
@@ -15,7 +15,7 @@ export class CommentsController {
   // 댓글 작성
   @Post('posts/:boardType/:postId/comments')
   @HttpCode(201)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '댓글 작성' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiParam({ name: 'postId', type: 'number', description: '게시물 ID' })
@@ -46,7 +46,7 @@ export class CommentsController {
   //댓글 수정
   @Patch('comments/:commentId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '댓글 수정' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
   @ApiBody({ type: CreateCommentDto })
@@ -66,7 +66,7 @@ export class CommentsController {
   //댓글 삭제
   @Delete('comments/:commentId')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '댓글 삭제' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
   @ApiResponse({ status: 200, description: '댓글 삭제 성공' })
@@ -81,7 +81,7 @@ export class CommentsController {
   //특정 댓글 신고
   @Post('comments/:commentId/reports')
   @HttpCode(200)
-  @UseGuards(SignInGuard)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '특정 댓글 신고' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
   @ApiBody({ type: ReportPostDto })

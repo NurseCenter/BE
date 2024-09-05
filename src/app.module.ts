@@ -12,7 +12,6 @@ import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
 import { OcrModule } from './ocr/ocr.module';
 import { OcrController } from './ocr/ocr.controller';
-import { SearchModule } from './search/search.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
@@ -46,7 +45,6 @@ import { ImagesModule } from './images/images.module';
     ScrapModule,
     LikesModule,
     OcrModule,
-    SearchModule,
     RepliesModule,
     RedisModule,
     HealthCheckModule,

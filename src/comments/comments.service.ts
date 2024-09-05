@@ -10,12 +10,10 @@ import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
 import { BoardType } from '../posts/enum/boardType.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { create } from 'domain';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { User } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ESuspensionReason } from '../admin/enums';
-import { ReportPostsEntity } from '../admin/entities/report-posts.entity';
 import { ReportCommentsEntity } from '../admin/entities/report-comments.entity';
 
 @Injectable()

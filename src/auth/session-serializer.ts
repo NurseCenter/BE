@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PassportSerializer, PassportStrategy } from '@nestjs/passport';
+import { PassportSerializer } from '@nestjs/passport';
 import { IUser, IUserWithoutPassword } from './interfaces';
 
 @Injectable()

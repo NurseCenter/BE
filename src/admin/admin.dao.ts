@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DeletedUsersEntity, SuspendedUsersEntity } from './entities';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { EMembershipStatus } from 'src/users/enums';

@@ -6,10 +6,10 @@ import * as passport from 'passport';
 import { SessionConfigService } from './config/session.config';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
-import AppDataSource from '../data-source';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DatabaseExceptionFilter } from './filters/database-exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   ConfigModule.forRoot({ isGlobal: true });
@@ -21,6 +21,19 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  
+  //스웨거 설정
+  const config = new DocumentBuilder()
+    .setTitle('Your API Title')
+    .setDescription('API description')
+    .setVersion('1.0')
+    .addTag('your-tag')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api', app, document);
+
   app.useGlobalFilters(new DatabaseExceptionFilter());
   // ConfigService 인스턴스 가져오기
   const sessionConfigService = app.get(SessionConfigService);

@@ -1,16 +1,16 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Length, MaxLength, maxLength } from 'class-validator';
-import { EBoardType } from '../enum/board-type.enum';
-import { BasePostDto } from './base-post.dto';
+import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { EReportReason } from '../../admin/enums';
-import { EReportStatus } from '../../admin/enums/report-status.enum';
-import { IsNull } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ReportPostDto {
   @IsEnum(EReportReason)
+  @ApiProperty({ description: '댓글 내용' })
+  @ApiProperty({ enum: EReportReason, description: '신고 이유' })
   reportedReason: string;
 
   @IsString()
   @MaxLength(100)
   @IsOptional()
+  @ApiProperty({ required: false, description: '기타 신고 이유' })
   otherReportedReason?: string;
 }

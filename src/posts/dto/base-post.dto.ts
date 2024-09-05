@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNumber, IsString, Length } from 'class-validator';
+import { IsEnum, IsNumber } from 'class-validator';
 import { EBoardType } from '../enum/board-type.enum';
 import { Type } from 'class-transformer';
 

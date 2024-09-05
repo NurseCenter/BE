@@ -1,13 +1,10 @@
-import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SignInUserDto, VerifyEmailDto } from './dto';
 import Redis from 'ioredis';
 import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
 import { Request, Response } from 'express';
 import { EMembershipStatus } from 'src/users/enums';
 import { EmailService } from 'src/email/email.service';
-import { Repository } from 'typeorm';
-import { UsersEntity } from 'src/users/entities/users.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { maskEmail } from 'src/common/utils/email.utils';
 import { UsersDAO } from 'src/users/users.dao';
@@ -16,7 +13,6 @@ import { UsersDAO } from 'src/users/users.dao';
 export class AuthService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
-    @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
     private readonly authUserService: AuthUserService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly authSessionService: AuthSessionService,

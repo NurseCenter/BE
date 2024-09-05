@@ -1,9 +1,11 @@
 import { Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { ScrapService } from './scraps.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SignInGuard } from '../auth/guards';
+import { IUserWithoutPassword } from 'src/auth/interfaces';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Scraps')
 @Controller('scraps')
 export class ScrapController {
   constructor(private readonly scrapsService: ScrapService) {}

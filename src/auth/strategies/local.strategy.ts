@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
-import { IUser, IUserWithoutPassword } from '../interfaces/index';
+import { IUserWithoutPassword } from '../interfaces/index';
 import { AuthUserService } from '../services';
 import { SignInUserDto } from '../dto';
 

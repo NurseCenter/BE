@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 

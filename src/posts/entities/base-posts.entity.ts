@@ -1,6 +1,5 @@
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -10,14 +9,14 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  TableInheritance,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { LikeEntity } from '../../likes/entities/likes.entity';
-import { EBoardType } from '../enum/board-type.enum';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
-import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
+import { ImageEntity } from '../../images/entities/image.entity';
+import { ReportPostsEntity } from 'src/admin/entities';
+import { EBoardType } from '../enum/board-type.enum';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -34,7 +33,6 @@ import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
 export class PostsEntity {
   @PrimaryGeneratedColumn()
   postId: number;
-
   @Column({ type: 'enum', enum: EBoardType, enumName: 'boardType' })
   boardType: EBoardType;
 
@@ -97,4 +95,7 @@ export class PostsEntity {
 
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
   reportPosts: ReportPostsEntity[];
+
+  @OneToMany(() => ImageEntity, (image) => image.post)
+  images: ImageEntity[];
 }

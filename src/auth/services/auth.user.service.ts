@@ -6,7 +6,6 @@ import { dateToISOString } from 'src/common/utils/data.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
-import { AuthSessionService } from './auth.session.service';
 import { IUserWithoutPassword, IMembershipStatusResponse } from '../interfaces';
 
 @Injectable()
@@ -14,7 +13,6 @@ export class AuthUserService {
   constructor(
     @InjectRepository(UsersEntity)
     private readonly authPasswordService: AuthPasswordService,
-    private readonly authSessionService: AuthSessionService,
     private readonly usersDAO: UsersDAO,
   ) {}
 

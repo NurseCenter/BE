@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { DataSource, getConnection, Like, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { LikeEntity } from './entities/likes.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 
@@ -16,7 +16,6 @@ export class LikesService {
   async toggleLike(postId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
-    console.log(post);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

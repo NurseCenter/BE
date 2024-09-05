@@ -1,7 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto, FindEmailDto, FindPasswordDto, SendPhoneVerificationDto, SignInUserDto, VerifyEmailDto, VerifyPhoneNumberDto } from './dto';
+import {
+  CreateUserDto,
+  FindEmailDto,
+  FindPasswordDto,
+  SendPhoneVerificationDto,
+  SignInUserDto,
+  VerifyEmailDto,
+  VerifyPhoneNumberDto,
+} from './dto';
 import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
 

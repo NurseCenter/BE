@@ -26,7 +26,12 @@ export class CommentsService {
   private reportCommentRepository: Repository<ReportCommentsEntity>;
 
   //작성
-  async createComment(boardType: BoardType, postId: number, sessionUser: IUserWithoutPassword, createCommentDto: CreateCommentDto) {
+  async createComment(
+    boardType: BoardType,
+    postId: number,
+    sessionUser: IUserWithoutPassword,
+    createCommentDto: CreateCommentDto,
+  ) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOne({
       where: {

@@ -15,7 +15,13 @@ import { TestController } from './test.controller';
 import { DataAccessModule } from 'src/common/data-access.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersEntity, LoginsEntity]), RedisModule, ConfigModule, EmailModule, DataAccessModule],
+  imports: [
+    TypeOrmModule.forFeature([UsersEntity, LoginsEntity]),
+    RedisModule,
+    ConfigModule,
+    EmailModule,
+    DataAccessModule,
+  ],
   controllers: [AuthController, TestController],
   providers: [
     AuthService,
@@ -25,8 +31,8 @@ import { DataAccessModule } from 'src/common/data-access.module';
     AuthSessionService,
     AuthTwilioService,
     LocalStrategy,
-    SessionSerializer
+    SessionSerializer,
   ],
-  exports: [AuthUserService, AuthPasswordService], 
+  exports: [AuthUserService, AuthPasswordService],
 })
 export class AuthModule {}

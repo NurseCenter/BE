@@ -16,9 +16,9 @@ import { DataAccessModule } from '../common/data-access.module';
     TypeOrmModule.forFeature([UsersEntity, PostsEntity, CommentsEntity, RepliesEntity, ScrapsEntity]),
     ScrapModule,
     AuthModule,
-    DataAccessModule
+    DataAccessModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService]
+  providers: [UsersService],
 })
 export class UsersModule {}

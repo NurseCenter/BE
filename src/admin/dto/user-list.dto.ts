@@ -10,13 +10,13 @@
 */
 
 export class UserListDto {
-    userId: number;
-    nickname: string;
-    email: string;
-    postCount: number;
-    commentCount: number;
-    createdAt: Date;
-    suspensionStatus: string | null;
-    deletionStatus: string | null;
-    managementReason: string | null;
+  userId: number;
+  nickname: string;
+  email: string;
+  postCount: number;
+  commentCount: number;
+  createdAt: Date;
+  suspensionStatus: string | null;
+  deletionStatus: string | null;
+  managementReason: string | null;
 }

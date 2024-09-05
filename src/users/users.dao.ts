@@ -8,7 +8,7 @@ import { CreateUserDto } from 'src/auth/dto';
 export class UsersDAO {
   constructor(
     @InjectRepository(UsersEntity)
-    private readonly userRepository: Repository<UsersEntity>
+    private readonly userRepository: Repository<UsersEntity>,
   ) {}
 
   // 회원 엔티티 생성

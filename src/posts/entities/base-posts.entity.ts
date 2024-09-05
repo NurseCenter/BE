@@ -32,8 +32,10 @@ import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
 @Entity('posts')
 @Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
 export class PostsEntity {
+  
   @PrimaryGeneratedColumn()
   postId: number;
+
   @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
   boardType: BoardType;
 

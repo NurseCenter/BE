@@ -1,10 +1,10 @@
-import { IsString, IsNotEmpty } from "class-validator";
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class DeletionUserDto {
-    @IsNotEmpty()
-    readonly userId: number;
+  @IsNotEmpty()
+  readonly userId: number;
 
-    @IsString()
-    @IsNotEmpty()
-    readonly deletionReason: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly deletionReason: string;
 }

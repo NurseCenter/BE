@@ -6,6 +6,6 @@ import { UsersEntity } from '../users/entities/users.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity])],
   providers: [UsersDAO],
-  exports: [UsersDAO]
+  exports: [UsersDAO],
 })
 export class DataAccessModule {}

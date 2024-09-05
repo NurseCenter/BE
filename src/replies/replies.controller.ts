@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards 
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
 import { BoardType } from '../posts/enum/boardType.enum';
-import { IUserWithoutPassword} from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { SignInGuard } from '../auth/guards';
 
@@ -34,7 +34,11 @@ export class RepliesController {
   @Patch('replies/:replyId')
   @HttpCode(200)
   @UseGuards(SignInGuard)
-  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto, @SessionUser() sessionUser: IUserWithoutPassword) {
+  async updateReplies(
+    @Param('replyId') replyId: number,
+    @Body() replyDto: ReplyDto,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ) {
     const result = await this.repliesService.updateReplies(replyId, sessionUser, replyDto);
     return result;
   }

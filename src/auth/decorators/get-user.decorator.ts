@@ -5,8 +5,8 @@ import { IUser } from '../interfaces';
 declare module 'express-session' {
   interface SessionData {
     passport: {
-      user: IUser
-    }
+      user: IUser;
+    };
   }
 }
 

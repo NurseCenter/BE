@@ -24,7 +24,7 @@ export class EmailService {
     try {
       const templatePath = join(process.cwd(), 'views', `${templateName}.ejs`);
       const template = await fs.readFile(templatePath, 'utf-8');
-      
+
       return ejs.render(template, data);
     } catch (error) {
       console.error('template rendering error', error);
@@ -43,14 +43,14 @@ export class EmailService {
       };
       await this.transpoter.sendMail(mailOptions);
     } catch (error) {
-      console.error("Email Sending Error", error);
-      throw new Error('Failed to send Email')
+      console.error('Email Sending Error', error);
+      throw new Error('Failed to send Email');
     }
   }
 
   // 회원가입 후 이메일 발송
   async sendVerificationEmail(to: string, nickname: string, emailVerificationLink: string): Promise<void> {
-    const data = { nickname, emailVerificationLink, email: to};
+    const data = { nickname, emailVerificationLink, email: to };
     await this.send(to, '회원가입 인증', 'sign-up-email', data);
   }
 

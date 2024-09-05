@@ -94,7 +94,6 @@ export class UsersEntity {
   @OneToMany(() => ScrapsEntity, (scrap) => scrap.user)
   scraps: ScrapsEntity[];
 
-  // 여러 로그인 기록
   @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
 
@@ -106,7 +105,7 @@ export class UsersEntity {
 
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
   submittedCommentReports: LoginsEntity[];
-  
+
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
   receivedCommentReports: LoginsEntity[];
 }

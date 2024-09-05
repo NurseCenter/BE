@@ -80,7 +80,11 @@ export class PostsService {
   }
 
   //게시글 생성
-  async createPost(boardType: BoardType, createpostDto: CreatePostDto, sessionUser: IUserWithoutPassword): Promise<PostsEntity> {
+  async createPost(
+    boardType: BoardType,
+    createpostDto: CreatePostDto,
+    sessionUser: IUserWithoutPassword,
+  ): Promise<PostsEntity> {
     const { title, content } = createpostDto;
     const { userId } = sessionUser;
 
@@ -112,7 +116,12 @@ export class PostsService {
   }
 
   //게시글 수정
-  async updatePost(boardType: BoardType, postId: number, updatePostDto: UpdatePostDto, sessionUser: IUserWithoutPassword) {
+  async updatePost(
+    boardType: BoardType,
+    postId: number,
+    updatePostDto: UpdatePostDto,
+    sessionUser: IUserWithoutPassword,
+  ) {
     const { userId } = sessionUser;
     try {
       const post = await this.postRepository.findOneBy({ postId });

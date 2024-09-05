@@ -23,12 +23,11 @@ export class AuthService {
     private readonly authSignInService: AuthSignInService,
     private readonly emailService: EmailService,
     private readonly authTwilioService: AuthTwilioService,
-    private readonly usersDAO: UsersDAO
+    private readonly usersDAO: UsersDAO,
   ) {}
 
   // 회원가입
-  async signUp( 
-  createUserDto: CreateUserDto): Promise<void> {
+  async signUp(createUserDto: CreateUserDto): Promise<void> {
     await this.authUserService.addNewUser(createUserDto);
   }
 
@@ -38,7 +37,7 @@ export class AuthService {
   }
 
   // 로그인
-  async signIn(signInUserDto: SignInUserDto, req: Request, res: Response){
+  async signIn(signInUserDto: SignInUserDto, req: Request, res: Response) {
     const { email, password } = signInUserDto;
 
     // 1. 이메일로 회원 찾기
@@ -94,7 +93,7 @@ export class AuthService {
     const emailVerificationLink = `${process.env.FRONTEND_URL}?token=${token}`;
 
     // Redis에 사용자 이메일과 토큰 저장
-    await this.redisClient.set(`emailVerificationToken:${token}`, user.email); 
+    await this.redisClient.set(`emailVerificationToken:${token}`, user.email);
 
     // 이메일 발송 데이터 준비
     const sendEmailDto: SendEmailDto = {
@@ -104,11 +103,15 @@ export class AuthService {
     };
 
     // 이메일 전송
-    await this.emailService.sendVerificationEmail(sendEmailDto.email, sendEmailDto.nickname, sendEmailDto.emailVerificationLink);
+    await this.emailService.sendVerificationEmail(
+      sendEmailDto.email,
+      sendEmailDto.nickname,
+      sendEmailDto.emailVerificationLink,
+    );
   }
 
   // 회원가입 이메일 인증 확인
-  async verifyEmail(token: string): Promise<{message: string}> {
+  async verifyEmail(token: string): Promise<{ message: string }> {
     if (!token) throw new UnauthorizedException('토큰이 없습니다');
 
     // Redis에서 이메일 조회
@@ -160,12 +163,12 @@ export class AuthService {
 
   // 휴대폰 번호 인증 메시지 보내기
   // +821012341234 로 파싱 필요함.
-  async sendPhoneVerificationCode(to: string){
+  async sendPhoneVerificationCode(to: string) {
     return this.authTwilioService.sendVerificationCode({ to });
   }
-  
+
   // 휴대폰 번호 인증 확인
-  async verifyPhoneNumberCode(to: string, code: string){
+  async verifyPhoneNumberCode(to: string, code: string) {
     return this.authTwilioService.checkVerificationCode({ to, code });
   }
 

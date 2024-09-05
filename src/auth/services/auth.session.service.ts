@@ -22,7 +22,7 @@ export class AuthSessionService {
     // 직접 Redis에서 세션 데이터 가져오기
     const sessionData = await this.redisClient.get(`sess:${sessionId}`);
 
-    console.log("sessionData", sessionData); 
+    console.log('sessionData', sessionData);
 
     // 세션 데이터가 존재하는지 확인
     if (sessionData) {

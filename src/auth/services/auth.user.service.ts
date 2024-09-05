@@ -15,33 +15,33 @@ export class AuthUserService {
     @InjectRepository(UsersEntity)
     private readonly authPasswordService: AuthPasswordService,
     private readonly authSessionService: AuthSessionService,
-    private readonly usersDAO: UsersDAO
+    private readonly usersDAO: UsersDAO,
   ) {}
 
-    // 회원 생성
-    async addNewUser(createUserDto: CreateUserDto): Promise<void> {
-        const { email, password, nickname } = createUserDto;
+  // 회원 생성
+  async addNewUser(createUserDto: CreateUserDto): Promise<void> {
+    const { email, password, nickname } = createUserDto;
 
-        const existingUser = await this.usersDAO.findUserByEmail(email);
+    const existingUser = await this.usersDAO.findUserByEmail(email);
 
-        if (existingUser) {
-            if (existingUser.deletedAt !== null) {
-            throw new ConflictException('이미 탈퇴한 회원입니다.');
-            } else if (existingUser.email === email) {
-            throw new ConflictException('이미 가입된 회원입니다.');
-            } else if (existingUser.nickname === nickname) {
-            throw new ConflictException('이미 존재하는 닉네임입니다.');
-            }
-        }
-
-        // 해싱된 비밀번호 가져오기
-        const hashedPassword = await this.authPasswordService.createPassword(password);
-
-        // 사용자 엔티티 생성 및 비밀번호 설정
-        const newUser = await this.usersDAO.createUser(createUserDto);
-        newUser.password = hashedPassword;
-        await this.usersDAO.saveUser(newUser);
+    if (existingUser) {
+      if (existingUser.deletedAt !== null) {
+        throw new ConflictException('이미 탈퇴한 회원입니다.');
+      } else if (existingUser.email === email) {
+        throw new ConflictException('이미 가입된 회원입니다.');
+      } else if (existingUser.nickname === nickname) {
+        throw new ConflictException('이미 존재하는 닉네임입니다.');
+      }
     }
+
+    // 해싱된 비밀번호 가져오기
+    const hashedPassword = await this.authPasswordService.createPassword(password);
+
+    // 사용자 엔티티 생성 및 비밀번호 설정
+    const newUser = await this.usersDAO.createUser(createUserDto);
+    newUser.password = hashedPassword;
+    await this.usersDAO.saveUser(newUser);
+  }
 
   // 입력받은 회원정보가 유효한지 확인
   async validateUser(signInUserDto: SignInUserDto): Promise<IUserWithoutPassword | null> {
@@ -62,8 +62,8 @@ export class AuthUserService {
       // 날짜 데이터 타입 ISOstring으로 변환해줌.
       createdAt: dateToISOString(user.createdAt),
       deletedAt: dateToISOString(user.deletedAt),
-      suspensionEndDate: dateToISOString(user.suspensionEndDate)
-    }
+      suspensionEndDate: dateToISOString(user.suspensionEndDate),
+    };
 
     return returnedUser;
   }
@@ -96,11 +96,11 @@ export class AuthUserService {
   }
 
   // 회원 ID로 이미 탈퇴한 회원인지 확인
-  async checkDeletedByUserId(userId: number): Promise<void>{
+  async checkDeletedByUserId(userId: number): Promise<void> {
     const user = await this.usersDAO.findUserByUserId(userId);
 
     if (user && user.deletedAt !== null) {
-        throw new ConflictException("이미 탈퇴한 회원입니다.")
+      throw new ConflictException('이미 탈퇴한 회원입니다.');
     }
   }
 
@@ -109,26 +109,26 @@ export class AuthUserService {
     const user = await this.usersDAO.findUserByUserId(userId);
     const status = user.membershipStatus;
 
-    switch(status) {
-        case EMembershipStatus.PENDING_VERIFICATION:
+    switch (status) {
+      case EMembershipStatus.PENDING_VERIFICATION:
         return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
-        case EMembershipStatus.EMAIL_VERIFIED:
-        return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.'}
-        case EMembershipStatus.APPROVED_MEMBER:
-        return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.'}
-        default:
-            throw new Error('존재하지 않는 사용자 상태입니다.');
-        }
-     }
+      case EMembershipStatus.EMAIL_VERIFIED:
+        return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.' };
+      case EMembershipStatus.APPROVED_MEMBER:
+        return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.' };
+      default:
+        throw new Error('존재하지 않는 사용자 상태입니다.');
+    }
+  }
 
-     // 회원 상태 이메일 발송 후 Pending으로 변경
-    async updateUserStatusToPending(email: string) {
-        const user = await this.usersDAO.findUserByEmail(email);
-        if (!user) throw new ConflictException('사용자를 찾을 수 없습니다.');
-    
-        user.membershipStatus = EMembershipStatus.PENDING_VERIFICATION;
-        await this.usersDAO.saveUser(user);
-    
-        return user;
-      }
+  // 회원 상태 이메일 발송 후 Pending으로 변경
+  async updateUserStatusToPending(email: string) {
+    const user = await this.usersDAO.findUserByEmail(email);
+    if (!user) throw new ConflictException('사용자를 찾을 수 없습니다.');
+
+    user.membershipStatus = EMembershipStatus.PENDING_VERIFICATION;
+    await this.usersDAO.saveUser(user);
+
+    return user;
+  }
 }

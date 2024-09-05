@@ -8,8 +8,8 @@ import {
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
-import { BoardType } from './enum/boardType.enum';
-import { SortOrder, SortType } from './enum/sortType.enum';
+import { EBoardType } from './enum/board-type.enum';
+import { ESortOrder, ESortType } from './enum/sort-type.enum';
 import { PostsEntity } from './entities/base-posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,7 +27,7 @@ export class PostsService {
   private reportPostRepository: Repository<ReportPostsEntity>;
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
-  async getPosts(boardType: BoardType, paginateQueryDto: PaginateQueryDto) {
+  async getPosts(boardType: EBoardType, paginateQueryDto: PaginateQueryDto) {
     let { page, limit, search, sortOrder, sortType } = paginateQueryDto;
     page = page && Number(page) > 0 ? Number(page) : 1;
     limit = limit && Number(limit) > 0 ? Number(limit) : 10;
@@ -44,21 +44,21 @@ export class PostsService {
         query = query.where('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
       }
 
-      sortType = Object.values(SortType).includes(sortType) ? sortType : SortType.DATE;
-      sortOrder = Object.values(SortOrder).includes(sortOrder) ? sortOrder : SortOrder.DESC;
+      sortType = Object.values(ESortType).includes(sortType) ? sortType : ESortType.DATE;
+      sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
 
       switch (sortType) {
-        case SortType.DATE:
+        case ESortType.DATE:
           query = query.orderBy('post.createdAt', sortOrder).addOrderBy('post.postId', sortOrder); // ID로 보조 정렬
           break;
-        case SortType.LIKES:
+        case ESortType.LIKES:
           query = query
             .orderBy('post.likes', sortOrder)
-            .addOrderBy('post.createdAt', SortOrder.DESC) // 생성 날짜로 보조 정렬
-            .addOrderBy('post.postId', SortOrder.DESC); // ID로 추가 보조 정렬
+            .addOrderBy('post.createdAt', ESortOrder.DESC) // 생성 날짜로 보조 정렬
+            .addOrderBy('post.postId', ESortOrder.DESC); // ID로 추가 보조 정렬
           break;
         default:
-          query = query.orderBy('post.createdAt', SortOrder.DESC).addOrderBy('post.postId', SortOrder.DESC);
+          query = query.orderBy('post.createdAt', ESortOrder.DESC).addOrderBy('post.postId', ESortOrder.DESC);
       }
 
       // 페이지네이션 적용
@@ -81,7 +81,7 @@ export class PostsService {
 
   //게시글 생성
   async createPost(
-    boardType: BoardType,
+    boardType: EBoardType,
     createpostDto: CreatePostDto,
     sessionUser: IUserWithoutPassword,
   ): Promise<PostsEntity> {
@@ -105,7 +105,7 @@ export class PostsService {
   }
 
   //특정 게시글 조회
-  async getPostDetails(boardType: BoardType, postId: number) {
+  async getPostDetails(boardType: EBoardType, postId: number) {
     try {
       const result = await this.postRepository.findOneBy({ postId });
       if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
@@ -117,7 +117,7 @@ export class PostsService {
 
   //게시글 수정
   async updatePost(
-    boardType: BoardType,
+    boardType: EBoardType,
     postId: number,
     updatePostDto: UpdatePostDto,
     sessionUser: IUserWithoutPassword,
@@ -147,7 +147,7 @@ export class PostsService {
   }
 
   //게시글 삭제
-  async deletePost(boardType: BoardType, postId: number, sessionUser: IUserWithoutPassword) {
+  async deletePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword) {
     try {
       const { userId } = sessionUser;
       const post = await this.postRepository.findOneBy({ postId });

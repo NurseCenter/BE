@@ -1,16 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { DeletionUserDto, UserInfoDto } from './dto';
 import { AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
 import { AdminDAO } from './admin.dao';
 import { ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
-import { PaginationDto } from './dto/pagination.dto';
-import { UserListDto } from './dto/user-list.dto';
 import { ApprovalDto } from './dto/approval.dto';
 import { EMembershipStatus } from 'src/users/enums';
+import { PaginatedResponse } from 'src/common/interfaces/paginated-response-interface';
+import { IApprovalUserList, ICommentOrReply, IPostList, IUserInfo, IUserList } from './interfaces';
+import { DeletionUserDto } from './dto';
+import { error } from 'console';
 
 @Injectable()
 export class AdminService {
@@ -21,7 +22,7 @@ export class AdminService {
   ) {}
 
   // 회원 계정 탈퇴 처리
-  async withdrawUserByAdmin(deletionUserDto: DeletionUserDto) {
+  async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
     const queryRunner = dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -29,24 +30,28 @@ export class AdminService {
     const { userId, deletionReason } = deletionUserDto;
 
     try {
+      const user = await this.usersDAO.findUserByUserId(userId);
+      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
       await this.authUserService.deleteUser(userId);
 
       const newDeletedUser = await this.adminDAO.createDeletedUser(userId);
       if (!newDeletedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-      newDeletedUser.deletedAt = new Date();
       newDeletedUser.deletionReason = deletionReason;
+      await this.adminDAO.saveDeletedUser(newDeletedUser);
 
       await queryRunner.commitTransaction();
     } catch {
       await queryRunner.rollbackTransaction();
+      throw error;
     } finally {
       await queryRunner.release();
     }
   }
 
   // 회원 계정 정지 처리
-  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto) {
+  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<void> {
     const queryRunner = dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -54,8 +59,11 @@ export class AdminService {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     try {
+      const user = await this.usersDAO.findUserByUserId(userId);
+      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
       const newSuspendedUser = await this.adminDAO.createSuspendedUser(userId);
-      if (!newSuspendedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+      if (!newSuspendedUser) throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
 
       newSuspendedUser.suspensionReason = suspensionReason;
       newSuspendedUser.suspensionDuration = suspensionDuration;
@@ -63,22 +71,20 @@ export class AdminService {
 
       const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
 
-      const _newSuspendedUser = await this.usersDAO.findUserByUserId(userId);
-      if (_newSuspendedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-
-      _newSuspendedUser.suspensionEndDate = suspensionEndDate;
-      await this.usersDAO.saveUser(_newSuspendedUser);
+      user.suspensionEndDate = suspensionEndDate;
+      await this.usersDAO.saveUser(user);
 
       await queryRunner.commitTransaction();
     } catch {
       await queryRunner.rollbackTransaction();
+      throw error;
     } finally {
       await queryRunner.release();
     }
   }
 
   // 모든 회원 조회
-  async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<PaginationDto<UserListDto>> {
+  async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IUserList>> {
     const [users, total] = await this.adminDAO.findUsersWithDetails(pageNumber, pageSize);
     const suspendedUsers = await this.adminDAO.findSuspendedUsers();
     const deletedUsers = await this.adminDAO.findDeletedUsers();
@@ -87,16 +93,27 @@ export class AdminService {
       const suspendedUser = suspendedUsers.find((su) => su.userId === user.userId);
       const deletedUser = deletedUsers.find((du) => du.userId === user.userId);
 
+      // 관리 상태 결정
+      let managementStatus: '정지' | '탈퇴' | '해당없음' = '해당없음';
+      let managementReason = '없음';
+
+      if (deletedUser) {
+        managementStatus = '탈퇴';
+        managementReason = deletedUser.deletionReason || '없음';
+      } else if (suspendedUser) {
+        managementStatus = '정지';
+        managementReason = suspendedUser.suspensionReason || '없음';
+      }
+
       return {
-        userId: user.userId,
-        nickname: user.nickname,
-        email: user.email,
-        postCount: Number(user.postCount) || 0,
-        commentCount: Number(user.commentCount) || 0,
-        createdAt: user.createdAt,
-        suspensionStatus: user.suspensionEndDate ? '정지' : '해당없음',
-        deletionStatus: user.deletedAt ? '탈퇴' : '해당없음',
-        managementReason: suspendedUser?.suspensionReason || deletedUser?.deletionReason || '없음',
+        userId: user.userId, // 회원 ID (렌더링 X)
+        nickname: user.nickname, // 닉네임
+        email: user.email, // 이메일 
+        postCount: Number(user.postCount) || 0, // 게시물 수
+        commentCount: Number(user.commentCount) || 0, // 댓글 수
+        createdAt: user.createdAt, // 가입일
+        managementStatus, // 정지 또는 탈퇴 여부 (정지, 탈퇴, 해당없음)
+        managementReason, // 관리 사유
       };
     });
 
@@ -104,11 +121,10 @@ export class AdminService {
     const totalPages = Math.ceil(total / pageSize);
 
     return {
+      items: userList,
       totalItems: total,
       totalPages,
       currentPage: pageNumber,
-      pageSize,
-      items: userList,
     };
   }
 
@@ -118,26 +134,28 @@ export class AdminService {
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
     const returnUserInfo = { nickname: user.nickname, email: user.email };
-    return returnUserInfo as UserInfoDto;
+    return returnUserInfo as IUserInfo;
   }
 
   // 관리자 특정 회원 승인
-  async processUserApproval(approvalDto: ApprovalDto) {
+  async processUserApproval(approvalDto: ApprovalDto): Promise<{ message: string; membershipStatus: EMembershipStatus }> {
     const { userId, isApproved } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-
+  
     // 1 : 이메일 인증 완료 상태
     const isEmailVerified = user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED;
     // 2 : 비회원 또는 이메일 인증 대기 상태
     const isNonMemberOrPending =
-      user.membershipStatus === (EMembershipStatus.NON_MEMBER || EMembershipStatus.PENDING_VERIFICATION);
+      user.membershipStatus === EMembershipStatus.NON_MEMBER || user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION;
     // 3 : 이미 정회원 상태
     const isAlreadyApproved = user.membershipStatus === EMembershipStatus.APPROVED_MEMBER;
-
+  
     if (isApproved) {
       if (isEmailVerified) {
         user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
+        await this.usersDAO.saveUser(user);
+        return { message: '회원 가입 승인이 완료되었습니다.', membershipStatus: user.membershipStatus };
       } else if (isNonMemberOrPending) {
         throw new BadRequestException('아직 이메일 인증을 완료하지 않은 회원입니다.');
       } else if (isAlreadyApproved) {
@@ -145,10 +163,9 @@ export class AdminService {
       }
     } else {
       user.rejected = true;
+      await this.usersDAO.saveUser(user);
+      return { message: '회원 가입 승인이 거절되었습니다.', membershipStatus: user.membershipStatus };
     }
-
-    await this.usersDAO.saveUser(user);
-    return { message: '회원 승인 처리가 완료되었습니다.', membershipStatus: user.membershipStatus };
   }
 
   // 정지 날짜 계산
@@ -170,24 +187,24 @@ export class AdminService {
   }
 
   // 회원가입 승인 화면 보여주기
-  async showUserApprovals(pageNumber: number, pageSize: number = 10) {
+  async showUserApprovals(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IApprovalUserList>> {
     try {
       const [users, total] = await this.adminDAO.findPendingAndRejectVerifications(pageNumber, pageSize);
 
       const items = users.map((user) => ({
-        userId: user.userId,
-        nickname: user.nickname,
-        email: user.email,
-        createdAt: user.createdAt,
-        studentStatus: user.membershipStatus,
-        certificationDocumentUrl: user.certificationDocumentUrl,
-        status: user.rejected ? '승인거절' : '승인대기',
+        userId: user.userId, // 회원 ID (렌더링 X)
+        nickname: user.nickname, // 닉네임
+        email: user.email, // 이메일 
+        createdAt: user.createdAt, // 가입 날짜
+        studentStatus: user.membershipStatus, // 재학여부
+        certificationDocumentUrl: user.certificationDocumentUrl, // 첨부파일
+        status: user.rejected ? '승인거절' : '승인대기', // 상태
       }));
 
       return {
         items,
         totalItems: total,
-        tatalPages: Math.ceil(total / pageSize),
+        totalPages: Math.ceil(total / pageSize),
         currentPage: pageNumber,
       };
     } catch (error) {
@@ -196,14 +213,17 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(pageNumber: number, pageSize: number): Promise<{ items: any[], totalItems: number, totalPages: number, currentPage: number }> {
+  async getAllPosts(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<PaginatedResponse<IPostList>> {
     const [posts, total] = await this.adminDAO.findAllPosts(pageNumber, pageSize);
 
-    const items = posts.map(post => ({
+    const items = posts.map((post) => ({
       postId: post.postId, // 게시물 ID
       boardType: post.boardType, // 카테고리
-      title: post.title,  // 제목
-      userId: post.userId,  // 작성자 --> 조인해서 닉네임으로 변경 필요
+      title: post.title, // 제목
+      author: post.user.nickname, // 작성자
       createdAt: post.createdAt, // 작성일
     }));
 
@@ -217,6 +237,75 @@ export class AdminService {
 
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<void> {
-    await this.adminDAO.deletePost(postId);
+    const post = await this.adminDAO.deletePost(postId);
+    
+    if (!post) {
+      throw new NotFoundException('게시물이 존재하지 않거나 이미 삭제되었습니다.');
+    }
+  }
+
+     // 댓글 및 답글 조회
+  async findAllCommentsAndReplies(pageNumber: number, pageSize: number): Promise<ICommentOrReply[]> {
+    // 댓글과 답글을 모두 조회
+    const [comments, replies] = await Promise.all([
+      this.adminDAO.findAllComments(),
+      this.adminDAO.findAllReplies(),
+    ]);
+
+    // 댓글과 답글을 합침
+    const combined = [
+      ...comments.map((comment) => ({
+        id: comment.commentId, // 댓글 ID
+        category: comment.boardType, // 게시물 카테고리
+        postTitle: comment.title, // 게시물 제목
+        content: comment.content, // 댓글 내용
+        nickname: comment.nickname, // 작성자 닉네임
+        createdAt: new Date(comment.createdAt), // 작성일
+      })),
+      ...replies.map((reply) => ({
+        id: reply.replyId, // 답글 ID
+        category: reply.boardType, // 게시물 카테고리
+        postTitle: reply.title, // 게시물 제목
+        content: reply.content, // 답글 내용
+        nickname: reply.nickname, // 작성자 닉네임
+        createdAt: new Date(reply.createdAt), // 작성일
+      })),
+    ];
+
+    // 작성일자 기준으로 정렬
+    combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // 페이지네이션 처리
+    const skip = (pageNumber - 1) * pageSize;
+    return combined.slice(skip, skip + pageSize);
+  }
+
+   // 특정 댓글 또는 답글 조회
+   async findCommentOrReplyById(id: number): Promise<ICommentOrReply> {
+    const comment = await this.adminDAO.findCommentById(id);
+    if (comment) {
+      return {
+        id: comment.commentId, // 댓글 ID
+        category: comment.boardType, // 게시물 카테고리
+        postTitle: comment.post.title, // 게시물 제목
+        content: comment.content, // 댓글 내용
+        nickname: comment.user.nickname, // 작성자 닉네임
+        createdAt: new Date(comment.createdAt), // 작성일
+      };
+    }
+
+    const reply = await this.adminDAO.findReplyById(id);
+    if (reply) {
+      return {
+        id: reply.replyId, // 답글 ID
+        category: reply.post.boardType, // 게시물 카테고리
+        postTitle: reply.post.title, // 게시물 제목
+        content: reply.content, // 답글 내용
+        nickname: reply.user.nickname, // 작성자 닉네임
+        createdAt: new Date(reply.createdAt), // 작성일
+      };
+    }
+
+    throw new NotFoundException('댓글 또는 답글을 찾을 수 없습니다.');
   }
 }

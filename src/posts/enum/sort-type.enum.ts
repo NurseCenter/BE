@@ -1,10 +1,10 @@
-export enum SortType {
+export enum ESortType {
   DATE = 'date',
   LIKES = 'likes',
   ALL = 'all',
 }
 
-export enum SortOrder {
+export enum ESortOrder {
   ASC = 'ASC',
   DESC = 'DESC',
 }

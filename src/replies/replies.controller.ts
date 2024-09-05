@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
-import { BoardType } from '../posts/enum/boardType.enum';
+import { EBoardType } from '../posts/enum/board-type.enum';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { SignInGuard } from '../auth/guards';

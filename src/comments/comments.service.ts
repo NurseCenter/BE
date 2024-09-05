@@ -8,7 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
-import { BoardType } from '../posts/enum/boardType.enum';
+import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
@@ -27,7 +27,7 @@ export class CommentsService {
 
   //작성
   async createComment(
-    boardType: BoardType,
+    boardType: EBoardType,
     postId: number,
     sessionUser: IUserWithoutPassword,
     createCommentDto: CreateCommentDto,
@@ -54,7 +54,7 @@ export class CommentsService {
     return createdComment;
   }
   //조회
-  async getComments(boardType: BoardType, postId: number) {
+  async getComments(boardType: EBoardType, postId: number) {
     const comments = await this.commentRepository.find({
       where: {
         // postId,

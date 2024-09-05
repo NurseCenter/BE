@@ -12,7 +12,18 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersEntity, DeletedUsersEntity, SuspendedUsersEntity, PostsEntity, CommentsEntity, RepliesEntity]), DataAccessModule, AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      UsersEntity,
+      DeletedUsersEntity,
+      SuspendedUsersEntity,
+      PostsEntity,
+      CommentsEntity,
+      RepliesEntity,
+    ]),
+    DataAccessModule,
+    AuthModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService, AdminDAO],
 })

@@ -15,7 +15,7 @@ import {
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { LikeEntity } from '../../likes/entities/likes.entity';
-import { BoardType } from '../enum/boardType.enum';
+import { EBoardType } from '../enum/board-type.enum';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
 
@@ -32,12 +32,11 @@ import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
 @Entity('posts')
 @Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
 export class PostsEntity {
-  
   @PrimaryGeneratedColumn()
   postId: number;
 
-  @Column({ type: 'enum', enum: BoardType, enumName: 'boardType' })
-  boardType: BoardType;
+  @Column({ type: 'enum', enum: EBoardType, enumName: 'boardType' })
+  boardType: EBoardType;
 
   @Column()
   userId: number;

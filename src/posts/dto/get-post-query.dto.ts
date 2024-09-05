@@ -1,9 +1,9 @@
 import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { SortType, SortOrder } from '../enum/sortType.enum';
+import { ESortType, ESortOrder } from '../enum/sort-type.enum';
 export class PaginateQueryDto {
   @IsOptional()
-  @IsEnum(SortType)
-  sortType?: SortType = SortType.DATE;
+  @IsEnum(ESortType)
+  sortType?: ESortType = ESortType.DATE;
 
   @IsOptional()
   @IsInt()
@@ -20,6 +20,6 @@ export class PaginateQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(SortOrder)
-  sortOrder?: SortOrder = SortOrder.DESC;
+  @IsEnum(ESortOrder)
+  sortOrder?: ESortOrder = ESortOrder.DESC;
 }

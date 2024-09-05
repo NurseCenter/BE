@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsOptional, IsString, Length, MaxLength, maxLength } from 'class-validator';
-import { BoardType } from '../enum/boardType.enum';
+import { EBoardType } from '../enum/board-type.enum';
 import { BasePostDto } from './base-post.dto';
 import { EReportReason } from '../../admin/enums';
 import { EReportStatus } from '../../admin/enums/report-status.enum';

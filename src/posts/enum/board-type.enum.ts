@@ -1,4 +1,4 @@
-export enum BoardType {
+export enum EBoardType {
   EMPLOYMENT = 'employment',
   EVENT = 'event',
   EXAM = 'exam',

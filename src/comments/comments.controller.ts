@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CommentsService } from './comments.service';
-import { BoardType } from '../posts/enum/boardType.enum';
+import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
@@ -16,7 +16,7 @@ export class CommentsController {
   @HttpCode(201)
   @UseGuards(SignInGuard)
   async createComment(
-    @Param('boardType') boardType: BoardType,
+    @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @Body() createCommentDto: CreateCommentDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
@@ -27,7 +27,7 @@ export class CommentsController {
   //특정 게시물 댓글 전체 조회
   @Get('posts/:boardType/:postId/comments')
   @HttpCode(200)
-  async getComments(@Param('boardType') boardType: BoardType, @Param('postId') postId: number) {
+  async getComments(@Param('boardType') boardType: EBoardType, @Param('postId') postId: number) {
     const result = await this.commentsService.getComments(boardType, postId);
     return result;
   }

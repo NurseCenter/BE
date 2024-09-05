@@ -52,7 +52,7 @@ export class UsersEntity {
   @Column({
     type: 'enum',
     enum: EStudentStatus,
-    default: EStudentStatus.CURRENT_STUDENT,
+    default: EStudentStatus.CURRENT,
   })
   studentStatus: EStudentStatus;
 

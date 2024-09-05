@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { BoardType } from './enum/boardType.enum';
+import { EBoardType } from './enum/board-type.enum';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
 import { PaginateQueryDto } from './dto/get-post-query.dto';
@@ -17,7 +17,7 @@ export class PostsController {
   @Get(':boardType')
   @HttpCode(200)
   async getPosts(
-    @Param('boardType') boardType: BoardType,
+    @Param('boardType') boardType: EBoardType,
     @Query()
     paginateQueryDto: PaginateQueryDto,
   ) {
@@ -32,7 +32,7 @@ export class PostsController {
   //특정 게시글 조회
   @Get(':boardType/:id')
   @HttpCode(200)
-  async getPostDetails(@Param('boardType') boardType: BoardType, @Param('id') id: number) {
+  async getPostDetails(@Param('boardType') boardType: EBoardType, @Param('id') id: number) {
     try {
       const result = await this.postsService.getPostDetails(boardType, id);
 
@@ -47,7 +47,7 @@ export class PostsController {
   @HttpCode(201)
   @UseGuards(SignInGuard)
   async createPost(
-    @Param('boardType') boardType: BoardType,
+    @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
@@ -64,7 +64,7 @@ export class PostsController {
   @HttpCode(200)
   @UseGuards(SignInGuard)
   async updatePost(
-    @Param('boardType') boardType: BoardType,
+    @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
@@ -83,7 +83,7 @@ export class PostsController {
   @HttpCode(200)
   @UseGuards(SignInGuard)
   async softDeletePost(
-    @Param('boardType') boardType: BoardType,
+    @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {

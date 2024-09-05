@@ -6,11 +6,10 @@ import { AdminDAO } from './admin.dao';
 import { ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
-import { ApprovalDto } from './dto/approval.dto';
 import { EMembershipStatus } from 'src/users/enums';
 import { PaginatedResponse } from 'src/common/interfaces/paginated-response-interface';
 import { IApprovalUserList, ICommentOrReply, IPostList, IUserInfo, IUserList } from './interfaces';
-import { DeletionUserDto } from './dto';
+import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { error } from 'console';
 
 @Injectable()
@@ -63,7 +62,8 @@ export class AdminService {
       if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
       const newSuspendedUser = await this.adminDAO.createSuspendedUser(userId);
-      if (!newSuspendedUser) throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
+      if (!newSuspendedUser)
+        throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
 
       newSuspendedUser.suspensionReason = suspensionReason;
       newSuspendedUser.suspensionDuration = suspensionDuration;
@@ -108,7 +108,7 @@ export class AdminService {
       return {
         userId: user.userId, // 회원 ID (렌더링 X)
         nickname: user.nickname, // 닉네임
-        email: user.email, // 이메일 
+        email: user.email, // 이메일
         postCount: Number(user.postCount) || 0, // 게시물 수
         commentCount: Number(user.commentCount) || 0, // 댓글 수
         createdAt: user.createdAt, // 가입일
@@ -138,19 +138,22 @@ export class AdminService {
   }
 
   // 관리자 특정 회원 승인
-  async processUserApproval(approvalDto: ApprovalDto): Promise<{ message: string; membershipStatus: EMembershipStatus }> {
+  async processUserApproval(
+    approvalDto: ApprovalUserDto,
+  ): Promise<{ message: string; membershipStatus: EMembershipStatus }> {
     const { userId, isApproved } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-  
+
     // 1 : 이메일 인증 완료 상태
     const isEmailVerified = user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED;
     // 2 : 비회원 또는 이메일 인증 대기 상태
     const isNonMemberOrPending =
-      user.membershipStatus === EMembershipStatus.NON_MEMBER || user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION;
+      user.membershipStatus === EMembershipStatus.NON_MEMBER ||
+      user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION;
     // 3 : 이미 정회원 상태
     const isAlreadyApproved = user.membershipStatus === EMembershipStatus.APPROVED_MEMBER;
-  
+
     if (isApproved) {
       if (isEmailVerified) {
         user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
@@ -194,7 +197,7 @@ export class AdminService {
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)
         nickname: user.nickname, // 닉네임
-        email: user.email, // 이메일 
+        email: user.email, // 이메일
         createdAt: user.createdAt, // 가입 날짜
         studentStatus: user.membershipStatus, // 재학여부
         certificationDocumentUrl: user.certificationDocumentUrl, // 첨부파일
@@ -213,10 +216,7 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(
-    pageNumber: number,
-    pageSize: number,
-  ): Promise<PaginatedResponse<IPostList>> {
+  async getAllPosts(pageNumber: number, pageSize: number): Promise<PaginatedResponse<IPostList>> {
     const [posts, total] = await this.adminDAO.findAllPosts(pageNumber, pageSize);
 
     const items = posts.map((post) => ({
@@ -238,19 +238,16 @@ export class AdminService {
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<void> {
     const post = await this.adminDAO.deletePost(postId);
-    
+
     if (!post) {
       throw new NotFoundException('게시물이 존재하지 않거나 이미 삭제되었습니다.');
     }
   }
 
-     // 댓글 및 답글 조회
+  // 댓글 및 답글 조회
   async findAllCommentsAndReplies(pageNumber: number, pageSize: number): Promise<ICommentOrReply[]> {
     // 댓글과 답글을 모두 조회
-    const [comments, replies] = await Promise.all([
-      this.adminDAO.findAllComments(),
-      this.adminDAO.findAllReplies(),
-    ]);
+    const [comments, replies] = await Promise.all([this.adminDAO.findAllComments(), this.adminDAO.findAllReplies()]);
 
     // 댓글과 답글을 합침
     const combined = [
@@ -280,8 +277,8 @@ export class AdminService {
     return combined.slice(skip, skip + pageSize);
   }
 
-   // 특정 댓글 또는 답글 조회
-   async findCommentOrReplyById(id: number): Promise<ICommentOrReply> {
+  // 특정 댓글 또는 답글 조회
+  async findCommentOrReplyById(id: number): Promise<ICommentOrReply> {
     const comment = await this.adminDAO.findCommentById(id);
     if (comment) {
       return {

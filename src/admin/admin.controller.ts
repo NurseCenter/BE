@@ -2,8 +2,7 @@ import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, P
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { DeletionUserDto } from './dto';
-import { ApprovalDto } from './dto/approval.dto';
+import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { PaginatedResponse } from 'src/common/interfaces/paginated-response-interface';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
 
@@ -51,7 +50,10 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @Get('approval')
   @HttpCode(HttpStatus.OK)
-  async getApprovalsByAdmin(@Query() pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IApprovalUserList>> {
+  async getApprovalsByAdmin(
+    @Query() pageNumber: number,
+    pageSize: number = 10,
+  ): Promise<PaginatedResponse<IApprovalUserList>> {
     return await this.adminService.showUserApprovals(pageNumber, pageSize);
   }
 
@@ -59,7 +61,7 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @Post('approval')
   @HttpCode(HttpStatus.OK)
-  async postApprovalByAdmin(@Body() approvalDto: ApprovalDto) {
+  async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
     const result = await this.adminService.processUserApproval(approvalDto);
     return result;
   }
@@ -99,8 +101,7 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @Get('comments')
   @HttpCode(HttpStatus.OK)
-  async getAllComments(    @Query('pageNumber') pageNumber: number,
-  @Query('pageSize') pageSize: number = 10,) {
+  async getAllComments(@Query('pageNumber') pageNumber: number, @Query('pageSize') pageSize: number = 10) {
     return await this.adminService.findAllCommentsAndReplies(pageNumber, pageSize);
   }
 

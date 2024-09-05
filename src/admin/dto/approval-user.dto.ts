@@ -1,6 +1,6 @@
 import { IsBoolean, IsNumber } from 'class-validator';
 
-export class ApprovalDto {
+export class ApprovalUserDto {
   @IsNumber()
   userId: number;
 

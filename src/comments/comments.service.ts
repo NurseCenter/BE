@@ -14,7 +14,7 @@ import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { EReportReason } from '../admin/enums';
-import { ReportCommentsEntity } from '../admin/entities/report-comments.entity';
+import { ReportCommentsEntity } from '../reports/entities/report-comments.entity';
 
 @Injectable()
 export class CommentsService {

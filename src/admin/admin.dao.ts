@@ -56,7 +56,7 @@ export class AdminDAO {
       .select([
         'user.userId', // 회원 ID (렌터링 X)
         'user.nickname', // 닉네임
-        'user.email', // 이메일 
+        'user.email', // 이메일
         'COUNT(posts.id) AS postCount', // 게시물 수
         'COUNT(comments.id) AS commentCount', // 댓글 수
         'user.createdAt', // 가입날짜
@@ -140,20 +140,20 @@ export class AdminDAO {
     return Number(result.total);
   }
 
-    // 특정 게시물 삭제
-    async deletePost(postId: number): Promise<PostsEntity | null> {
-      const post = await this.postsRepository.findOne({
-        where: { postId, deletedAt: null }
-      });
-  
-      if (post) {
-        post.deletedAt = new Date();
-        await this.postsRepository.save(post);
-        return post;
-      }
-      
-      return null; // 게시물이 없거나 이미 삭제된 경우
+  // 특정 게시물 삭제
+  async deletePost(postId: number): Promise<PostsEntity | null> {
+    const post = await this.postsRepository.findOne({
+      where: { postId, deletedAt: null },
+    });
+
+    if (post) {
+      post.deletedAt = new Date();
+      await this.postsRepository.save(post);
+      return post;
     }
+
+    return null; // 게시물이 없거나 이미 삭제된 경우
+  }
 
   // 모든 댓글 조회
   async findAllComments(): Promise<any[]> {
@@ -167,7 +167,7 @@ export class AdminDAO {
         'comment.createdAt', // 작성일
         'user.nickname', // 작성자 닉네임,
         'post.title', // 게시물 제목
-        'post.boardType' // 게시물 카테고리 
+        'post.boardType', // 게시물 카테고리
       ])
       .where('comment.deletedAt IS NULL')
       .getRawMany();
@@ -185,7 +185,7 @@ export class AdminDAO {
         'reply.createdAt', // 작성일
         'user.nickname', // 작성자 닉네임
         'post.title', // 게시물 제목
-        'post.boardType' // 게시물 카테고리
+        'post.boardType', // 게시물 카테고리
       ])
       .where('reply.deletedAt IS NULL')
       .getRawMany();
@@ -203,14 +203,14 @@ export class AdminDAO {
         'comment.createdAt', // 작성일
         'user.nickname', // 작성자 닉네임
         'post.title', // 게시물 제목
-        'post.boardType' // 게시물 카테고리
+        'post.boardType', // 게시물 카테고리
       ])
       .where('comment.commentId = :id AND comment.deletedAt IS NULL', { id })
       .getRawOne();
   }
 
-   // 특정 답글 조회
-   async findReplyById(id: number): Promise<any> {
+  // 특정 답글 조회
+  async findReplyById(id: number): Promise<any> {
     return this.repliesRepository
       .createQueryBuilder('reply')
       .leftJoinAndSelect('reply.user', 'user')
@@ -221,12 +221,11 @@ export class AdminDAO {
         'reply.createdAt', // 작성일
         'user.nickname', // 작성자 닉네임
         'post.title', // 게시물 제목
-        'post.boardType' // 게시물 카테고리
+        'post.boardType', // 게시물 카테고리
       ])
       .where('reply.replyId = :id AND reply.deletedAt IS NULL', { id })
       .getRawOne();
   }
- 
 
   // 댓글 또는 답글 삭제
   async deleteCommentOrReply(id: number): Promise<void> {

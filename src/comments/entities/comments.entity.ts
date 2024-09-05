@@ -13,8 +13,8 @@ import {
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { EBoardType } from '../../posts/enum/board-type.enum';
 import { UsersEntity } from '../../users/entities/users.entity';
-import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
-import { ReportCommentsEntity } from '../../admin/entities/report-comments.entity';
+import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
+import { ReportCommentsEntity } from '../../reports/entities/report-comments.entity';
 
 @Entity('comments')
 export class CommentsEntity {

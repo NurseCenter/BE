@@ -17,7 +17,7 @@ import { UsersEntity } from '../../users/entities/users.entity';
 import { LikeEntity } from '../../likes/entities/likes.entity';
 import { EBoardType } from '../enum/board-type.enum';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
-import { ReportPostsEntity } from '../../admin/entities/report-posts.entity';
+import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity

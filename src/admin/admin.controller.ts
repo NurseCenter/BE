@@ -51,7 +51,7 @@ export class AdminController {
   }
 
   // 관리자 특정 회원 정보 조회
-  @Get('user/:userId')
+  @Get('users/:userId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '특정 회원 정보 조회' })
   @ApiParam({ name: 'userId', type: Number, description: '회원 ID' })
@@ -61,10 +61,10 @@ export class AdminController {
     return await this.adminService.fetchUserInfoByAdmin(userId);
   }
 
-  // 관리자 회원 가입 승인 화면 데이터 조회
+  // 관리자 회원 가입 대기자 목록 조회
   @Get('approval')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 가입 승인 화면 데이터 조회' })
+  @ApiOperation({ summary: '회원 가입 대기자 목록 조회' })
   @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({ status: 200, description: '회원 가입 승인 목록 조회 성공', type: 'IPaginatedResponse' })
@@ -74,11 +74,11 @@ export class AdminController {
     return await this.adminService.showUserApprovals(page, limit);
   }
 
-  // 관리자 회원 가입 승인
+  // 관리자 회원 가입 승인 및 거절 처리
   @Post('approval')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 가입 승인 처리' })
-  @ApiResponse({ status: 200, description: '회원 가입 승인 처리 성공' })
+  @ApiOperation({ summary: '회원 가입 승인 및 거절 처리' })
+  @ApiResponse({ status: 200, description: '회원 가입 승인 및 거절 처리 성공' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
     const result = await this.adminService.processUserApproval(approvalDto);
@@ -111,10 +111,10 @@ export class AdminController {
     return { message: '게시물이 성공적으로 삭제되었습니다.' };
   }
 
-  // 관리자 댓글 전체 조회
+  // 관리자 댓글 및 답글 전체 조회
   @Get('comments')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '전체 댓글 조회' })
+  @ApiOperation({ summary: '전체 댓글 및 답글 조회' })
   @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({ status: 200, description: '댓글 목록 조회 성공' })

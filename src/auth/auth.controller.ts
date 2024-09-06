@@ -96,7 +96,7 @@ export class AuthController {
   }
 
   // 이메일 찾기
-  @Get('email')
+  @Post('email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '이메일 찾기' })
   @ApiQuery({ name: 'email', type: FindEmailDto, description: '이메일 찾기에 필요한 정보' })
@@ -108,7 +108,7 @@ export class AuthController {
   }
 
   // 비밀번호 찾기 (임시 비밀번호 발급)
-  @Get('password')
+  @Post('password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '비밀번호 찾기' })
   @ApiQuery({ name: 'password', type: FindPasswordDto, description: '비밀번호 찾기에 필요한 정보' })

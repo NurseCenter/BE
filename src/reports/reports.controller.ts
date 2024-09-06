@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/guards';
 import { ReportsService } from './reports.service';
 import { EReportStatus } from './enum';
@@ -7,6 +7,7 @@ import { ReportPostsEntity, ReportCommentsEntity } from './entities';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto } from 'src/common/dto';
 
+@ApiTags('Reports')
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}

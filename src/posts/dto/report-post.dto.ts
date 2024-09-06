@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { EReportReason } from '../../admin/enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { EReportReason } from 'src/reports/enum';
 
 export class ReportPostDto {
   @IsEnum(EReportReason)

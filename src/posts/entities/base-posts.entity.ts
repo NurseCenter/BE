@@ -33,6 +33,7 @@ import { EBoardType } from '../enum/board-type.enum';
 export class PostsEntity {
   @PrimaryGeneratedColumn()
   postId: number;
+  
   @Column({ type: 'enum', enum: EBoardType, enumName: 'boardType' })
   boardType: EBoardType;
 

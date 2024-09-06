@@ -17,9 +17,9 @@ import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.inter
 import { ReportPostsEntity } from '../reports/entities/report-posts.entity';
 import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
-import { EReportReason } from '../admin/enums';
 import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesService } from '../images/images.service';
+import { EReportReason } from 'src/reports/enum';
 
 @Injectable()
 export class PostsService {

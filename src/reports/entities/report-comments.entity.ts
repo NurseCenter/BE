@@ -1,3 +1,4 @@
+import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import {
   Entity,
@@ -8,20 +9,19 @@ import {
   JoinColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { EReportReason } from '../../admin/enums';
-import { CommentsEntity } from '../../comments/entities/comments.entity';
-import { EReportStatus } from '../../admin/enums/report-status.enum';
+import { EReportReason, EReportStatus } from '../enum';
 
 @Entity('report_comments')
 export class ReportCommentsEntity {
+  // 신고된 댓글의 ID (신고 테이블에서의 ID)
   @PrimaryGeneratedColumn()
   reportCommentId: number;
 
-  //신고한 사용자
+  //신고한 회원 ID
   @Column()
   userId: number;
 
-  //신고당한 사용자
+  //신고당한 회원 ID
   @Column()
   reportedUserId: number;
 
@@ -43,6 +43,7 @@ export class ReportCommentsEntity {
   })
   otherReportedReason?: string;
 
+  // 신고처리 상태
   @Column({
     type: 'enum',
     enum: EReportStatus,
@@ -50,7 +51,7 @@ export class ReportCommentsEntity {
   })
   status: EReportStatus;
 
-  // 신고일
+  // 신고일자
   @CreateDateColumn()
   createdAt: Date;
 
@@ -59,15 +60,17 @@ export class ReportCommentsEntity {
   @DeleteDateColumn()
   deletedAt: Date;
 
+  // 신고한 회원
   @ManyToOne(() => UsersEntity, (user) => user.submittedCommentReports)
   @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   reportingUser: UsersEntity;
 
+  // 신고된 댓글
   @ManyToOne(() => CommentsEntity, (comment) => comment.reportComments)
   @JoinColumn({ name: 'commentId', referencedColumnName: 'commentId' })
   comments: CommentsEntity;
 
-  // 신고된 글의 작성자
+  // 신고된 댓글의 작성자
   @ManyToOne(() => UsersEntity, (user) => user.receivedCommentReports)
   @JoinColumn({ name: 'reportedUserId', referencedColumnName: 'userId' })
   reportedUser: UsersEntity;

@@ -5,6 +5,7 @@ import { ReportPostsEntity } from './entities/report-posts.entity';
 import { ReportCommentsEntity } from './entities/report-comments.entity';
 import { ReportsDAO } from './reports.dao';
 import { EReportStatus } from './enum';
+import { PaginatedResponse } from 'src/common/interfaces';
 
 @Injectable()
 export class ReportsService {
@@ -17,8 +18,18 @@ export class ReportsService {
   ) {}
 
   // 신고된 게시물 전체 조회
-  async getAllReportedPosts(): Promise<ReportPostsEntity[]> {
-    return await this.reportPostsRepository.find();
+  async getAllReportedPosts(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<ReportPostsEntity>> {
+    const [posts, total] = await this.reportPostsRepository.findAndCount({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+    });
+
+    return {
+      items: posts,
+      totalItems: total,
+      totalPages: Math.ceil(total / pageSize),
+      currentPage: pageNumber,
+    };
   }
 
   // 신고된 특정 게시물 조회
@@ -40,8 +51,18 @@ export class ReportsService {
   }
 
   // 신고된 댓글 전체 조회
-  async getAllReportedComments(): Promise<ReportCommentsEntity[]> {
-    return await this.reportCommentsRepository.find();
+  async getAllReportedComments(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<ReportCommentsEntity>> {
+    const [comments, total] = await this.reportCommentsRepository.findAndCount({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+    });
+
+    return {
+      items: comments,
+      totalItems: total,
+      totalPages: Math.ceil(total / pageSize),
+      currentPage: pageNumber,
+    };
   }
 
   // 신고된 특정 댓글 조회

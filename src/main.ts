@@ -31,14 +31,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
   SwaggerModule.setup('api', app, document);
 
   app.useGlobalFilters(new DatabaseExceptionFilter());
-  // ConfigService 인스턴스 가져오기
-  const sessionConfigService = app.get(SessionConfigService);
 
-  // 인스턴스를 전달하여 sessionOptions 생성
+  // 환경변수 설정
+  const sessionConfigService = app.get(SessionConfigService);
   const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(session(sessionOptions));

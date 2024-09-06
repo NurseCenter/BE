@@ -1,8 +1,10 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/guards';
 import { ReportsService } from './reports.service';
 import { EReportStatus } from './enum';
+import { PaginatedResponse } from 'src/common/interfaces';
+import { ReportPostsEntity, ReportCommentsEntity } from './entities';
 
 @Controller('reports')
 export class ReportsController {
@@ -13,10 +15,15 @@ export class ReportsController {
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '신고된 게시물 전체 조회' })
-  @ApiResponse({ status: 200, description: '신고된 게시물 목록 조회 성공' })
+  @ApiQuery({ name: 'pageNumber', type: 'number', required: false, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: 'number', required: false, description: '페이지 사이즈' })
+  @ApiResponse({ status: 200, description: '신고된 게시물 목록 조회 성공', type: 'PaginatedResponse' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async getAllReportedPosts() {
-    return await this.reportsService.getAllReportedPosts();
+  async getAllReportedPosts(
+    @Query('pageNumber') pageNumber: number = 1,
+    @Query('pageSize') pageSize: number = 10
+  ): Promise<PaginatedResponse<ReportPostsEntity>> {
+    return await this.reportsService.getAllReportedPosts(pageNumber, pageSize);
   }
 
   // 신고된 특정 게시물 조회
@@ -79,10 +86,15 @@ export class ReportsController {
   @Get('comments')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '신고된 댓글 전체 조회' })
-  @ApiResponse({ status: 200, description: '신고된 댓글 목록 조회 성공' })
+  @ApiQuery({ name: 'pageNumber', type: 'number', required: false, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: 'number', required: false, description: '페이지 사이즈' })
+  @ApiResponse({ status: 200, description: '신고된 댓글 목록 조회 성공', type: 'PaginatedResponse' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async getAllReportedComments() {
-    return await this.reportsService.getAllReportedComments();
+  async getAllReportedComments(
+    @Query('pageNumber') pageNumber: number = 1,
+    @Query('pageSize') pageSize: number = 10
+  ): Promise<PaginatedResponse<ReportCommentsEntity>> {
+    return await this.reportsService.getAllReportedComments(pageNumber, pageSize);
   }
 
   // 신고된 특정 댓글 조회

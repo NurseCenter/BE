@@ -21,7 +21,7 @@ export class ReportsController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getAllReportedPosts(
     @Query('pageNumber') pageNumber: number = 1,
-    @Query('pageSize') pageSize: number = 10
+    @Query('pageSize') pageSize: number = 10,
   ): Promise<PaginatedResponse<ReportPostsEntity>> {
     return await this.reportsService.getAllReportedPosts(pageNumber, pageSize);
   }
@@ -92,7 +92,7 @@ export class ReportsController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getAllReportedComments(
     @Query('pageNumber') pageNumber: number = 1,
-    @Query('pageSize') pageSize: number = 10
+    @Query('pageSize') pageSize: number = 10,
   ): Promise<PaginatedResponse<ReportCommentsEntity>> {
     return await this.reportsService.getAllReportedComments(pageNumber, pageSize);
   }

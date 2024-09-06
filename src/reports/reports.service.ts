@@ -43,7 +43,7 @@ export class ReportsService {
 
   // 신고된 특정 게시물 삭제
   async deleteReportedPost(postId: number): Promise<void> {
-    const post = await this.getReportedPost(postId); 
+    const post = await this.getReportedPost(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
@@ -51,7 +51,10 @@ export class ReportsService {
   }
 
   // 신고된 댓글 전체 조회
-  async getAllReportedComments(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<ReportCommentsEntity>> {
+  async getAllReportedComments(
+    pageNumber: number,
+    pageSize: number = 10,
+  ): Promise<PaginatedResponse<ReportCommentsEntity>> {
     const [comments, total] = await this.reportCommentsRepository.findAndCount({
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,
@@ -76,11 +79,11 @@ export class ReportsService {
 
   // 신고된 특정 댓글 삭제
   async deleteReportedComment(commentId: number): Promise<void> {
-    const comment = await this.getReportedComment(commentId); 
+    const comment = await this.getReportedComment(commentId);
     if (!comment) {
       throw new NotFoundException('해당 댓글이 존재하지 않습니다.');
     }
-    await this.reportsDAO.removeReportedComment(commentId); 
+    await this.reportsDAO.removeReportedComment(commentId);
   }
 
   // 신고된 게시물 상태 업데이트 및 저장

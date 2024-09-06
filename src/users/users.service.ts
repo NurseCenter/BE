@@ -71,7 +71,7 @@ export class UsersService {
     if (!sessionUser?.userId) {
       throw new BadRequestException('회원 ID가 존재하지 않습니다.');
     }
-    return this.postsDAO.findUserPosts(sessionUser.userId, page, limit, sort);
+    return this.postsDAO.findMyPosts(sessionUser.userId, page, limit, sort);
   }
 
   // 나의 댓글 조회
@@ -79,6 +79,6 @@ export class UsersService {
     if (!sessionUser?.userId) {
       throw new BadRequestException('회원 ID가 존재하지 않습니다.');
     }
-    return this.commentsDAO.findUserComments(sessionUser.userId, page, limit, sort);
+    return this.commentsDAO.findMyComments(sessionUser.userId, page, limit, sort);
   }
 }

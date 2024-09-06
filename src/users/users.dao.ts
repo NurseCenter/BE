@@ -44,51 +44,51 @@ export class UsersDAO {
     return this.usersRepository.findOne({ where: { username, email } });
   }
 
-    // 페이지네이션 회원 조회
-    async findUsersWithDetails(page: number, pageSize: number = 10): Promise<[any[], number]> {
-      const queryBuilder = this.usersRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.posts', 'posts')
-        .leftJoinAndSelect('user.comments', 'comments')
-        .select([
-          'user.userId', // 회원 ID (렌터링 X)
-          'user.nickname', // 닉네임
-          'user.email', // 이메일
-          'COUNT(posts.id) AS postCount', // 게시물 수
-          'COUNT(comments.id) AS commentCount', // 댓글 수
-          'user.createdAt', // 가입날짜
-        ])
-        .groupBy('user.userId')
-        .orderBy('user.createdAt', 'DESC') // 가입일 기준 내림차순 정렬
-        .skip((page - 1) * pageSize)
-        .take(pageSize);
-  
-      const [rawUsers, total] = await Promise.all([queryBuilder.getRawMany(), this.countTotalUsers()]);
-  
-      return [rawUsers, total];
-    }
-  
-    // 전체 사용자 수 계산
-    async countTotalUsers(): Promise<number> {
-      const result = await this.usersRepository
-        .createQueryBuilder('user')
-        .select('COUNT(user.userId)', 'total')
-        .getRawOne();
-      return Number(result.total);
-    }
-  
-    // 승인 대기중, 승인 거절당한 회원 조회
-    async findPendingAndRejectVerifications(pageNumber: number, pageSize: number = 10): Promise<[UsersEntity[], number]> {
-      return this.usersRepository.findAndCount({
-        where: [
-          { membershipStatus: EMembershipStatus.PENDING_VERIFICATION, deletedAt: null },
-          { rejected: false, deletedAt: null },
-        ],
-        skip: (pageNumber - 1) * pageSize,
-        take: pageSize,
-        order: {
-          createdAt: 'DESC',
-        },
-      });
-    }
+  // 페이지네이션 회원 조회
+  async findUsersWithDetails(page: number, pageSize: number = 10): Promise<[any[], number]> {
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.posts', 'posts')
+      .leftJoinAndSelect('user.comments', 'comments')
+      .select([
+        'user.userId', // 회원 ID (렌터링 X)
+        'user.nickname', // 닉네임
+        'user.email', // 이메일
+        'COUNT(posts.id) AS postCount', // 게시물 수
+        'COUNT(comments.id) AS commentCount', // 댓글 수
+        'user.createdAt', // 가입날짜
+      ])
+      .groupBy('user.userId')
+      .orderBy('user.createdAt', 'DESC') // 가입일 기준 내림차순 정렬
+      .skip((page - 1) * pageSize)
+      .take(pageSize);
+
+    const [rawUsers, total] = await Promise.all([queryBuilder.getRawMany(), this.countTotalUsers()]);
+
+    return [rawUsers, total];
+  }
+
+  // 전체 사용자 수 계산
+  async countTotalUsers(): Promise<number> {
+    const result = await this.usersRepository
+      .createQueryBuilder('user')
+      .select('COUNT(user.userId)', 'total')
+      .getRawOne();
+    return Number(result.total);
+  }
+
+  // 승인 대기중, 승인 거절당한 회원 조회
+  async findPendingAndRejectVerifications(pageNumber: number, pageSize: number = 10): Promise<[UsersEntity[], number]> {
+    return this.usersRepository.findAndCount({
+      where: [
+        { membershipStatus: EMembershipStatus.PENDING_VERIFICATION, deletedAt: null },
+        { rejected: false, deletedAt: null },
+      ],
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
 }

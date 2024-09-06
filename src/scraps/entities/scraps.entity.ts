@@ -39,7 +39,7 @@ export class ScrapsEntity {
   @ManyToOne(() => PostsEntity, (post) => post.scraps)
   @JoinColumn([{ name: 'postId', referencedColumnName: 'postId' }])
   post: PostsEntity;
-  
+
   // 이 스크랩을 등록한 회원
   @ManyToOne(() => UsersEntity, (user) => user.userId)
   @JoinColumn([{ name: 'userId', referencedColumnName: 'userId' }])

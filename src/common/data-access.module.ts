@@ -12,7 +12,16 @@ import { DeletedUsersDAO, SuspendedUsersDAO } from 'src/admin/dao';
 import { DeletedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersEntity, CommentsEntity, PostsEntity, RepliesEntity, DeletedUsersEntity, SuspendedUsersEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      UsersEntity,
+      CommentsEntity,
+      PostsEntity,
+      RepliesEntity,
+      DeletedUsersEntity,
+      SuspendedUsersEntity,
+    ]),
+  ],
   providers: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO],
   exports: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO],
 })

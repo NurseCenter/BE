@@ -35,7 +35,7 @@ export class PostsEntity {
   // 게시물 고유 ID
   @PrimaryGeneratedColumn()
   postId: number;
-  
+
   // 카테고리 종류
   @Column({ type: 'enum', enum: EBoardType, enumName: 'boardType' })
   boardType: EBoardType;

@@ -66,15 +66,16 @@ export class AdminController {
     return result;
   }
 
-  // 관리자 게시물 전체 조회
+  // 관리자 게시물 전체 조회 및 검색
   @UseGuards(AdminGuard)
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   async getAllPosts(
     @Query('pageNumber') pageNumber: number,
     @Query('pageSize') pageSize: number = 10,
+    @Query('search') search?: string,
   ): Promise<PaginatedResponse<IPostList>> {
-    return this.adminService.getAllPosts(pageNumber, pageSize);
+    return this.adminService.getAllPosts(pageNumber, pageSize, search);
   }
 
   // 관리자 특정 게시물 삭제
@@ -86,17 +87,6 @@ export class AdminController {
     return { message: '게시물이 성공적으로 삭제되었습니다.' };
   }
 
-  // 관리자 특정 게시물 검색
-  // @Get('posts/:postId')
-  // @HttpCode(HttpStatus.OK)
-  // async getSearchPost(@Param('postId') postId: number): Promise<any> {
-  //   const post = await this.adminService.findPostById(postId);
-  //   if (!post) {
-  //     throw new NotFoundException('게시물을 찾을 수 없습니다.');
-  //   }
-  //   return post;
-  // }
-
   // 관리자 댓글 전체 조회
   @UseGuards(AdminGuard)
   @Get('comments')
@@ -105,11 +95,11 @@ export class AdminController {
     return await this.adminService.findAllCommentsAndReplies(pageNumber, pageSize);
   }
 
-  // // 관리자 특정 댓글 삭제
-  // @Delete('comments/:commentId')
-  // @HttpCode(HttpStatus.OK)
-  // async deleteComment(@Param('commentId') commentId: number): Promise<{ message: string }> {
-  //   await this.adminService.deleteCommentOrReplyById(commentId);
-  //   return { message: '댓글이 성공적으로 삭제되었습니다.' };
-  // }
+  // 관리자 특정 댓글 삭제
+  @Delete('comments/:commentId')
+  @HttpCode(HttpStatus.OK)
+  async deleteComment(@Param('commentId') commentId: number): Promise<{ message: string }> {
+    await this.adminService.deleteCommentOrReplyById(commentId);
+    return { message: '댓글이 성공적으로 삭제되었습니다.' };
+  }
 }

@@ -24,7 +24,7 @@ export class AdminService {
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
-    private readonly repliesDAO: RepliesDAO
+    private readonly repliesDAO: RepliesDAO,
   ) {}
 
   // 회원 계정 탈퇴 처리
@@ -223,8 +223,8 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(pageNumber: number, pageSize: number): Promise<PaginatedResponse<IPostList>> {
-    const [posts, total] = await this.postsDAO.findAllPosts(pageNumber, pageSize);
+  async getAllPosts(pageNumber: number, pageSize: number, search: string): Promise<PaginatedResponse<IPostList>> {
+    const [posts, total] = await this.postsDAO.findAllPosts(pageNumber, pageSize, search);
 
     const items = posts.map((post) => ({
       postId: post.postId, // 게시물 ID
@@ -254,7 +254,10 @@ export class AdminService {
   // 댓글 및 답글 조회
   async findAllCommentsAndReplies(pageNumber: number, pageSize: number): Promise<ICommentOrReply[]> {
     // 댓글과 답글을 모두 조회
-    const [comments, replies] = await Promise.all([this.commentsDAO.findAllComments(), this.repliesDAO.findAllReplies()]);
+    const [comments, replies] = await Promise.all([
+      this.commentsDAO.findAllComments(),
+      this.repliesDAO.findAllReplies(),
+    ]);
 
     // 댓글과 답글을 합침
     const combined = [
@@ -311,5 +314,10 @@ export class AdminService {
     }
 
     throw new NotFoundException('댓글 또는 답글을 찾을 수 없습니다.');
+  }
+
+  // 댓글 또는 답글 삭제
+  async deleteCommentOrReplyById(id: number): Promise<void> {
+    await this.commentsDAO.deleteCommentOrReply(id);
   }
 }

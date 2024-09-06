@@ -114,7 +114,7 @@ export class UsersEntity {
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
   submittedCommentReports: LoginsEntity[];
 
-   // 이 사용자가 신고받은 댓글들
+  // 이 사용자가 신고받은 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
   receivedCommentReports: LoginsEntity[];
 }

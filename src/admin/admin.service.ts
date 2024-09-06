@@ -6,7 +6,6 @@ import { ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
 import { EMembershipStatus } from 'src/users/enums';
-import { PaginatedResponse } from 'src/common/interfaces/paginated-response-interface';
 import { IApprovalUserList, ICommentOrReply, IPostList, IUserInfo, IUserList } from './interfaces';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { error } from 'console';
@@ -14,6 +13,7 @@ import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @Injectable()
 export class AdminService {
@@ -91,7 +91,7 @@ export class AdminService {
   }
 
   // 모든 회원 조회
-  async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IUserList>> {
+  async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IUserList>> {
     const [users, total] = await this.usersDAO.findUsersWithDetails(pageNumber, pageSize);
     const suspendedUsers = await this.suspendedUsersDAO.findSuspendedUsers();
     const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
@@ -197,7 +197,7 @@ export class AdminService {
   }
 
   // 회원가입 승인 화면 보여주기
-  async showUserApprovals(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IApprovalUserList>> {
+  async showUserApprovals(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IApprovalUserList>> {
     try {
       const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(pageNumber, pageSize);
 
@@ -223,7 +223,7 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(pageNumber: number, pageSize: number, search: string): Promise<PaginatedResponse<IPostList>> {
+  async getAllPosts(pageNumber: number, pageSize: number, search: string): Promise<IPaginatedResponse<IPostList>> {
     const [posts, total] = await this.postsDAO.findAllPosts(pageNumber, pageSize, search);
 
     const items = posts.map((post) => ({

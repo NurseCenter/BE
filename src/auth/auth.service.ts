@@ -169,8 +169,7 @@ export class AuthService {
   }
 
   // 로그인한 사용자의 회원 상태 확인
-  async sendStatus(sessionId: string) {
-    const userId = await this.authSessionService.findUserIdFromSession(sessionId);
+  async sendStatus(userId: number) {
     return this.authUserService.checkStatusByUserId(userId);
   }
 }

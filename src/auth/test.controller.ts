@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AdminGuard, RegularMemberGuard, SignInGuard } from './guards';
 
-@Controller('test')
+@Controller('test-guard')
 export class TestController {
   // 정회원 권한
   @Get('regular')
@@ -14,7 +14,7 @@ export class TestController {
   @Get('admin')
   @UseGuards(AdminGuard)
   getAdminData() {
-    return { message: '정회원만 가능합니다.' };
+    return { message: '관리자만 가능합니다.' };
   }
 
   // 로그인 권한

@@ -3,8 +3,8 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/guards';
 import { ReportsService } from './reports.service';
 import { EReportStatus } from './enum';
-import { PaginatedResponse } from 'src/common/interfaces';
 import { ReportPostsEntity, ReportCommentsEntity } from './entities';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @Controller('reports')
 export class ReportsController {
@@ -17,12 +17,12 @@ export class ReportsController {
   @ApiOperation({ summary: '신고된 게시물 전체 조회' })
   @ApiQuery({ name: 'pageNumber', type: 'number', required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'pageSize', type: 'number', required: false, description: '페이지 사이즈' })
-  @ApiResponse({ status: 200, description: '신고된 게시물 목록 조회 성공', type: 'PaginatedResponse' })
+  @ApiResponse({ status: 200, description: '신고된 게시물 목록 조회 성공', type: 'IPaginatedResponse' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getAllReportedPosts(
     @Query('pageNumber') pageNumber: number = 1,
     @Query('pageSize') pageSize: number = 10,
-  ): Promise<PaginatedResponse<ReportPostsEntity>> {
+  ): Promise<IPaginatedResponse<ReportPostsEntity>> {
     return await this.reportsService.getAllReportedPosts(pageNumber, pageSize);
   }
 
@@ -88,12 +88,12 @@ export class ReportsController {
   @ApiOperation({ summary: '신고된 댓글 전체 조회' })
   @ApiQuery({ name: 'pageNumber', type: 'number', required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'pageSize', type: 'number', required: false, description: '페이지 사이즈' })
-  @ApiResponse({ status: 200, description: '신고된 댓글 목록 조회 성공', type: 'PaginatedResponse' })
+  @ApiResponse({ status: 200, description: '신고된 댓글 목록 조회 성공', type: 'IPaginatedResponse' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getAllReportedComments(
     @Query('pageNumber') pageNumber: number = 1,
     @Query('pageSize') pageSize: number = 10,
-  ): Promise<PaginatedResponse<ReportCommentsEntity>> {
+  ): Promise<IPaginatedResponse<ReportCommentsEntity>> {
     return await this.reportsService.getAllReportedComments(pageNumber, pageSize);
   }
 

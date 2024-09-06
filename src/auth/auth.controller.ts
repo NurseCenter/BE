@@ -12,7 +12,9 @@ import {
 } from './dto';
 import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -20,6 +22,10 @@ export class AuthController {
   // 회원가입
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: '회원가입' })
+  @ApiBody({ type: CreateUserDto, description: '회원가입에 필요한 정보' })
+  @ApiResponse({ status: 201, description: '회원가입이 성공적으로 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string }> {
     await this.authService.signUp(createUserDto);
     return { message: '회원가입이 성공적으로 완료되었습니다.' };
@@ -28,6 +34,9 @@ export class AuthController {
   // 회원탈퇴
   @Delete('withdrawal')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '회원탈퇴' })
+  @ApiResponse({ status: 204, description: '회원탈퇴가 성공적으로 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async deleteWithdrawal(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     const { userId } = sessionUser;
     await this.authService.withDraw(userId);
@@ -37,6 +46,10 @@ export class AuthController {
   // 로그인
   @Post('sign-in')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '로그인' })
+  @ApiBody({ type: SignInUserDto, description: '로그인에 필요한 정보' })
+  @ApiResponse({ status: 200, description: '로그인에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignIn(
     @Body() signInUserDto: SignInUserDto,
     @Req() req: Request,
@@ -49,6 +62,9 @@ export class AuthController {
   // 로그아웃
   @Post('sign-out')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiResponse({ status: 200, description: '로그아웃에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
     await this.authService.signOut(req, res);
     return { message: '로그아웃에 성공하였습니다.' };
@@ -57,6 +73,10 @@ export class AuthController {
   // 이메일 인증 발송
   @Post('sign-up/email')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 발송' })
+  @ApiBody({ type: VerifyEmailDto, description: '이메일 인증을 위한 정보' })
+  @ApiResponse({ status: 200, description: '회원가입 인증용 이메일을 발송하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignUpEmail(@Body() verifyEmailDto: VerifyEmailDto): Promise<{ message: string }> {
     await this.authService.sendVerificationEmail(verifyEmailDto);
     return { message: '회원가입 인증용 이메일을 발송하였습니다.' };
@@ -65,6 +85,10 @@ export class AuthController {
   // 이메일 인증 확인
   @Post('sign-up/email-verification')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 확인' })
+  @ApiBody({ type: Object, description: '이메일 인증 토큰' })
+  @ApiResponse({ status: 200, description: '이메일 인증에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignUpEmailVerification(@Body() body: { token: string }): Promise<{ message: string }> {
     const { token } = body;
     await this.authService.verifyEmail(token);
@@ -74,6 +98,10 @@ export class AuthController {
   // 이메일 찾기
   @Get('email')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 찾기' })
+  @ApiQuery({ name: 'email', type: FindEmailDto, description: '이메일 찾기에 필요한 정보' })
+  @ApiResponse({ status: 200, description: '이메일 찾기가 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getEmail(@Body() findEmailDto: FindEmailDto) {
     const email = await this.authService.findEmail(findEmailDto);
     return { message: '이메일 찾기가 성공하였습니다.', email };
@@ -82,6 +110,10 @@ export class AuthController {
   // 비밀번호 찾기 (임시 비밀번호 발급)
   @Get('password')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '비밀번호 찾기' })
+  @ApiQuery({ name: 'password', type: FindPasswordDto, description: '비밀번호 찾기에 필요한 정보' })
+  @ApiResponse({ status: 200, description: '임시 비밀번호 발급이 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getPassword(@Body() findPasswordDto: FindPasswordDto) {
     await this.authService.findPassword(findPasswordDto);
     return { message: '임시 비밀번호 발급이 성공하였습니다.' };
@@ -90,6 +122,10 @@ export class AuthController {
   // 휴대폰 인증번호 발급
   @Post('phone')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '휴대폰 인증번호 발급' })
+  @ApiBody({ type: SendPhoneVerificationDto, description: '휴대폰 인증번호 발급을 위한 정보' })
+  @ApiResponse({ status: 200, description: '휴대폰 인증번호가 발급되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postPhoneVerificationCode(@Body() sendPhoneVerificationDto: SendPhoneVerificationDto) {
     const { phoneNumber } = sendPhoneVerificationDto;
     await this.authService.sendPhoneVerificationCode(phoneNumber);
@@ -99,6 +135,10 @@ export class AuthController {
   // 휴대폰 인증번호 발급 확인
   @Post('phone-verification')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '휴대폰 인증번호 발급 확인' })
+  @ApiBody({ type: VerifyPhoneNumberDto, description: '휴대폰 인증번호 확인을 위한 정보' })
+  @ApiResponse({ status: 200, description: '휴대폰 인증이 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postPhoneVerificationConfirm(verifyPhoneNumberDto: VerifyPhoneNumberDto) {
     const { phoneNumber, code } = verifyPhoneNumberDto;
     await this.authService.verifyPhoneNumberCode(phoneNumber, code);
@@ -109,9 +149,11 @@ export class AuthController {
   // 프론트엔드의 리다이렉션을 위함.
   @Get('status')
   @HttpCode(HttpStatus.OK)
-  async getStatus(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
-    const sessionId = req.cookies['connect.sid'];
-    await this.authService.sendStatus(sessionId);
-    return { message: '로그아웃에 성공하였습니다.' };
+  @ApiOperation({ summary: '사용자 상태 확인' })
+  @ApiResponse({ status: 200, description: '사용자 상태 확인 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async getStatus(@SessionUser() sessionUser: IUserWithoutPassword, @Res() res: Response): Promise<{ message: string }> {
+    const { userId } = sessionUser;
+    return await this.authService.sendStatus(userId);
   }
 }

@@ -3,101 +3,137 @@ import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
-import { PaginatedResponse } from 'src/common/interfaces/paginated-response-interface';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
+@ApiTags('Admin')
 @Controller('admin')
 @UseGuards(AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   // 관리자 회원 탈퇴 처리
-  @UseGuards(AdminGuard)
   @Delete('withdrawal')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 탈퇴 처리' })
+  @ApiResponse({ status: 200, description: '회원 탈퇴 처리가 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string }> {
     await this.adminService.withdrawUserByAdmin(deleteUserDto);
     return { message: '회원 탈퇴 처리가 완료되었습니다.' };
   }
 
   // 관리자 회원 정지 처리
-  @UseGuards(AdminGuard)
   @Post('suspension')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 정지 처리' })
+  @ApiResponse({ status: 200, description: '회원 정지 처리가 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
     await this.adminService.suspendUserByAdmin(suspensionUserDto);
     return { message: '회원 정지 처리가 완료되었습니다.' };
   }
 
   // 관리자 전체 회원 조회
-  @UseGuards(AdminGuard)
   @Get('users')
   @HttpCode(HttpStatus.OK)
-  async getAllUsers(@Query() pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IUserList>> {
+  @ApiOperation({ summary: '전체 회원 조회' })
+  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiResponse({ status: 200, description: '회원 목록 조회 성공', type: 'IPaginatedResponse' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async getAllUsers(@Query() pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IUserList>> {
     const result = await this.adminService.fetchAllUsersByAdmin(pageNumber, pageSize);
     return result;
   }
 
   // 관리자 특정 회원 정보 조회
-  @UseGuards(AdminGuard)
   @Get('user/:userId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '특정 회원 정보 조회' })
+  @ApiParam({ name: 'userId', type: Number, description: '회원 ID' })
+  @ApiResponse({ status: 200, description: '회원 정보 조회 성공', type: 'IUserInfo' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getUserInfoByAdmin(@Param('userId') userId: number): Promise<IUserInfo> {
     return await this.adminService.fetchUserInfoByAdmin(userId);
   }
 
   // 관리자 회원 가입 승인 화면 데이터 조회
-  @UseGuards(AdminGuard)
   @Get('approval')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 가입 승인 화면 데이터 조회' })
+  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiResponse({ status: 200, description: '회원 가입 승인 목록 조회 성공', type: 'IPaginatedResponse' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getApprovalsByAdmin(
     @Query() pageNumber: number,
     pageSize: number = 10,
-  ): Promise<PaginatedResponse<IApprovalUserList>> {
+  ): Promise<IPaginatedResponse<IApprovalUserList>> {
     return await this.adminService.showUserApprovals(pageNumber, pageSize);
   }
 
   // 관리자 회원 가입 승인
-  @UseGuards(AdminGuard)
   @Post('approval')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 가입 승인 처리' })
+  @ApiResponse({ status: 200, description: '회원 가입 승인 처리 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
     const result = await this.adminService.processUserApproval(approvalDto);
     return result;
   }
 
   // 관리자 게시물 전체 조회 및 검색
-  @UseGuards(AdminGuard)
   @Get('posts')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
+  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
+  @ApiResponse({ status: 200, description: '게시물 목록 조회 성공', type: 'IPaginatedResponse' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getAllPosts(
     @Query('pageNumber') pageNumber: number,
     @Query('pageSize') pageSize: number = 10,
     @Query('search') search?: string,
-  ): Promise<PaginatedResponse<IPostList>> {
+  ): Promise<IPaginatedResponse<IPostList>> {
     return this.adminService.getAllPosts(pageNumber, pageSize, search);
   }
 
   // 관리자 특정 게시물 삭제
-  @UseGuards(AdminGuard)
   @Delete('posts/:postId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '특정 게시물 삭제' })
+  @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
+  @ApiResponse({ status: 200, description: '게시물 삭제 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async deletePost(@Param('postId') postId: number): Promise<{ message: string }> {
     await this.adminService.deletePost(postId);
     return { message: '게시물이 성공적으로 삭제되었습니다.' };
   }
 
   // 관리자 댓글 전체 조회
-  @UseGuards(AdminGuard)
   @Get('comments')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '전체 댓글 조회' })
+  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiResponse({ status: 200, description: '댓글 목록 조회 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getAllComments(@Query('pageNumber') pageNumber: number, @Query('pageSize') pageSize: number = 10) {
     return await this.adminService.findAllCommentsAndReplies(pageNumber, pageSize);
   }
 
-  // 관리자 특정 댓글 삭제
+  // 관리자 특정 댓글 혹은 답글 삭제
+  // 댓글이나 답글 ID 넘겨주면 삭제함.
   @Delete('comments/:commentId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
+  @ApiParam({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
+  @ApiResponse({ status: 200, description: '댓글 또는 답글 삭제 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async deleteComment(@Param('commentId') commentId: number): Promise<{ message: string }> {
     await this.adminService.deleteCommentOrReplyById(commentId);
     return { message: '댓글이 성공적으로 삭제되었습니다.' };

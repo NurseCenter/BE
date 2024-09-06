@@ -5,7 +5,7 @@ import { ReportPostsEntity } from './entities/report-posts.entity';
 import { ReportCommentsEntity } from './entities/report-comments.entity';
 import { ReportsDAO } from './reports.dao';
 import { EReportStatus } from './enum';
-import { PaginatedResponse } from 'src/common/interfaces';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @Injectable()
 export class ReportsService {
@@ -18,7 +18,7 @@ export class ReportsService {
   ) {}
 
   // 신고된 게시물 전체 조회
-  async getAllReportedPosts(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<ReportPostsEntity>> {
+  async getAllReportedPosts(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<ReportPostsEntity>> {
     const [posts, total] = await this.reportPostsRepository.findAndCount({
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,
@@ -54,7 +54,7 @@ export class ReportsService {
   async getAllReportedComments(
     pageNumber: number,
     pageSize: number = 10,
-  ): Promise<PaginatedResponse<ReportCommentsEntity>> {
+  ): Promise<IPaginatedResponse<ReportCommentsEntity>> {
     const [comments, total] = await this.reportCommentsRepository.findAndCount({
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,

@@ -45,7 +45,7 @@ export class UsersDAO {
   }
 
   // 페이지네이션 회원 조회
-  async findUsersWithDetails(page: number, pageSize: number = 10): Promise<[any[], number]> {
+  async findUsersWithDetails(page: number, limit: number = 10): Promise<[any[], number]> {
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'posts')
@@ -60,8 +60,8 @@ export class UsersDAO {
       ])
       .groupBy('user.userId')
       .orderBy('user.createdAt', 'DESC') // 가입일 기준 내림차순 정렬
-      .skip((page - 1) * pageSize)
-      .take(pageSize);
+      .skip((page - 1) * limit)
+      .take(limit);
 
     const [rawUsers, total] = await Promise.all([queryBuilder.getRawMany(), this.countTotalUsers()]);
 
@@ -78,14 +78,14 @@ export class UsersDAO {
   }
 
   // 승인 대기중, 승인 거절당한 회원 조회
-  async findPendingAndRejectVerifications(pageNumber: number, pageSize: number = 10): Promise<[UsersEntity[], number]> {
+  async findPendingAndRejectVerifications(page: number, limit: number = 10): Promise<[UsersEntity[], number]> {
     return this.usersRepository.findAndCount({
       where: [
         { membershipStatus: EMembershipStatus.PENDING_VERIFICATION, deletedAt: null },
         { rejected: false, deletedAt: null },
       ],
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * limit,
+      take: limit,
       order: {
         createdAt: 'DESC',
       },

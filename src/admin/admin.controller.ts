@@ -6,6 +6,7 @@ import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -39,12 +40,13 @@ export class AdminController {
   @Get('users')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 회원 조회' })
-  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
-  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({ status: 200, description: '회원 목록 조회 성공', type: 'IPaginatedResponse' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getAllUsers(@Query() pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IUserList>> {
-    const result = await this.adminService.fetchAllUsersByAdmin(pageNumber, pageSize);
+  async getAllUsers(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IUserList>> {
+    const { page, limit } = query;
+    const result = await this.adminService.fetchAllUsersByAdmin(page, limit);
     return result;
   }
 
@@ -63,15 +65,13 @@ export class AdminController {
   @Get('approval')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 승인 화면 데이터 조회' })
-  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
-  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({ status: 200, description: '회원 가입 승인 목록 조회 성공', type: 'IPaginatedResponse' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getApprovalsByAdmin(
-    @Query() pageNumber: number,
-    pageSize: number = 10,
-  ): Promise<IPaginatedResponse<IApprovalUserList>> {
-    return await this.adminService.showUserApprovals(pageNumber, pageSize);
+  async getApprovalsByAdmin(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IApprovalUserList>> {
+    const { page, limit } = query;
+    return await this.adminService.showUserApprovals(page, limit);
   }
 
   // 관리자 회원 가입 승인
@@ -89,17 +89,14 @@ export class AdminController {
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
-  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
-  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
   @ApiResponse({ status: 200, description: '게시물 목록 조회 성공', type: 'IPaginatedResponse' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getAllPosts(
-    @Query('pageNumber') pageNumber: number,
-    @Query('pageSize') pageSize: number = 10,
-    @Query('search') search?: string,
-  ): Promise<IPaginatedResponse<IPostList>> {
-    return this.adminService.getAllPosts(pageNumber, pageSize, search);
+  async getAllPosts(@Query() query: SearchQueryDto): Promise<IPaginatedResponse<IPostList>> {
+    const { page, limit, search } = query;
+    return this.adminService.getAllPosts(page, limit, search);
   }
 
   // 관리자 특정 게시물 삭제
@@ -118,12 +115,13 @@ export class AdminController {
   @Get('comments')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 댓글 조회' })
-  @ApiQuery({ name: 'pageNumber', type: Number, required: true, description: '페이지 번호' })
-  @ApiQuery({ name: 'pageSize', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({ status: 200, description: '댓글 목록 조회 성공' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getAllComments(@Query('pageNumber') pageNumber: number, @Query('pageSize') pageSize: number = 10) {
-    return await this.adminService.findAllCommentsAndReplies(pageNumber, pageSize);
+  async getAllComments(@Query() query: PaginationQueryDto) {
+    const { page, limit } = query;
+    return await this.adminService.findAllCommentsAndReplies(page, limit);
   }
 
   // 관리자 특정 댓글 혹은 답글 삭제

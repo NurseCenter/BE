@@ -2,7 +2,7 @@ import { Controller, Get, Patch, Body, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SessionUser } from 'src/auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
-import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
+import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users')
@@ -47,13 +47,8 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '본인의 게시글이 성공적으로 조회되었습니다.' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @Get('posts')
-  async getMyPosts(
-    @SessionUser() user: IUserWithoutPassword,
-    @Query('page') page: number,
-    @Query('limit') limit: number = 10,
-    @Query('sort') sort: 'latest' | 'popular' = 'latest',
-  ) {
-    return this.usersService.fetchMyPosts(user, page, limit, sort);
+  async getMyPosts(@SessionUser() user: IUserWithoutPassword, @Query() query: GetMyPostsQueryDto) {
+    return this.usersService.fetchMyPosts(user, query.page, query.limit, query.sort);
   }
 
   // 본인 댓글 전체 조회
@@ -64,12 +59,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '본인의 댓글이 성공적으로 조회되었습니다.' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @Get('comments')
-  async getMyComments(
-    @SessionUser() user: IUserWithoutPassword,
-    @Query('page') page: number,
-    @Query('limit') limit: number = 10,
-    @Query('sort') sort: 'latest' | 'popular' = 'latest',
-  ) {
-    return this.usersService.fetchMyComments(user, page, limit, sort);
+  async getMyComments(@SessionUser() user: IUserWithoutPassword, @Query() query: GetMyCommentsQueryDto) {
+    return this.usersService.fetchMyComments(user, query.page, query.limit, query.sort);
   }
 }

@@ -13,13 +13,8 @@ export class CommentsDAO {
     private readonly repliesRepository: Repository<RepliesEntity>,
   ) {}
 
-   // 본인이 쓴 댓글 및 답글 조회
-   async findMyComments(
-    userId: number,
-    page: number,
-    limit: number,
-    sort: 'latest' | 'popular'
-  ) {
+  // 본인이 쓴 댓글 및 답글 조회
+  async findMyComments(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
     const skip = (page - 1) * limit;
 
     const commentsQuery = this.commentsRepository
@@ -30,8 +25,9 @@ export class CommentsDAO {
       .orderBy(
         // 최신순일 경우 댓글의 작성일(createdAt)로 정렬, 인기순일 경우 게시물의 스크랩 수(scrapCounts)로 정렬
         // 정렬 방향: 최신순일 경우 최신 댓글이 위로 오도록 내림차순, 인기순일 경우 스크랩 수가 많은 게시물이 위로 오도록 내림차순
-        sort === 'latest' ? 'comment.createdAt' : 'post.scrapCounts', 
-        sort === 'latest' ? 'DESC' : 'DESC')
+        sort === 'latest' ? 'comment.createdAt' : 'post.scrapCounts',
+        sort === 'latest' ? 'DESC' : 'DESC',
+      )
       .skip(skip)
       .take(limit);
 
@@ -41,9 +37,7 @@ export class CommentsDAO {
       .leftJoinAndSelect('comment.post', 'post')
       .where('reply.userId = :userId', { userId })
       .andWhere('reply.deletedAt IS NULL')
-      .orderBy(
-        sort === 'latest' ? 'reply.createdAt' : 'post.scrapCounts', 
-        sort === 'latest' ? 'DESC' : 'DESC')
+      .orderBy(sort === 'latest' ? 'reply.createdAt' : 'post.scrapCounts', sort === 'latest' ? 'DESC' : 'DESC')
       .skip(skip)
       .take(limit);
 

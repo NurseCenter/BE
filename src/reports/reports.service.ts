@@ -18,17 +18,17 @@ export class ReportsService {
   ) {}
 
   // 신고된 게시물 전체 조회
-  async getAllReportedPosts(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<ReportPostsEntity>> {
+  async getAllReportedPosts(page: number, limit: number = 10): Promise<IPaginatedResponse<ReportPostsEntity>> {
     const [posts, total] = await this.reportPostsRepository.findAndCount({
-      take: pageSize,
-      skip: (pageNumber - 1) * pageSize,
+      take: limit,
+      skip: (page - 1) * limit,
     });
 
     return {
       items: posts,
       totalItems: total,
-      totalPages: Math.ceil(total / pageSize),
-      currentPage: pageNumber,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
     };
   }
 
@@ -51,20 +51,17 @@ export class ReportsService {
   }
 
   // 신고된 댓글 전체 조회
-  async getAllReportedComments(
-    pageNumber: number,
-    pageSize: number = 10,
-  ): Promise<IPaginatedResponse<ReportCommentsEntity>> {
+  async getAllReportedComments(page: number, limit: number = 10): Promise<IPaginatedResponse<ReportCommentsEntity>> {
     const [comments, total] = await this.reportCommentsRepository.findAndCount({
-      take: pageSize,
-      skip: (pageNumber - 1) * pageSize,
+      take: limit,
+      skip: (page - 1) * limit,
     });
 
     return {
       items: comments,
       totalItems: total,
-      totalPages: Math.ceil(total / pageSize),
-      currentPage: pageNumber,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
     };
   }
 

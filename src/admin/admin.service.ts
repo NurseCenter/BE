@@ -91,8 +91,8 @@ export class AdminService {
   }
 
   // 모든 회원 조회
-  async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IUserList>> {
-    const [users, total] = await this.usersDAO.findUsersWithDetails(pageNumber, pageSize);
+  async fetchAllUsersByAdmin(page: number, limit: number = 10): Promise<IPaginatedResponse<IUserList>> {
+    const [users, total] = await this.usersDAO.findUsersWithDetails(page, limit);
     const suspendedUsers = await this.suspendedUsersDAO.findSuspendedUsers();
     const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
 
@@ -125,13 +125,13 @@ export class AdminService {
     });
 
     // 전체 페이지 수 계산
-    const totalPages = Math.ceil(total / pageSize);
+    const totalPages = Math.ceil(total / limit);
 
     return {
       items: userList,
       totalItems: total,
       totalPages,
-      currentPage: pageNumber,
+      currentPage: page,
     };
   }
 
@@ -197,9 +197,9 @@ export class AdminService {
   }
 
   // 회원가입 승인 화면 보여주기
-  async showUserApprovals(pageNumber: number, pageSize: number = 10): Promise<IPaginatedResponse<IApprovalUserList>> {
+  async showUserApprovals(page: number, limit: number = 10): Promise<IPaginatedResponse<IApprovalUserList>> {
     try {
-      const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(pageNumber, pageSize);
+      const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(page, limit);
 
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)
@@ -214,8 +214,8 @@ export class AdminService {
       return {
         items,
         totalItems: total,
-        totalPages: Math.ceil(total / pageSize),
-        currentPage: pageNumber,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
       };
     } catch (error) {
       console.error('회원가입 승인 화면 데이터를 가져오는 중 에러 발생: ', error);
@@ -223,8 +223,8 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(pageNumber: number, pageSize: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-    const [posts, total] = await this.postsDAO.findAllPosts(pageNumber, pageSize, search);
+  async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
+    const [posts, total] = await this.postsDAO.findAllPosts(page, limit, search);
 
     const items = posts.map((post) => ({
       postId: post.postId, // 게시물 ID
@@ -237,8 +237,8 @@ export class AdminService {
     return {
       items,
       totalItems: total,
-      totalPages: Math.ceil(total / pageSize),
-      currentPage: pageNumber,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
     };
   }
 
@@ -252,7 +252,7 @@ export class AdminService {
   }
 
   // 댓글 및 답글 조회
-  async findAllCommentsAndReplies(pageNumber: number, pageSize: number): Promise<ICommentOrReply[]> {
+  async findAllCommentsAndReplies(page: number, limit: number): Promise<ICommentOrReply[]> {
     // 댓글과 답글을 모두 조회
     const [comments, replies] = await Promise.all([
       this.commentsDAO.findAllComments(),
@@ -283,8 +283,8 @@ export class AdminService {
     combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     // 페이지네이션 처리
-    const skip = (pageNumber - 1) * pageSize;
-    return combined.slice(skip, skip + pageSize);
+    const skip = (page - 1) * limit;
+    return combined.slice(skip, skip + limit);
   }
 
   // 특정 댓글 또는 답글 조회

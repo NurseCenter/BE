@@ -4,7 +4,6 @@ import { AdminService } from './admin.service';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataAccessModule } from 'src/common/data-access.module';
-import { AdminDAO } from './admin.dao';
 import { DeletedUsersEntity, SuspendedUsersEntity } from './entities';
 import { AuthModule } from 'src/auth/auth.module';
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
@@ -25,6 +24,6 @@ import { PostsEntity } from 'src/posts/entities/base-posts.entity';
     AuthModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, AdminDAO],
+  providers: [AdminService],
 })
 export class AdminModule {}

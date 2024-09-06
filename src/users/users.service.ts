@@ -1,29 +1,19 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { IUserInfoResponse } from './interfaces/user-info-response.interface';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PostsEntity } from 'src/posts/entities/base-posts.entity';
-import { CommentsEntity } from 'src/comments/entities/comments.entity';
-import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { AuthPasswordService } from 'src/auth/services';
-import { UsersEntity } from './entities/users.entity';
 import { UsersDAO } from './users.dao';
+import { CommentsDAO } from 'src/comments/comments.dao';
+import { PostsDAO } from 'src/posts/posts.dao';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly authPasswordService: AuthPasswordService,
     private readonly userDAO: UsersDAO,
-    @InjectRepository(UsersEntity)
-    private readonly usersRepository: Repository<UsersEntity>,
-    @InjectRepository(PostsEntity)
-    private readonly postsRepository: Repository<PostsEntity>,
-    @InjectRepository(CommentsEntity)
-    private readonly commentsRepository: Repository<CommentsEntity>,
-    @InjectRepository(RepliesEntity)
-    private readonly repliesRepository: Repository<RepliesEntity>,
+    private readonly postsDAO: PostsDAO,
+    private readonly commentsDAO: CommentsDAO,
   ) {}
 
   // 나의 정보 조회
@@ -44,7 +34,7 @@ export class UsersService {
     }
 
     user.nickname = newNickname;
-    await this.usersRepository.save(user);
+    await this.userDAO.saveUser(user);
     return { message: '닉네임이 수정되었습니다.' };
   }
 
@@ -53,7 +43,7 @@ export class UsersService {
     const { userId } = sessionUser;
     const { oldPassword, newPassword } = updatePasswordDto;
 
-    const user = await this.usersRepository.findOne({ where: { userId } });
+    const user = await this.userDAO.findUserByUserId(userId);
 
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -71,45 +61,24 @@ export class UsersService {
 
     const newHashedPassword = await this.authPasswordService.createPassword(newPassword);
     user.password = newHashedPassword;
-    await this.usersRepository.save(user);
+    await this.userDAO.saveUser(user);
 
     return { message: '비밀번호가 수정되었습니다.' };
   }
 
-  // 내가 쓴 게시물 전체 조회
-  async fetchMyPosts(sessionUser: IUserWithoutPassword) {
+  // 나의 게시글 조회
+  async fetchMyPosts(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular') {
     if (!sessionUser?.userId) {
       throw new BadRequestException('회원 ID가 존재하지 않습니다.');
     }
-
-    const { userId } = sessionUser;
-
-    // userId와 일치하는 게시물 조회
-    const posts = await this.postsRepository.find({
-      where: { user: { userId } },
-    });
-
-    return posts;
+    return this.postsDAO.findUserPosts(sessionUser.userId, page, limit, sort);
   }
 
-  // 내가 쓴 댓글과 답글 전체 조회
-  // 댓글과 답글을 시간순으로 정렬
-  async fetchMyComments(sessionUser: IUserWithoutPassword) {
-    const { userId } = sessionUser;
-
+  // 나의 댓글 조회
+  async fetchMyComments(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular') {
     if (!sessionUser?.userId) {
       throw new BadRequestException('회원 ID가 존재하지 않습니다.');
     }
-
-    // userId와 일치하는 댓글과 대댓글을 최신순으로 조회
-    const comments = await this.commentsRepository.find({
-      where: { userId },
-    });
-    const replies = await this.repliesRepository.find({
-      where: { userId },
-    });
-
-    const commentsAndReplies = [...comments, ...replies];
-    return commentsAndReplies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return this.commentsDAO.findUserComments(sessionUser.userId, page, limit, sort);
   }
 }

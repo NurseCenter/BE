@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { AdminDAO } from './admin.dao';
 import { ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
@@ -11,13 +10,21 @@ import { PaginatedResponse } from 'src/common/interfaces/paginated-response-inte
 import { IApprovalUserList, ICommentOrReply, IPostList, IUserInfo, IUserList } from './interfaces';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { error } from 'console';
+import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
+import { PostsDAO } from 'src/posts/posts.dao';
+import { CommentsDAO } from 'src/comments/comments.dao';
+import { RepliesDAO } from 'src/replies/replies.dao';
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly authUserService: AuthUserService,
     private readonly usersDAO: UsersDAO,
-    private readonly adminDAO: AdminDAO,
+    private readonly deletedUsersDAO: DeletedUsersDAO,
+    private readonly suspendedUsersDAO: SuspendedUsersDAO,
+    private readonly postsDAO: PostsDAO,
+    private readonly commentsDAO: CommentsDAO,
+    private readonly repliesDAO: RepliesDAO
   ) {}
 
   // 회원 계정 탈퇴 처리
@@ -34,11 +41,11 @@ export class AdminService {
 
       await this.authUserService.deleteUser(userId);
 
-      const newDeletedUser = await this.adminDAO.createDeletedUser(userId);
+      const newDeletedUser = await this.deletedUsersDAO.createDeletedUser(userId);
       if (!newDeletedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
       newDeletedUser.deletionReason = deletionReason;
-      await this.adminDAO.saveDeletedUser(newDeletedUser);
+      await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
 
       await queryRunner.commitTransaction();
     } catch {
@@ -61,13 +68,13 @@ export class AdminService {
       const user = await this.usersDAO.findUserByUserId(userId);
       if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-      const newSuspendedUser = await this.adminDAO.createSuspendedUser(userId);
+      const newSuspendedUser = await this.suspendedUsersDAO.createSuspendedUser(userId);
       if (!newSuspendedUser)
         throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
 
       newSuspendedUser.suspensionReason = suspensionReason;
       newSuspendedUser.suspensionDuration = suspensionDuration;
-      await this.adminDAO.saveSuspendedUser(newSuspendedUser);
+      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
 
       const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
 
@@ -85,9 +92,9 @@ export class AdminService {
 
   // 모든 회원 조회
   async fetchAllUsersByAdmin(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IUserList>> {
-    const [users, total] = await this.adminDAO.findUsersWithDetails(pageNumber, pageSize);
-    const suspendedUsers = await this.adminDAO.findSuspendedUsers();
-    const deletedUsers = await this.adminDAO.findDeletedUsers();
+    const [users, total] = await this.usersDAO.findUsersWithDetails(pageNumber, pageSize);
+    const suspendedUsers = await this.suspendedUsersDAO.findSuspendedUsers();
+    const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
 
     const userList = users.map((user) => {
       const suspendedUser = suspendedUsers.find((su) => su.userId === user.userId);
@@ -192,7 +199,7 @@ export class AdminService {
   // 회원가입 승인 화면 보여주기
   async showUserApprovals(pageNumber: number, pageSize: number = 10): Promise<PaginatedResponse<IApprovalUserList>> {
     try {
-      const [users, total] = await this.adminDAO.findPendingAndRejectVerifications(pageNumber, pageSize);
+      const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(pageNumber, pageSize);
 
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)
@@ -217,7 +224,7 @@ export class AdminService {
 
   // 게시물 관리 페이지 데이터 조회
   async getAllPosts(pageNumber: number, pageSize: number): Promise<PaginatedResponse<IPostList>> {
-    const [posts, total] = await this.adminDAO.findAllPosts(pageNumber, pageSize);
+    const [posts, total] = await this.postsDAO.findAllPosts(pageNumber, pageSize);
 
     const items = posts.map((post) => ({
       postId: post.postId, // 게시물 ID
@@ -237,7 +244,7 @@ export class AdminService {
 
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<void> {
-    const post = await this.adminDAO.deletePost(postId);
+    const post = await this.postsDAO.deletePost(postId);
 
     if (!post) {
       throw new NotFoundException('게시물이 존재하지 않거나 이미 삭제되었습니다.');
@@ -247,7 +254,7 @@ export class AdminService {
   // 댓글 및 답글 조회
   async findAllCommentsAndReplies(pageNumber: number, pageSize: number): Promise<ICommentOrReply[]> {
     // 댓글과 답글을 모두 조회
-    const [comments, replies] = await Promise.all([this.adminDAO.findAllComments(), this.adminDAO.findAllReplies()]);
+    const [comments, replies] = await Promise.all([this.commentsDAO.findAllComments(), this.repliesDAO.findAllReplies()]);
 
     // 댓글과 답글을 합침
     const combined = [
@@ -279,7 +286,7 @@ export class AdminService {
 
   // 특정 댓글 또는 답글 조회
   async findCommentOrReplyById(id: number): Promise<ICommentOrReply> {
-    const comment = await this.adminDAO.findCommentById(id);
+    const comment = await this.commentsDAO.findCommentById(id);
     if (comment) {
       return {
         id: comment.commentId, // 댓글 ID
@@ -291,7 +298,7 @@ export class AdminService {
       };
     }
 
-    const reply = await this.adminDAO.findReplyById(id);
+    const reply = await this.repliesDAO.findReplyById(id);
     if (reply) {
       return {
         id: reply.replyId, // 답글 ID

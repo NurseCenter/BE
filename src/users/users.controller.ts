@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SessionUser } from 'src/auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
@@ -28,13 +28,23 @@ export class UsersController {
 
   // 본인 게시글 전체 조회
   @Get('posts')
-  async getMyPosts(@SessionUser() user: IUserWithoutPassword) {
-    return this.usersService.fetchMyPosts(user);
+  async getMyPosts(
+    @SessionUser() user: IUserWithoutPassword,
+    @Query('page') page: number,
+    @Query('limit') limit: number = 10,
+    @Query('sort') sort: 'latest' | 'popular' = 'latest',
+  ) {
+    return this.usersService.fetchMyPosts(user, page, limit, sort);
   }
 
   // 본인 댓글 전체 조회
   @Get('comments')
-  async getMyComments(@SessionUser() user: IUserWithoutPassword) {
-    return this.usersService.fetchMyComments(user);
+  async getMyComments(
+    @SessionUser() user: IUserWithoutPassword,
+    @Query('page') page: number,
+    @Query('limit') limit: number = 10,
+    @Query('sort') sort: 'latest' | 'popular' = 'latest',
+  ) {
+    return this.usersService.fetchMyComments(user, page, limit, sort);
   }
 }

@@ -8,7 +8,7 @@ import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
 import { ConfigModule } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import { DatabaseExceptionFilter } from './filters/database-exception.filter';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {

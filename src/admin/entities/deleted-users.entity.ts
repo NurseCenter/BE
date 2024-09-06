@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 
 @Entity('deleted_users')
 export class DeletedUsersEntity {
+  // 탈퇴처리된 회원 테이블에서의 고유 ID
   @PrimaryGeneratedColumn()
   id: number;
 

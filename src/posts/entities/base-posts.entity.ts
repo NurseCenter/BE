@@ -15,8 +15,8 @@ import { UsersEntity } from '../../users/entities/users.entity';
 import { LikeEntity } from '../../likes/entities/likes.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { ImageEntity } from '../../images/entities/image.entity';
-import { ReportPostsEntity } from 'src/admin/entities';
 import { EBoardType } from '../enum/board-type.enum';
+import { ReportPostsEntity } from 'src/reports/entities';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -27,24 +27,28 @@ import { EBoardType } from '../enum/board-type.enum';
 [이벤트] event.entity.ts -> EventEntity
 [공지사항] notice.entity.ts -> NoticeEntity
 */
+
 // @Index('IDX_BOARD_TYPE_POST_ID', ['boardType', 'postId'])
 @Entity('posts')
 @Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
 export class PostsEntity {
+  // 게시물 고유 ID
   @PrimaryGeneratedColumn()
   postId: number;
   
+  // 카테고리 종류
   @Column({ type: 'enum', enum: EBoardType, enumName: 'boardType' })
   boardType: EBoardType;
 
+  // 작성자 ID
   @Column()
   userId: number;
 
-  // 제목
+  // 글 제목
   @Column({ type: 'varchar', length: 50 })
   title: string;
 
-  // 내용
+  // 글 내용
   @Column({ type: 'varchar', length: 2000 })
   content: string;
 
@@ -60,17 +64,15 @@ export class PostsEntity {
   @Column({ type: 'int', default: 0 })
   viewCounts: number;
 
+  // 좋아요 수
   @Column({ type: 'int', default: 0 })
   like: number;
 
-  // 댓글
-  // 하나의 게시글에 여러 개의 댓글이 가능함.
-
-  // 작성일
+  // 게시물 작성일
   @CreateDateColumn()
   createdAt: Date;
 
-  // 게시물 업데이트일
+  // 게시물 수정일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
   @UpdateDateColumn()
@@ -81,22 +83,34 @@ export class PostsEntity {
   @DeleteDateColumn()
   deletedAt?: Date;
 
+  // 글 작성자와의 관계 설정
+  // 한 회원이 여러 개의 게시물을 작성할 수 있음.
   @ManyToOne(() => UsersEntity, (user) => user.posts)
   @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   user: UsersEntity;
 
+  // 댓글과의 관계 설정
+  // 하나의 게시글에 여러 개의 댓글이 가능함
   @OneToMany(() => CommentsEntity, (comment) => comment.post)
   comments: CommentsEntity[];
 
+  // 좋아요와의 관계 설정
+  // 하나의 게시글에 여러 개의 좋아요가 있을 수 있음
   @OneToMany(() => LikeEntity, (like) => like.post)
   likes: LikeEntity[];
 
+  // 스크랩과의 관계 설정
+  // 하나의 게시글에 여러 개의 스크랩이 있을 수 있음
   @OneToMany(() => ScrapsEntity, (scrap) => scrap.post)
   scraps: ScrapsEntity[];
 
+  // 신고된 게시글과의 관계 설정
+  // 하나의 게시글에 여러 개의 신고가 있을 수 있음
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
   reportPosts: ReportPostsEntity[];
 
+  // 이미지와의 관계 설정
+  // 하나의 게시글에 여러 개의 이미지가 첨부될 수 있음
   @OneToMany(() => ImageEntity, (image) => image.post)
   images: ImageEntity[];
 }

@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDa
 
 @Entity('logins')
 export class LoginsEntity {
+  // 로그인 기록 테이블의 고유 ID
   @PrimaryGeneratedColumn()
   id: number;
 

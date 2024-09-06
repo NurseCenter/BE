@@ -3,7 +3,7 @@ import { PostsEntity } from '../../posts/entities/base-posts.entity';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { LoginsEntity } from 'src/auth/entities/logins.entity';
 import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
 import { ReportCommentsEntity } from '../../reports/entities/report-comments.entity';
@@ -73,39 +73,48 @@ export class UsersEntity {
   createdAt?: Date;
 
   // 활동 정지 종료 날짜
-  // 기본 상태 null, 정지되었으면 정지가 종료되는 날짜
+  // 기본 상태 null, 정지된 경우 정지가 종료되는 날짜를 저장
   @Column({ type: 'timestamp', nullable: true, default: null })
   suspensionEndDate?: Date;
 
   // 탈퇴일
-  // 탈퇴하지 않은 null, 탈퇴하면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  // 탈퇴하지 않은 경우 null이며, 탈퇴 시 날짜가 저장됨
+  @DeleteDateColumn()
   deletedAt?: Date;
 
+  // 이 회원이 작성한 게시물들
   @OneToMany(() => PostsEntity, (post) => post.user)
   posts: PostsEntity[];
 
+  // 이 회원이 작성한 댓글들
   @OneToMany(() => CommentsEntity, (comment) => comment.user)
   comments: CommentsEntity[];
 
+  // 이 회원이 작성한 답글들
   @OneToMany(() => RepliesEntity, (reply) => reply.user)
   replies: RepliesEntity[];
 
+  // 이 회원이 스크랩한 게시물들
   @OneToMany(() => ScrapsEntity, (scrap) => scrap.user)
   scraps: ScrapsEntity[];
 
+  // 이 사용자의 로그인 기록들
   @OneToMany(() => LoginsEntity, (login) => login.loginUser)
   logins: LoginsEntity[];
 
+  // 이 사용자가 신고한 게시물들
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportingUser)
   submittedPostReports: LoginsEntity[];
 
+  // 이 사용자가 신고받은 게시물들
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportedUser)
   receivedPostReports: LoginsEntity[];
 
+  // 이 사용자가 신고한 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
   submittedCommentReports: LoginsEntity[];
 
+   // 이 사용자가 신고받은 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
   receivedCommentReports: LoginsEntity[];
 }

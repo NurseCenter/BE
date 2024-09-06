@@ -56,7 +56,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<{ message: string }> {
     await this.authService.signIn(signInUserDto, req, res);
-    return { message: '로그인에 성공하였습니다.' };
+    return { message: '로그인이 완료되었습니다.' };
   }
 
   // 로그아웃
@@ -67,7 +67,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
     await this.authService.signOut(req, res);
-    return { message: '로그아웃에 성공하였습니다.' };
+    return { message: '로그아웃이 완료되었습니다.' };
   }
 
   // 이메일 인증 발송
@@ -149,8 +149,25 @@ export class AuthController {
   // 프론트엔드의 리다이렉션을 위함.
   @Get('status')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '사용자 상태 확인' })
-  @ApiResponse({ status: 200, description: '사용자 상태 확인 성공' })
+  @ApiOperation({ summary: '회원 상태 확인' })
+  @ApiResponse({
+    status: 200,
+    description: '사용자 상태 확인 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          enum: ['non_member', 'pending_verification', 'email_verified', 'approved_member', 'error'],
+          example: 'non_member'
+        },
+        message: {
+          type: 'string',
+          example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getStatus(
     @SessionUser() sessionUser: IUserWithoutPassword,

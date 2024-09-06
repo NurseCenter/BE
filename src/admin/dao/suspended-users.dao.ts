@@ -21,8 +21,15 @@ export class SuspendedUsersDAO {
     return await this.suspendedUsersRepository.save(suspendedUserEntity);
   }
 
-  // 정지된 회원 조회
+  // 정지된 회원 전체 조회
   async findSuspendedUsers() {
     return this.suspendedUsersRepository.find();
+  }
+
+  // 특정 정지된 회원 조회
+  async findSuspendedUserByUserId(userId: number): Promise<SuspendedUsersEntity> {
+    return await this.suspendedUsersRepository.findOne({
+      where: { userId },
+    });
   }
 }

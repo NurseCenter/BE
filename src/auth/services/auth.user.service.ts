@@ -108,6 +108,8 @@ export class AuthUserService {
     const status = user.membershipStatus;
 
     switch (status) {
+      case EMembershipStatus.NON_MEMBER:
+        return { status: 'non_member', message: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' };
       case EMembershipStatus.PENDING_VERIFICATION:
         return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
       case EMembershipStatus.EMAIL_VERIFIED:

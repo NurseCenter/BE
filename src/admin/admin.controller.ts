@@ -4,7 +4,7 @@ import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 
@@ -25,6 +25,17 @@ export class AdminController {
     return { message: '회원 탈퇴 처리가 완료되었습니다.' };
   }
 
+    // 관리자 회원 탈퇴 취소
+    @Post('withdrawal/cancel')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: '회원 탈퇴 취소' })
+    @ApiBody({ type: Number, description: '탈퇴 취소에 필요한 사용자 ID' })
+    @ApiResponse({ status: 200, description: '회원 탈퇴 취소가 완료되었습니다.' })
+    @ApiResponse({ status: 400, description: '잘못된 요청' })
+    async postCancelWithdrawal(@Body() userId: number) {
+      return this.adminService.cancelWithdrawal(userId);
+    }
+
   // 관리자 회원 정지 처리
   @Post('suspension')
   @HttpCode(HttpStatus.OK)
@@ -34,6 +45,17 @@ export class AdminController {
   async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
     await this.adminService.suspendUserByAdmin(suspensionUserDto);
     return { message: '회원 정지 처리가 완료되었습니다.' };
+  }
+
+  // 관리자 회원 정지 취소
+  @Post('suspension/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 정지 취소' })
+  @ApiBody({ type: Number, description: '정지 취소에 필요한 사용자 ID' })
+  @ApiResponse({ status: 200, description: '회원 정지 취소가 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async postCancelSuspension(@Body() userId: number) {
+    return this.adminService.cancelSuspension(userId);
   }
 
   // 관리자 전체 회원 조회

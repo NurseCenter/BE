@@ -21,8 +21,15 @@ export class DeletedUsersDAO {
     return await this.deletedUsersRepository.save(deletedUserEntity);
   }
 
-  // 탈퇴된 회원 조회
+  // 탈퇴된 회원 전체 조회
   async findDeletedUsers() {
     return this.deletedUsersRepository.find();
+  }
+
+  // 특정 탈퇴된 회원 조회
+  async findDeletedUserByUserId(userId: number): Promise<DeletedUsersEntity> {
+    return await this.deletedUsersRepository.findOne({
+      where: { userId },
+    });
   }
 }

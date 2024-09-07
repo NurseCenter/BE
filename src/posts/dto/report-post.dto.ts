@@ -1,11 +1,11 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { ESuspensionReason } from '../../admin/enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { EReportReason } from 'src/reports/enum';
 
 export class ReportPostDto {
-  @IsEnum(ESuspensionReason)
+  @IsEnum(EReportReason)
   @ApiProperty({ description: '댓글 내용' })
-  @ApiProperty({ enum: ESuspensionReason, description: '신고 이유' })
+  @ApiProperty({ enum: EReportReason, description: '신고 이유' })
   reportedReason: string;
 
   @IsString()

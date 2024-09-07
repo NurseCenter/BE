@@ -4,7 +4,7 @@ import { CommentsEntity } from '../comments/entities/comments.entity';
 import { RepliesEntity } from './entities/replies.entity';
 import { Repository } from 'typeorm';
 import { ReplyDto } from './dto/reply.dto';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 
 @Injectable()
 export class RepliesService {
@@ -14,7 +14,7 @@ export class RepliesService {
   private replyRepository: Repository<RepliesEntity>;
 
   //작성
-  async createReply(commentId: number, sessionUser: User, replyDto: ReplyDto) {
+  async createReply(commentId: number, sessionUser: IUserWithoutPassword, replyDto: ReplyDto) {
     const { userId } = sessionUser;
     const post = await this.commentRepository.findOne({
       where: {
@@ -42,7 +42,7 @@ export class RepliesService {
     return comments;
   }
   //수정
-  async updateReplies(replyId: number, sessionUser: User, replyDto: ReplyDto) {
+  async updateReplies(replyId: number, sessionUser: IUserWithoutPassword, replyDto: ReplyDto) {
     const { userId } = sessionUser;
     const reply = await this.replyRepository.findOne({
       where: {
@@ -65,7 +65,7 @@ export class RepliesService {
     return updateComment;
   }
   //삭제
-  async deleteReplies(replyId: number, sessionUser: User) {
+  async deleteReplies(replyId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const reply = await this.replyRepository.findOne({
       where: {

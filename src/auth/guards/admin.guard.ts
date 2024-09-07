@@ -8,8 +8,8 @@ export class AdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     if (!request.user?.isAdmin) {
-        throw new ForbiddenException("관리자 권한이 없습니다.")
+      throw new ForbiddenException('관리자 권한이 없습니다.');
     }
-    return true; 
+    return true;
   }
 }

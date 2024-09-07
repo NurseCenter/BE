@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { ESuspensionDuration } from './enums';
+import { EmanagementStatus, ESuspensionDuration } from './enums';
 import dayjs from 'dayjs';
 import dataSource from 'data-source';
 import { EMembershipStatus } from 'src/users/enums';
@@ -145,14 +145,14 @@ export class AdminService {
       const deletedUser = deletedUsers.find((du) => du.userId === user.userId);
 
       // 관리 상태 결정
-      let managementStatus: '정지' | '탈퇴' | '해당없음' = '해당없음';
+      let managementStatus: EmanagementStatus = EmanagementStatus.NONE; // 없음(기본값)
       let managementReason = '없음';
 
       if (deletedUser) {
-        managementStatus = '탈퇴';
+        managementStatus = EmanagementStatus.WITHDRAWN; // 탈퇴
         managementReason = deletedUser.deletionReason || '없음';
       } else if (suspendedUser) {
-        managementStatus = '정지';
+        managementStatus = EmanagementStatus.STOPPED; // 정지
         managementReason = suspendedUser.suspensionReason || '없음';
       }
 

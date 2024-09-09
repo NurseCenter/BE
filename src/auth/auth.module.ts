@@ -33,6 +33,6 @@ import { DataAccessModule } from 'src/common/data-access.module';
     LocalStrategy,
     SessionSerializer,
   ],
-  exports: [AuthUserService, AuthPasswordService],
+  exports: [AuthUserService, AuthPasswordService, AuthSignInService, AuthService],
 })
 export class AuthModule {}

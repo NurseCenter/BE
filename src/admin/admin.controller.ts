@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, Param, Query } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, Param, Query, Req, Res } from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
@@ -7,12 +7,30 @@ import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
+import { SignInUserDto } from 'src/auth/dto';
+import { Request, Response } from 'express';
 
 @ApiTags('Admin')
 @Controller('admin')
 @UseGuards(AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  // 관리자 계정 로그인
+  @Post('sign-in')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '관리자 계정 로그인' })
+  @ApiBody({ type: SignInUserDto, description: '로그인에 필요한 정보' })
+  @ApiResponse({ status: 200, description: '관리자 계정으로 로그인에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async postSignIn(
+    @Body() signInUserDto: SignInUserDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<{ message: string }> {
+    await this.adminService.signInByAdmin(signInUserDto, req, res);
+    return { message: '관리자 계정으로 로그인이 완료되었습니다.' };
+    }
 
   // 관리자 회원 탈퇴 처리
   @Delete('withdrawal')

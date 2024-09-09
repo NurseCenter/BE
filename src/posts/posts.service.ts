@@ -142,7 +142,9 @@ export class PostsService {
         relations: ['images'],
       });
       if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
-      return result;
+      return {
+        
+      };
     } catch (err) {
       throw err;
     }

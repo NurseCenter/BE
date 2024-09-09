@@ -43,6 +43,7 @@ export class PostsController {
   //특정 게시글 조회
   @Get(':boardType/:id')
   @HttpCode(200)
+  @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '특정 게시글 조회' })
   @ApiParam({ name: 'boardType', enum: BoardType, description: '게시판 유형' })
   @ApiParam({ name: 'id', type: Number, description: '게시글 ID' })

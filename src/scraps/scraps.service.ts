@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 
 @Injectable()
 export class ScrapService {
@@ -12,7 +12,7 @@ export class ScrapService {
   @InjectRepository(ScrapsEntity)
   private scrapRepository: Repository<ScrapsEntity>;
 
-  async scrapPost(postId: number, sessionUser: User): Promise<ScrapsEntity> {
+  async scrapPost(postId: number, sessionUser: IUserWithoutPassword): Promise<ScrapsEntity> {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
@@ -28,12 +28,12 @@ export class ScrapService {
     return result;
   }
 
-  async getScrapPosts(sessionUser: User) {
+  async getScrapPosts(sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     return await this.scrapRepository.find({ where: { userId }, relations: ['post'] });
   }
 
-  async deleteScrapPost(scrapId: number, sessionUser: User): Promise<DeleteResult> {
+  async deleteScrapPost(scrapId: number, sessionUser: IUserWithoutPassword): Promise<DeleteResult> {
     const { userId } = sessionUser;
     const scrapPost = await this.scrapRepository.findOneBy({ scrapId });
 

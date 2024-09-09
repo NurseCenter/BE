@@ -1,4 +1,4 @@
 export enum EStudentStatus {
-  CURRENT_STUDENT = 'current_student', // 재학생
-  ALUMNI = 'alumni', // 졸업생
+  CURRENT = 'current_student', // 재학생
+  GRADUATE = 'graduated_student', // 졸업생
 }

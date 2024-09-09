@@ -8,13 +8,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { Repository } from 'typeorm';
-import { BoardType } from '../posts/enum/boardType.enum';
+import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
-import { ESuspensionReason } from '../admin/enums';
-import { ReportCommentsEntity } from '../admin/entities/report-comments.entity';
+import { ReportCommentsEntity } from '../reports/entities/report-comments.entity';
+import { EReportReason } from 'src/reports/enum';
 
 @Injectable()
 export class CommentsService {
@@ -26,7 +26,12 @@ export class CommentsService {
   private reportCommentRepository: Repository<ReportCommentsEntity>;
 
   //작성
-  async createComment(boardType: BoardType, postId: number, sessionUser: User, createCommentDto: CreateCommentDto) {
+  async createComment(
+    boardType: EBoardType,
+    postId: number,
+    sessionUser: IUserWithoutPassword,
+    createCommentDto: CreateCommentDto,
+  ) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOne({
       where: {
@@ -46,7 +51,7 @@ export class CommentsService {
     return createdComment;
   }
   //조회
-  async getComments(boardType: BoardType, postId: number) {
+  async getComments(boardType: EBoardType, postId: number) {
     const comments = await this.commentRepository.find({
       where: {
         // postId,
@@ -57,7 +62,7 @@ export class CommentsService {
     return comments;
   }
   //수정
-  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: User) {
+  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const comment = await this.commentRepository.findOne({
       where: {
@@ -81,7 +86,7 @@ export class CommentsService {
     return updateComment;
   }
   //삭제
-  async deleteComment(commentId: number, sessionUser: User) {
+  async deleteComment(commentId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const comment = await this.commentRepository.findOne({
       where: {
@@ -98,14 +103,14 @@ export class CommentsService {
     return deletedComment;
   }
   //특정 댓글 신고
-  async reportComment(commentId: number, sessionUser: User, reportPostDto: ReportPostDto) {
+  async reportComment(commentId: number, sessionUser: IUserWithoutPassword, reportPostDto: ReportPostDto) {
     const { userId } = sessionUser;
     const comment = await this.commentRepository.findOneBy({ commentId });
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
     if (comment.userId === userId) {
       throw new ForbiddenException(`자신이 작성한 댓글을 신고할 수 없습니다.`);
     }
-    if (reportPostDto.reportedReason === ESuspensionReason.OTHER && !reportPostDto.otherReportedReason) {
+    if (reportPostDto.reportedReason === EReportReason.OTHER && !reportPostDto.otherReportedReason) {
       throw new BadRequestException(`신고 사유를 기입해주세요.`);
     }
     const existingReport = await this.reportCommentRepository.findOne({

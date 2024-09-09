@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { HospitalsModule } from './hospitals/hospitals.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
@@ -10,8 +9,6 @@ import { AdminModule } from './admin/admin.module';
 import { CommonModule } from './common/common.module';
 import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
-import { OcrModule } from './ocr/ocr.module';
-import { OcrController } from './ocr/ocr.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeOrmConfig } from './config/orm.config';
@@ -35,7 +32,6 @@ import { ImagesModule } from './images/images.module';
       inject: [ConfigService],
     }),
     AuthModule,
-    HospitalsModule,
     PostsModule,
     CommentsModule,
     UsersModule,
@@ -44,13 +40,12 @@ import { ImagesModule } from './images/images.module';
     ConfigModule,
     ScrapModule,
     LikesModule,
-    OcrModule,
     RepliesModule,
     RedisModule,
     HealthCheckModule,
     ImagesModule,
   ],
-  controllers: [AppController, OcrController],
+  controllers: [AppController],
   providers: [AppService, SessionConfigService],
 })
 export class AppModule {}

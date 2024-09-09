@@ -1,5 +1,5 @@
-import { IsEnum,  IsNumber } from 'class-validator';
-import { BoardType } from '../enum/boardType.enum';
+import { IsEnum, IsNumber } from 'class-validator';
+import { EBoardType } from '../enum/board-type.enum';
 import { Type } from 'class-transformer';
 
 export class BasePostDto {
@@ -7,6 +7,6 @@ export class BasePostDto {
   @Type(() => Number)
   postId: number;
 
-  @IsEnum(BoardType)
-  boardType: BoardType;
+  @IsEnum(EBoardType)
+  boardType: EBoardType;
 }

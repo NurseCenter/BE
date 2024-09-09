@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { ReplyDto } from './dto/reply.dto';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -23,7 +23,7 @@ export class RepliesController {
   async createReply(
     @Param('commentId') commentId: number,
     @Body() replyDto: ReplyDto,
-    @SessionUser() sessionUser: User,
+    @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     const result = await this.repliesService.createReply(commentId, sessionUser, replyDto);
     return result;
@@ -51,7 +51,11 @@ export class RepliesController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 403, description: '권한 없음' })
   @ApiResponse({ status: 404, description: '답글을 찾을 수 없음' })
-  async updateReplies(@Param('replyId') replyId: number, @Body() replyDto: ReplyDto, @SessionUser() sessionUser: User) {
+  async updateReplies(
+    @Param('replyId') replyId: number,
+    @Body() replyDto: ReplyDto,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ) {
     const result = await this.repliesService.updateReplies(replyId, sessionUser, replyDto);
     return result;
   }
@@ -65,7 +69,7 @@ export class RepliesController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 403, description: '권한 없음' })
   @ApiResponse({ status: 404, description: '답글을 찾을 수 없음' })
-  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: User) {
+  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
     const result = await this.repliesService.deleteReplies(replyId, sessionUser);
     return result;
   }

@@ -8,7 +8,7 @@ import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
 import { ConfigModule } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import { DatabaseExceptionFilter } from './filters/database-exception.filter';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -21,6 +21,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   //스웨거 설정
   const config = new DocumentBuilder()
     .setTitle('Your API Title')
@@ -30,13 +31,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
   SwaggerModule.setup('api', app, document);
-  app.useGlobalFilters(new DatabaseExceptionFilter());
-  // ConfigService 인스턴스 가져오기
-  const sessionConfigService = app.get(SessionConfigService);
 
-  // 인스턴스를 전달하여 sessionOptions 생성
+  app.useGlobalFilters(new DatabaseExceptionFilter());
+
+  // 환경변수 설정
+  const sessionConfigService = app.get(SessionConfigService);
   const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(session(sessionOptions));

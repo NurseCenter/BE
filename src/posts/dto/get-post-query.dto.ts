@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { SortOrder, SortType } from '../enum/sortType.enum';
+import { ESortOrder, ESortType } from '../enum/sort-type.enum';
+
 export class PaginateQueryDto {
   @IsOptional()
-  @IsEnum(SortType)
-  @ApiProperty({ enum: SortOrder, required: false, description: '정렬 순서' })
-  sortType?: SortType = SortType.DATE;
+  @IsEnum(ESortType)
+  @ApiProperty({ enum: ESortOrder, required: false, description: '정렬 순서' })
+  sortType?: ESortType = ESortType.DATE;
 
   @IsOptional()
   @IsNumber()
@@ -25,7 +26,7 @@ export class PaginateQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(SortOrder)
-  @ApiProperty({ enum: SortType, required: false, description: '정렬 기준' })
-  sortOrder?: SortOrder = SortOrder.DESC;
+  @IsEnum(ESortOrder)
+  @ApiProperty({ enum: ESortType, required: false, description: '정렬 기준' })
+  sortOrder?: ESortOrder = ESortOrder.DESC;
 }

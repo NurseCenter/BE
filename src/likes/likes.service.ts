@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { DataSource, Repository } from 'typeorm';
 import { LikeEntity } from './entities/likes.entity';
-import { User } from '../auth/interfaces/session-decorator.interface';
+import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 
 @Injectable()
 export class LikesService {
@@ -13,7 +13,7 @@ export class LikesService {
   @InjectRepository(LikeEntity)
   private likeRepository: Repository<LikeEntity>;
 
-  async toggleLike(postId: number, sessionUser: User) {
+  async toggleLike(postId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);

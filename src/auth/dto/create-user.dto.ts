@@ -7,7 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateUserDto {
   @ApiProperty({
     description: '닉네임 - 한글 또는 영문 2~8자 (숫자 및 특수문자 불가)',
-    example: '명란젓코난'
+    example: '명란젓코난',
   })
   @IsString()
   @Matches(NICKNAME_REGEX, { message: validationMessages.nickname })
@@ -22,7 +22,8 @@ export class CreateUserDto {
   readonly email: string;
 
   @ApiProperty({
-    description: "비밀번호 - 8 ~ 16자, 영문 대문자, 소문자, 숫자, 특수문자 각각 1개 이상 포함 (특수문자는 '!@#$%^&*?_'만 가능)",
+    description:
+      "비밀번호 - 8 ~ 16자, 영문 대문자, 소문자, 숫자, 특수문자 각각 1개 이상 포함 (특수문자는 '!@#$%^&*?_'만 가능)",
     example: 'P@ssw0rd123',
   })
   @IsString()

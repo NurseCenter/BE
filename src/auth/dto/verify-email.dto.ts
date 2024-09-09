@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class VerifyEmailDto {
   @ApiProperty({
     description: '유효한 이메일 주소',
-    example: 'example@domain.com'
+    example: 'example@domain.com',
   })
   @IsString()
   @IsNotEmpty()

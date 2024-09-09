@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SendEmailDto {
   @ApiProperty({
     description: '2~8자의 영문 대소문자 또는 한글 닉네임',
-    example: '홍길동'
+    example: '홍길동',
   })
   @IsString()
   @IsNotEmpty()
@@ -15,7 +15,7 @@ export class SendEmailDto {
 
   @ApiProperty({
     description: '유효한 이메일 주소',
-    example: 'example@domain.com'
+    example: 'example@domain.com',
   })
   @IsString()
   @IsNotEmpty()

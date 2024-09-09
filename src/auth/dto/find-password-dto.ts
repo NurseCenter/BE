@@ -13,7 +13,7 @@ export class FindPasswordDto {
 
   @ApiProperty({
     description: '이메일 주소',
-    example: 'gildong@example.com'
+    example: 'gildong@example.com',
   })
   @IsString()
   @Matches(EMAIL_REGEX, { message: validationMessages.email })

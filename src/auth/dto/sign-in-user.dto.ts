@@ -13,7 +13,7 @@ export class SignInUserDto {
 
   @ApiProperty({
     description: '8~16자 길이의 비밀번호로, 대문자, 소문자, 숫자, 특수 문자를 포함해야 함.',
-    example: 'Password123!'
+    example: 'Password123!',
   })
   @Matches(PASSWORD_REGEX, { message: validationMessages.password })
   readonly password: string;

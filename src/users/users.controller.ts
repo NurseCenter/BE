@@ -64,6 +64,10 @@ export class UsersController {
   }
 
   // 인증서류 이미지에서 실명 추출
+  @ApiOperation({ summary: '인증서류 이미지에서 실명 추출' })
+  @ApiResponse({ status: 200, description: '실명 추출 및 회원 정보 업데이트 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 404, description: '회원 또는 인증서류를 찾을 수 없음' })
   @Post('/:userId/name-extraction')
   async postNameExtraction(@Param('userId') userId: number): Promise<{ message: string; userName: string }> {
     const userName = await this.usersService.extractUserName(userId);

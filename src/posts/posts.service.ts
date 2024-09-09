@@ -141,8 +141,15 @@ export class PostsService {
       });
       if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
       return {
-        
-      };
+        postId: result.postId,
+        userId: result.userId,
+        title: result.title,
+        content: result.content,
+        like: result.like,
+        viewCounts: result.viewCounts + Number(viewCounts),
+        createdAt: result.createdAt,
+        images: result.images,
+      } as PostsEntity;
     } catch (err) {
       throw err;
     }

@@ -12,13 +12,13 @@ export class CertificatesService {
   ) {}
 
   // pre-signed URL 생성
-  async generatePreSignedUrl(fileType: string, userId: number): Promise<UploadInfoResponseDto> {
+  async generatePreSignedUrl(fileType: string): Promise<UploadInfoResponseDto> {
     // 파일 확장자 넣어주기
     const extension = fileType.split('/')[1] || 'bin'; // 기본 확장자 'bin' 설정
 
     // S3에 업로드할 파일 키 생성
     // certification-document 폴더 안에 'user-{103}/어쩌구'로 저장됨.
-    const key = `certification-document/user-${userId}/${uuidv4()}.${extension}`;
+    const key = `certification-document/user-${uuidv4()}.${extension}`;
 
     // URL 생성후 리턴값 반환
     const { url, fields } = await this.imagesService.generatePresignedUrl(fileType);

@@ -131,9 +131,4 @@ export class AuthUserService {
 
     return user;
   }
-
-  // 관리자 계정인지 조회
-  async checkIfAdmin() {
-    
-  }
 }

@@ -1,4 +1,17 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Post, UseGuards, Body, Param, Query, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+  Body,
+  Param,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
@@ -30,7 +43,7 @@ export class AdminController {
   ): Promise<{ message: string }> {
     await this.adminService.signInByAdmin(signInUserDto, req, res);
     return { message: '관리자 계정으로 로그인이 완료되었습니다.' };
-    }
+  }
 
   // 관리자 회원 탈퇴 처리
   @Delete('withdrawal')
@@ -43,16 +56,16 @@ export class AdminController {
     return { message: '회원 탈퇴 처리가 완료되었습니다.' };
   }
 
-    // 관리자 회원 탈퇴 취소
-    @Post('withdrawal/cancel')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: '회원 탈퇴 취소' })
-    @ApiBody({ type: Number, description: '탈퇴 취소에 필요한 사용자 ID' })
-    @ApiResponse({ status: 200, description: '회원 탈퇴 취소가 완료되었습니다.' })
-    @ApiResponse({ status: 400, description: '잘못된 요청' })
-    async postCancelWithdrawal(@Body() userId: number) {
-      return this.adminService.cancelWithdrawal(userId);
-    }
+  // 관리자 회원 탈퇴 취소
+  @Post('withdrawal/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 탈퇴 취소' })
+  @ApiBody({ type: Number, description: '탈퇴 취소에 필요한 사용자 ID' })
+  @ApiResponse({ status: 200, description: '회원 탈퇴 취소가 완료되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async postCancelWithdrawal(@Body() userId: number) {
+    return this.adminService.cancelWithdrawal(userId);
+  }
 
   // 관리자 회원 정지 처리
   @Post('suspension')

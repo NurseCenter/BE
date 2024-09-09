@@ -17,7 +17,7 @@ export class AuthUserService {
   ) {}
 
   // 회원 생성
-  async addNewUser(createUserDto: CreateUserDto): Promise<void> {
+  async addNewUser(createUserDto: CreateUserDto): Promise<number> {
     const { email, password, nickname } = createUserDto;
 
     const existingUser = await this.usersDAO.findUserByEmail(email);
@@ -39,6 +39,9 @@ export class AuthUserService {
     const newUser = await this.usersDAO.createUser(createUserDto);
     newUser.password = hashedPassword;
     await this.usersDAO.saveUser(newUser);
+
+    // 새로 가입한 회원의 회원 ID 반환
+    return newUser.userId;
   }
 
   // 입력받은 회원정보가 유효한지 확인

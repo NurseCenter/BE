@@ -33,12 +33,12 @@ export class AdminService {
   ) {}
 
   // 관리자 계정으로 로그인
-  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response){
+  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response) {
     // 1. 관리자 계정 여부 확인
-    await this.authSignInService.checkIfAdmin(signInUserDto.email)
+    await this.authSignInService.checkIfAdmin(signInUserDto.email);
 
     // 2. 일반 로그인 처리
-    await this.authService.signIn(signInUserDto, req, res)
+    await this.authService.signIn(signInUserDto, req, res);
   }
 
   // 회원 계정 탈퇴 처리
@@ -70,32 +70,32 @@ export class AdminService {
     }
   }
 
-    // 회원 탈퇴 취소
-    async cancelWithdrawal(userId: number): Promise<{ message: string }> {
-      const queryRunner = dataSource.createQueryRunner();
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
-  
-      try {
-        // 탈퇴된 사용자 조회
-        const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
-        if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
-  
-        // 사용자 복구
-        const user = await this.usersDAO.findUserByUserId(userId);
-        if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-        user.deletedAt = null;
-        await this.usersDAO.saveUser(user);
+  // 회원 탈퇴 취소
+  async cancelWithdrawal(userId: number): Promise<{ message: string }> {
+    const queryRunner = dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-        await queryRunner.commitTransaction();
-        return { message: '회원 탈퇴 취소가 완료되었습니다.' };
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        throw error;
-      } finally {
-        await queryRunner.release();
-      }
+    try {
+      // 탈퇴된 사용자 조회
+      const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
+      if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
+
+      // 사용자 복구
+      const user = await this.usersDAO.findUserByUserId(userId);
+      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+      user.deletedAt = null;
+      await this.usersDAO.saveUser(user);
+
+      await queryRunner.commitTransaction();
+      return { message: '회원 탈퇴 취소가 완료되었습니다.' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
+  }
 
   // 회원 계정 정지 처리
   async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<void> {
@@ -132,21 +132,21 @@ export class AdminService {
   }
 
   // 회원 계정 정지 취소
-    async cancelSuspension(userId: number): Promise<{ message: string }> {
-      const user = await this.usersDAO.findUserByUserId(userId);
-      if (!user) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
-  
-      user.suspensionEndDate = null;
-      await this.usersDAO.saveUser(user);
+  async cancelSuspension(userId: number): Promise<{ message: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
 
-      const suspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
-      if (!suspendedUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    user.suspensionEndDate = null;
+    await this.usersDAO.saveUser(user);
 
-      suspendedUser.deletedAt = new Date();
-      await this.suspendedUsersDAO.saveSuspendedUser(suspendedUser);
-  
-      return { message: '회원 정지 취소가 완료되었습니다.' };
-    }
+    const suspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
+    if (!suspendedUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+
+    suspendedUser.deletedAt = new Date();
+    await this.suspendedUsersDAO.saveSuspendedUser(suspendedUser);
+
+    return { message: '회원 정지 취소가 완료되었습니다.' };
+  }
 
   // 모든 회원 조회
   async fetchAllUsersByAdmin(page: number, limit: number = 10): Promise<IPaginatedResponse<IUserList>> {

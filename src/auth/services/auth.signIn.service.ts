@@ -33,9 +33,9 @@ export class AuthSignInService {
     return req.socket.remoteAddress || 'unknown';
   }
 
-  // 관리자 계정 여부 확인 
+  // 관리자 계정 여부 확인
   async checkIfAdmin(email: string): Promise<void> {
     const user = await this.usersDAO.findUserByEmail(email);
-    if (!user.isAdmin) throw new ForbiddenException("관리자 계정이 아닙니다.")
+    if (!user.isAdmin) throw new ForbiddenException('관리자 계정이 아닙니다.');
   }
 }

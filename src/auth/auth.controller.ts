@@ -26,9 +26,9 @@ export class AuthController {
   @ApiBody({ type: CreateUserDto, description: '회원가입에 필요한 정보' })
   @ApiResponse({ status: 201, description: '회원가입이 성공적으로 완료되었습니다.' })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async postSignUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string }> {
-    await this.authService.signUp(createUserDto);
-    return { message: '회원가입이 성공적으로 완료되었습니다.' };
+  async postSignUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string; userId: number }> {
+    const userId = await this.authService.signUp(createUserDto);
+    return { message: '회원가입이 성공적으로 완료되었습니다.', userId };
   }
 
   // 회원탈퇴
@@ -159,14 +159,14 @@ export class AuthController {
         status: {
           type: 'string',
           enum: ['non_member', 'pending_verification', 'email_verified', 'approved_member', 'error'],
-          example: 'non_member'
+          example: 'non_member',
         },
         message: {
           type: 'string',
-          example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.'
-        }
-      }
-    }
+          example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.',
+        },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getStatus(

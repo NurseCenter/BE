@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Query, Post, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SessionUser } from 'src/auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
@@ -61,5 +61,12 @@ export class UsersController {
   @Get('comments')
   async getMyComments(@SessionUser() user: IUserWithoutPassword, @Query() query: GetMyCommentsQueryDto) {
     return this.usersService.fetchMyComments(user, query.page, query.limit, query.sort);
+  }
+
+  // 인증서류 이미지에서 실명 추출
+  @Post('/:userId/name-extraction')
+  async postNameExtraction(@Param('userId') userId: number): Promise<{ message: string; userName: string }> {
+    const userName = await this.usersService.extractUserName(userId);
+    return { message: '실명 추출 및 회원 정보 업데이트 성공', userName };
   }
 }

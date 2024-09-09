@@ -6,6 +6,7 @@ import { AuthPasswordService } from 'src/auth/services';
 import { UsersDAO } from './users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
+import { OcrService } from 'src/orc/ocr.service';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +15,7 @@ export class UsersService {
     private readonly userDAO: UsersDAO,
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
+    private readonly ocrService: OcrService,
   ) {}
 
   // 나의 정보 조회
@@ -80,5 +82,18 @@ export class UsersService {
       throw new BadRequestException('회원 ID가 존재하지 않습니다.');
     }
     return this.commentsDAO.findMyComments(sessionUser.userId, page, limit, sort);
+  }
+
+  // 회원 인증서류 URL에서 실명 추출
+  async extractUserName(userId: number) {
+    const user = await this.userDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    const certificationUrl = user.certificationDocumentUrl;
+    if (!certificationUrl) throw new NotFoundException('해당 회원의 인증서류 URL을 찾을 수 없습니다.');
+
+    const extractedUserName = await this.ocrService.detextTextFromImage(certificationUrl);
+
+    return extractedUserName;
   }
 }

@@ -23,7 +23,7 @@ export class DeletedUsersDAO {
 
   // 탈퇴된 회원 전체 조회
   async findDeletedUsers() {
-    return this.deletedUsersRepository.find();
+    return await this.deletedUsersRepository.find();
   }
 
   // 특정 탈퇴된 회원 조회

@@ -8,7 +8,7 @@ import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from '../auth/guards';
 
-@ApiTags('comments')
+@ApiTags('Comments')
 @Controller()
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}

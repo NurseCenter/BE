@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ImagesService } from 'src/images/images.service';
 import { v4 as uuidv4 } from 'uuid';
-import { UploadInfoResponseDto } from './dto';
 import { UsersDAO } from 'src/users/users.dao';
+import { PresignedUrlResponseDto } from 'src/images/dto';
 
 @Injectable()
 export class CertificatesService {
@@ -12,7 +12,9 @@ export class CertificatesService {
   ) {}
 
   // pre-signed URL 생성
-  async generatePreSignedUrl(fileType: string): Promise<UploadInfoResponseDto> {
+  async generatePreSignedUrl(createPresignedUrlDto): Promise<PresignedUrlResponseDto> {
+    const { fileType } = createPresignedUrlDto;
+
     // 파일 확장자 넣어주기
     const extension = fileType.split('/')[1] || 'bin'; // 기본 확장자 'bin' 설정
 
@@ -24,7 +26,7 @@ export class CertificatesService {
     const { url, fields } = await this.imagesService.generatePresignedUrl(fileType);
     if (!url || !fields) throw new NotFoundException('생성된 URL을 찾을 수 없습니다.');
 
-    return { url, fields, key };
+    return { url, fields, key } as PresignedUrlResponseDto;
   }
 
   // 회원의 인증서 이미지 URL 정보를 업데이트

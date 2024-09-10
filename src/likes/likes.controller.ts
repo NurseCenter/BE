@@ -5,7 +5,7 @@ import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.inter
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('likes')
+@ApiTags('Likes')
 @Controller()
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}

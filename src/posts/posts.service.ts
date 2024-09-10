@@ -20,6 +20,7 @@ import { ReportPostDto } from './dto/report-post.dto';
 import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesService } from '../images/images.service';
 import { EReportReason } from 'src/reports/enum';
+import { CreatePresignedUrlDto } from 'src/images/dto';
 
 @Injectable()
 export class PostsService {
@@ -107,7 +108,11 @@ export class PostsService {
       let presignedPostData = [];
       if (imageTypes && imageTypes.length > 0) {
         presignedPostData = await Promise.all(
-          imageTypes.map((fileType) => this.imagesService.generatePresignedUrl(fileType)),
+          imageTypes.map((fileType) => {
+            const dto = new CreatePresignedUrlDto();
+            dto.fileType = fileType;
+            this.imagesService.generatePresignedUrl(dto)
+         }),
         );
 
         const imageEntities = presignedPostData.map((data) =>

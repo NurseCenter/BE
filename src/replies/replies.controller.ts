@@ -5,7 +5,8 @@ import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.inter
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-@ApiTags('replies')
+
+@ApiTags('Replies')
 @Controller()
 export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}

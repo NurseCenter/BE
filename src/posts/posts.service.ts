@@ -53,6 +53,20 @@ export class PostsService {
     try {
       let query = this.postRepository.createQueryBuilder('post');
 
+      // 작성자 닉네임을 불러오기 위해 조인 추가
+      query = query
+      .leftJoinAndSelect('post.user', 'user'); // 'user'는 UsersEntity의 alias
+
+      query = query.select([
+        'post.postId', // 게시물 ID
+        'post.boardType', // 게시판 카테고리
+        'post.title', // 제목
+        'user.nickname', // 작성자 닉네임
+        'post.createdAt', // 작성일
+        'post.viewCounts', // 조회수
+        'post.like', // 좋아요수
+      ]);
+
       query = query.where('post.boardType = :boardType', { boardType });
 
       if (search) {
@@ -68,7 +82,7 @@ export class PostsService {
           break;
         case ESortType.LIKES:
           query = query
-            .orderBy('post.likes', sortOrder)
+            .orderBy('post.like', sortOrder)
             .addOrderBy('post.createdAt', ESortOrder.DESC) // 생성 날짜로 보조 정렬
             .addOrderBy('post.postId', ESortOrder.DESC); // ID로 추가 보조 정렬
           break;

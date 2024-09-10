@@ -116,9 +116,6 @@ export class CertificatesController {
       },
     },
   })
-  @Get('upload-info')
-  @ApiOperation({ summary: 'S3 업로드 인증 정보 제공' })
-  @ApiResponse({ status: 200, description: 'S3 업로드 인증 정보 제공 성공' })
   async getUploadInfo(@Query('fileType') fileType: string): Promise<UploadInfoResponseDto> {
     return await this.certificatesService.generatePreSignedUrl(fileType);
   }

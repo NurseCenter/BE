@@ -19,6 +19,10 @@ import { SessionConfigService } from './config/session.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ImagesModule } from './images/images.module';
+import { OcrModule } from './orc/ocr.module';
+import { CertificatesService } from './certificates/certificates.service';
+import { CertificatesController } from './certificates/certificates.controller';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
   imports: [
@@ -44,8 +48,10 @@ import { ImagesModule } from './images/images.module';
     RedisModule,
     HealthCheckModule,
     ImagesModule,
+    OcrModule,
+    CertificatesModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, SessionConfigService],
+  controllers: [AppController, CertificatesController],
+  providers: [AppService, SessionConfigService, CertificatesService],
 })
 export class AppModule {}

@@ -10,6 +10,8 @@ import { UsersEntity } from './entities/users.entity';
 import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { DataAccessModule } from '../common/data-access.module';
+import { OcrModule } from 'src/orc/ocr.module';
+import { UsersDAO } from './users.dao';
 
 @Module({
   imports: [
@@ -17,8 +19,10 @@ import { DataAccessModule } from '../common/data-access.module';
     ScrapModule,
     AuthModule,
     DataAccessModule,
+    OcrModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, UsersDAO],
+  exports: [UsersDAO],
 })
 export class UsersModule {}

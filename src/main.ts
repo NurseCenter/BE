@@ -24,10 +24,10 @@ async function bootstrap() {
 
   //스웨거 설정
   const config = new DocumentBuilder()
-    .setTitle('Your API Title')
-    .setDescription('API description')
+    .setTitle('Gannies API Document')
+    .setDescription('중간이들 백엔드 API description')
     .setVersion('1.0')
-    .addTag('your-tag')
+    .addTag('Gannies')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

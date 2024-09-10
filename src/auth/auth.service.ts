@@ -23,8 +23,9 @@ export class AuthService {
   ) {}
 
   // 회원가입
-  async signUp(createUserDto: CreateUserDto): Promise<void> {
-    await this.authUserService.addNewUser(createUserDto);
+  async signUp(createUserDto: CreateUserDto): Promise<number> {
+    const userId = await this.authUserService.addNewUser(createUserDto);
+    return userId;
   }
 
   // 회원탈퇴

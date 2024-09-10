@@ -57,8 +57,8 @@ export class PostsEntity {
   isReported: boolean;
 
   // 스크랩 횟수
-  @Column({ type: 'int', default: 0 })
-  scrapCounts: number;
+  // @Column({ type: 'int', default: 0 })
+  // scrapCounts: number;
 
   // 조회수
   @Column({ type: 'int', default: 0 })

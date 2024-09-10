@@ -256,7 +256,7 @@ export class PostsService {
     return result;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async syncViewCountsToDB() {
     const startTime = performance.now();
     this.logger.log('조회수 동기화 진행중');

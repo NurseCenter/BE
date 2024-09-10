@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -28,9 +29,9 @@ import { performance } from 'perf_hooks';
 
 @Injectable()
 export class PostsService {
-  private readonly redis: Redis;
   private readonly logger = new Logger(PostsService.name);
   constructor(
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
     private imagesService: ImagesService,
     @InjectRepository(PostsEntity)
     private postRepository: Repository<PostsEntity>,
@@ -38,9 +39,7 @@ export class PostsService {
     private reportPostRepository: Repository<ReportPostsEntity>,
     @InjectRepository(ImageEntity)
     private imageRepository: Repository<ImageEntity>,
-  ) {
-    this.redis = new Redis();
-  }
+  ) {}
 
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
@@ -157,7 +156,7 @@ export class PostsService {
       const redisKey = `post:${postId}:views`;
 
       // 조회수 증가 (반환값은 증가된 후의 값을 문자열로 반환)
-      const viewCounts = await this.redis.incr(redisKey);
+      const viewCounts = await this.redisClient.incr(redisKey);
 
       // viewCounts를 숫자로 파싱 (필요한 경우)
       return {
@@ -261,10 +260,10 @@ export class PostsService {
     const startTime = performance.now();
     this.logger.log('조회수 동기화 진행중');
     try {
-      const keys = await this.redis.keys('post:*:views');
+      const keys = await this.redisClient.keys('post:*:views');
       for (const key of keys) {
         const postId = key.split(':')[1];
-        const viewCount = await this.redis.get(key);
+        const viewCount = await this.redisClient.get(key);
         if (viewCount !== null) {
           const increment = parseInt(viewCount, 10);
           if (!isNaN(increment)) {
@@ -272,7 +271,7 @@ export class PostsService {
           }
         }
 
-        await this.redis.del(key);
+        await this.redisClient.del(key);
         const endTime = performance.now();
         this.logger.log(`처리 시간 (게시물 ${postId}): ${(endTime - startTime).toFixed(2)}ms`);
       }

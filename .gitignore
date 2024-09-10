@@ -44,6 +44,10 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+*.env
+
+# Google API Key File
+google-api-key.json
 
 # temp directory
 .temp

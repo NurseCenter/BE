@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { LoginsEntity } from '../entities/logins.entity';
 import { Request } from 'express';
@@ -31,5 +31,11 @@ export class AuthSignInService {
   // 클라이언트 Request의 IP 주소 추출
   async getIpAddress(req: Request): Promise<string> {
     return req.socket.remoteAddress || 'unknown';
+  }
+
+  // 관리자 계정 여부 확인
+  async checkIfAdmin(email: string): Promise<void> {
+    const user = await this.usersDAO.findUserByEmail(email);
+    if (!user.isAdmin) throw new ForbiddenException('관리자 계정이 아닙니다.');
   }
 }

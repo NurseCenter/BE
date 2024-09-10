@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -20,9 +21,14 @@ import { ReportPostDto } from './dto/report-post.dto';
 import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesService } from '../images/images.service';
 import { EReportReason } from 'src/reports/enum';
+import Redis from 'ioredis';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { performance } from 'perf_hooks';
 
 @Injectable()
 export class PostsService {
+  private readonly redis: Redis;
+  private readonly logger = new Logger(PostsService.name);
   constructor(
     private imagesService: ImagesService,
     @InjectRepository(PostsEntity)
@@ -31,7 +37,9 @@ export class PostsService {
     private reportPostRepository: Repository<ReportPostsEntity>,
     @InjectRepository(ImageEntity)
     private imageRepository: Repository<ImageEntity>,
-  ) {}
+  ) {
+    this.redis = new Redis();
+  }
 
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
@@ -140,7 +148,23 @@ export class PostsService {
         relations: ['images'],
       });
       if (!result) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
-      return result;
+
+      const redisKey = `post:${postId}:views`;
+
+      // 조회수 증가 (반환값은 증가된 후의 값을 문자열로 반환)
+      const viewCounts = await this.redis.incr(redisKey);
+
+      // viewCounts를 숫자로 파싱 (필요한 경우)
+      return {
+        postId: result.postId,
+        userId: result.userId,
+        title: result.title,
+        content: result.content,
+        like: result.like,
+        viewCounts: result.viewCounts + Number(viewCounts),
+        createdAt: result.createdAt,
+        images: result.images,
+      } as PostsEntity;
     } catch (err) {
       throw err;
     }
@@ -225,5 +249,31 @@ export class PostsService {
     const result = await this.reportPostRepository.save(reportedPostDto);
 
     return result;
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async syncViewCountsToDB() {
+    const startTime = performance.now();
+    this.logger.log('조회수 동기화 진행중');
+    try {
+      const keys = await this.redis.keys('post:*:views');
+      for (const key of keys) {
+        const postId = key.split(':')[1];
+        const viewCount = await this.redis.get(key);
+        if (viewCount !== null) {
+          const increment = parseInt(viewCount, 10);
+          if (!isNaN(increment)) {
+            await this.postRepository.increment({ postId: Number(postId) }, 'viewCounts', increment);
+          }
+        }
+
+        await this.redis.del(key);
+        const endTime = performance.now();
+        this.logger.log(`처리 시간 (게시물 ${postId}): ${(endTime - startTime).toFixed(2)}ms`);
+      }
+      this.logger.log('동기화 작업 완료');
+    } catch (error) {
+      this.logger.error('Error during view count synchronization', error);
+    }
   }
 }

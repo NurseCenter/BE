@@ -19,6 +19,7 @@ import { SessionConfigService } from './config/session.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ImagesModule } from './images/images.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { OcrModule } from './orc/ocr.module';
 import { CertificatesService } from './certificates/certificates.service';
 import { CertificatesController } from './certificates/certificates.controller';
@@ -27,6 +28,7 @@ import { CertificatesModule } from './certificates/certificates.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),

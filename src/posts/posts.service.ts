@@ -72,7 +72,10 @@ export class PostsService {
         'post.like', // 좋아요수
       ]);
 
-      query = query.where('post.boardType = :boardType', { boardType });
+      if (boardType !== 'all') {
+        query = query.where('post.boardType = :boardType', { boardType });
+      }
+
 
       const boardTotal = await query.getCount();
 

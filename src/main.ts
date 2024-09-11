@@ -52,13 +52,15 @@ async function bootstrap() {
     origin: (origin, cb) => {
       const allowedOrigins = [
         'http://localhost:5173',
-        'http://127.0.0.1:5173'
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000',
+        'http://localhost:3000',
       ];
 
       if (allowedOrigins.includes(origin) || !origin) {
         cb(null, true);
       } else {
-        cb(new Error("CORS에 의해 허용되지 않는 요청입니다."))
+        cb(new Error('CORS에 의해 허용되지 않는 요청입니다.'));
       }
     },
     credentials: true,

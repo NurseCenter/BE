@@ -6,4 +6,5 @@ export enum EBoardType {
   NOTICE = 'notice', // 공지사항
   PRACTICE = 'practice', // 실습정보
   THEORY = 'theory', // 이론정보
+  all = 'all',
 }

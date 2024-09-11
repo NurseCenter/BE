@@ -51,15 +51,28 @@ export class CommentsService {
     return createdComment;
   }
   //조회
-  async getComments(boardType: EBoardType, postId: number) {
-    const comments = await this.commentRepository.find({
+  async getComments(boardType: EBoardType, postId: number, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [comments, total] = await this.commentRepository.findAndCount({
       where: {
-        // postId,
+        postId,
         boardType,
       },
+      skip: Number(skip),
+      take: limit,
+      order: { createdAt: 'DESC' },
     });
 
-    return comments;
+    return {
+      comments,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
   //수정
   async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword) {

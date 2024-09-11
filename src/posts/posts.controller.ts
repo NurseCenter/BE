@@ -17,7 +17,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   // 게시글 전체 및 검색 조회
-  @Get(':boardType')
+  @Get(':boardType/list')
   @ApiOperation({ summary: '게시글 조회' })
   @ApiParam({
     name: 'boardType',
@@ -37,20 +37,23 @@ export class PostsController {
         posts: [
           {
             postId: 1,
-            boardType: "employment",
-            title: "취업에 성공하는 비결",
-            nickname: "명란젓코난",
-            createdAt: "2024-01-01T00:00:00.000Z",
+            boardType: 'employment',
+            title: '취업에 성공하는 비결',
+            nickname: '명란젓코난',
+            createdAt: '2024-01-01T00:00:00.000Z',
             viewCounts: 100,
             like: 10,
-          }
+          },
         ],
-        total: 1,
-        page: 1,
-        limit: 10,
-        totalPages: 1
-      }
-    }
+        meta: {
+          total: 1,
+          boardTotal: 33,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -58,9 +61,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 400,
-        message: "Limit은 50을 넘어갈 수 없습니다."
-      }
-    }
+        message: 'Limit은 50을 넘어갈 수 없습니다.',
+      },
+    },
   })
   async getPosts(
     @Param('boardType') boardType: EBoardType,
@@ -75,21 +78,13 @@ export class PostsController {
       throw err;
     }
   }
-
-  // 특정 게시글 조회
+  //특정 게시글 조회
+  @Get(':boardType/posts/:postId')
+  @HttpCode(200)
   @UseGuards(RegularMemberGuard)
-  @Get(':boardType/:postId')
   @ApiOperation({ summary: '특정 게시글 조회' })
-  @ApiParam({
-    name: 'boardType',
-    description: '게시판 종류',
-    enum: EBoardType,
-  })
-  @ApiParam({
-    name: 'postId',
-    description: '게시글 ID',
-    type: Number,
-  })
+  @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
+  @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })
   @ApiResponse({
     status: 200,
     description: '게시글 조회 성공',
@@ -97,19 +92,30 @@ export class PostsController {
       example: {
         postId: 1,
         userId: 1,
-        title: "Post Title",
-        content: "Post Content",
-        like: 10,
-        viewCounts: 101,
-        createdAt: "2024-01-01T00:00:00.000Z",
+        title: '게시글 제목',
+        content: '게시글 내용',
+        like: 5,
+        viewCounts: 100,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        isLiked: true,
+        isScraped: false,
         images: [
           {
-            url: "https://example.com/image.jpg",
-            postId: 1
-          }
-        ]
-      }
-    }
+            imageId: 1,
+            imageUrl: 'https://example.com/image1.jpg',
+          },
+          {
+            imageId: 2,
+            imageUrl: 'https://example.com/image2.jpg',
+          },
+        ],
+        user: {
+          userId: 1,
+          username: '사용자명',
+          profileImage: 'https://example.com/profile.jpg',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -117,13 +123,40 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 404,
-        message: "이벤트 게시판에서 1번 게시물을 찾을 수 없습니다."
-      }
-    }
+        message: '게시글을 찾을 수 없습니다.',
+        error: 'Not Found',
+      },
+    },
   })
-  async getPostDetails(@Param('boardType') boardType: EBoardType, @Param('postId') postId: number) {
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: '잘못된 요청 파라미터',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: '인증에 실패했습니다.',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  async getPostDetails(
+    @Param('boardType') boardType: EBoardType,
+    @Param('postId') postId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ) {
     try {
-      const result = await this.postsService.getPostDetails(boardType, postId);
+      const result = await this.postsService.getPostDetails(boardType, postId, sessionUser);
 
       return result;
     } catch (err) {
@@ -142,11 +175,11 @@ export class PostsController {
     type: CreatePostDto,
     schema: {
       example: {
-        title: "New Post Title",
-        content: "New Post Content",
-        imageTypes: ["image/jpeg"]
-      }
-    }
+        title: 'New Post Title',
+        content: 'New Post Content',
+        imageTypes: ['image/jpeg'],
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -155,24 +188,24 @@ export class PostsController {
       example: {
         postId: 2,
         userId: 1,
-        title: "New Post Title",
-        content: "New Post Content",
+        title: 'New Post Title',
+        content: 'New Post Content',
         like: 0,
         viewCounts: 0,
-        createdAt: "2024-01-02T00:00:00.000Z",
+        createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
           {
-            url: "https://example.com/upload",
+            url: 'https://example.com/upload',
             fields: {
-              key: "image-key",
-              policy: "policy",
-              signature: "signature"
+              key: 'image-key',
+              policy: 'policy',
+              signature: 'signature',
             },
-            key: "image-key"
-          }
-        ]
-      }
-    }
+            key: 'image-key',
+          },
+        ],
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -180,9 +213,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 400,
-        message: "잘못된 요청"
-      }
-    }
+        message: '잘못된 요청',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -190,9 +223,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 401,
-        message: "인증 실패"
-      }
-    }
+        message: '인증 실패',
+      },
+    },
   })
   async createPost(
     @Param('boardType') boardType: EBoardType,
@@ -210,7 +243,7 @@ export class PostsController {
 
   // 게시글 수정
   @UseGuards(RegularMemberGuard)
-  @Patch(':boardType/:postId')
+  @Patch(':boardType/posts/:postId')
   @HttpCode(200)
   @ApiOperation({ summary: '게시글 수정' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
@@ -220,10 +253,10 @@ export class PostsController {
     type: UpdatePostDto,
     schema: {
       example: {
-        title: "게시글 수정했답",
-        content: "이게 바로 수정한 게시글 내용이다!"
-      }
-    }
+        title: '게시글 수정했답',
+        content: '이게 바로 수정한 게시글 내용이다!',
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -232,14 +265,14 @@ export class PostsController {
       example: {
         postId: 1,
         userId: 1,
-        title: "Updated Post Title",
-        content: "Updated Post Content",
+        title: 'Updated Post Title',
+        content: 'Updated Post Content',
         like: 10,
         viewCounts: 100,
-        createdAt: "2024-01-01T00:00:00.000Z",
-        updatedAt: "2024-01-02T00:00:00.000Z"
-      }
-    }
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-02T00:00:00.000Z',
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -247,9 +280,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 400,
-        message: "잘못된 요청"
-      }
-    }
+        message: '잘못된 요청',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -257,9 +290,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 401,
-        message: "인증 실패"
-      }
-    }
+        message: '인증 실패',
+      },
+    },
   })
   @ApiResponse({
     status: 403,
@@ -267,9 +300,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 403,
-        message: "이 게시물을 수정할 권한이 없습니다."
-      }
-    }
+        message: '이 게시물을 수정할 권한이 없습니다.',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -277,9 +310,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 404,
-        message: "이벤트 게시판에서 1번 게시물을 찾을 수 없습니다."
-      }
-    }
+        message: '이벤트 게시판에서 1번 게시물을 찾을 수 없습니다.',
+      },
+    },
   })
   async updatePost(
     @Param('boardType') boardType: EBoardType,
@@ -298,7 +331,7 @@ export class PostsController {
 
   // 게시글 삭제
   @UseGuards(RegularMemberGuard)
-  @Delete(':boardType/:postId')
+  @Delete(':boardType/posts/:postId')
   @HttpCode(204)
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiParam({
@@ -316,9 +349,9 @@ export class PostsController {
     description: '게시글 삭제 성공',
     schema: {
       example: {
-        affected: 1
-      }
-    }
+        affected: 1,
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -326,9 +359,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 401,
-        message: "인증 실패"
-      }
-    }
+        message: '인증 실패',
+      },
+    },
   })
   @ApiResponse({
     status: 403,
@@ -336,9 +369,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 403,
-        message: "이 게시물을 삭제할 권한이 없습니다."
-      }
-    }
+        message: '이 게시물을 삭제할 권한이 없습니다.',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -346,9 +379,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 404,
-        message: "이벤트 게시판에서 1번 게시물을 찾을 수 없습니다."
-      }
-    }
+        message: '이벤트 게시판에서 1번 게시물을 찾을 수 없습니다.',
+      },
+    },
   })
   async softDeletePost(
     @Param('boardType') boardType: EBoardType,
@@ -384,9 +417,9 @@ export class PostsController {
     schema: {
       example: {
         reportedReason: 'SPAM',
-        otherReportedReason: null
-      }
-    }
+        otherReportedReason: null,
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -399,9 +432,9 @@ export class PostsController {
         reportedReason: 'SPAM',
         otherReportedReason: null,
         reportedUserId: 2,
-        createdAt: '2024-01-01T00:00:00.000Z'
-      }
-    }
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -409,9 +442,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 400,
-        message: '신고 사유를 기입해주세요.'
-      }
-    }
+        message: '신고 사유를 기입해주세요.',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -419,9 +452,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 401,
-        message: '인증 실패'
-      }
-    }
+        message: '인증 실패',
+      },
+    },
   })
   @ApiResponse({
     status: 403,
@@ -429,9 +462,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 403,
-        message: '자기 자신의 게시물을 신고할 수 없습니다.'
-      }
-    }
+        message: '자기 자신의 게시물을 신고할 수 없습니다.',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -439,9 +472,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 404,
-        message: '이벤트 게시판의 1번 게시물을 찾을 수 없습니다.'
-      }
-    }
+        message: '이벤트 게시판의 1번 게시물을 찾을 수 없습니다.',
+      },
+    },
   })
   @ApiResponse({
     status: 409,
@@ -449,9 +482,9 @@ export class PostsController {
     schema: {
       example: {
         statusCode: 409,
-        message: '이미 신고한 게시물입니다.'
-      }
-    }
+        message: '이미 신고한 게시물입니다.',
+      },
+    },
   })
   async reportPost(
     @Param() basePostDto: BasePostDto,

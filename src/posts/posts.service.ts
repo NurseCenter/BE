@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -21,6 +22,7 @@ import { ReportPostDto } from './dto/report-post.dto';
 import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesService } from '../images/images.service';
 import { EReportReason } from 'src/reports/enum';
+import { CreatePresignedUrlDto } from 'src/images/dto';
 import Redis from 'ioredis';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { performance } from 'perf_hooks';
@@ -29,9 +31,9 @@ import { LikeEntity } from '../likes/entities/likes.entity';
 
 @Injectable()
 export class PostsService {
-  private readonly redis: Redis;
   private readonly logger = new Logger(PostsService.name);
   constructor(
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
     private imagesService: ImagesService,
     @InjectRepository(PostsEntity)
     private postRepository: Repository<PostsEntity>,
@@ -43,9 +45,7 @@ export class PostsService {
     private scrapRepository: Repository<ScrapsEntity>,
     @InjectRepository(LikeEntity)
     private likeRepository: Repository<LikeEntity>,
-  ) {
-    this.redis = new Redis();
-  }
+  ) {}
 
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
@@ -58,6 +58,19 @@ export class PostsService {
     }
     try {
       let query = this.postRepository.createQueryBuilder('post');
+
+      // 작성자 닉네임을 불러오기 위해 조인 추가
+      query = query.leftJoinAndSelect('post.user', 'user'); // 'user'는 UsersEntity의 alias
+
+      query = query.select([
+        'post.postId', // 게시물 ID
+        'post.boardType', // 게시판 카테고리
+        'post.title', // 제목
+        'user.nickname', // 작성자 닉네임
+        'post.createdAt', // 작성일
+        'post.viewCounts', // 조회수
+        'post.like', // 좋아요수
+      ]);
 
       query = query.where('post.boardType = :boardType', { boardType });
 
@@ -76,7 +89,7 @@ export class PostsService {
           break;
         case ESortType.LIKES:
           query = query
-            .orderBy('post.likes', sortOrder)
+            .orderBy('post.like', sortOrder)
             .addOrderBy('post.createdAt', ESortOrder.DESC) // 생성 날짜로 보조 정렬
             .addOrderBy('post.postId', ESortOrder.DESC); // ID로 추가 보조 정렬
           break;
@@ -127,7 +140,11 @@ export class PostsService {
       let presignedPostData = [];
       if (imageTypes && imageTypes.length > 0) {
         presignedPostData = await Promise.all(
-          imageTypes.map((fileType) => this.imagesService.generatePresignedUrl(fileType)),
+          imageTypes.map((fileType) => {
+            const dto = new CreatePresignedUrlDto();
+            dto.fileType = fileType;
+            this.imagesService.generatePresignedUrl(dto);
+          }),
         );
 
         const imageEntities = presignedPostData.map((data) =>
@@ -165,7 +182,7 @@ export class PostsService {
       const redisKey = `post:${postId}:views`;
 
       // 조회수 증가 (반환값은 증가된 후의 값을 문자열로 반환)
-      const viewCounts = await this.redis.incr(redisKey);
+      const viewCounts = await this.redisClient.incr(redisKey);
 
       const isLiked = await this.likeRepository.exists({ where: { userId, postId } });
 
@@ -275,10 +292,10 @@ export class PostsService {
     const startTime = performance.now();
     this.logger.log('조회수 동기화 진행중');
     try {
-      const keys = await this.redis.keys('post:*:views');
+      const keys = await this.redisClient.keys('post:*:views');
       for (const key of keys) {
         const postId = key.split(':')[1];
-        const viewCount = await this.redis.get(key);
+        const viewCount = await this.redisClient.get(key);
         if (viewCount !== null) {
           const increment = parseInt(viewCount, 10);
           if (!isNaN(increment)) {
@@ -286,7 +303,7 @@ export class PostsService {
           }
         }
 
-        await this.redis.del(key);
+        await this.redisClient.del(key);
         const endTime = performance.now();
         this.logger.log(`처리 시간 (게시물 ${postId}): ${(endTime - startTime).toFixed(2)}ms`);
       }

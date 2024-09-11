@@ -1,12 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PresignedUrlResponseDto } from 'src/images/dto';
 
-export class UploadInfoResponseDto {
-  @ApiProperty({
-    description: 'S3에 파일을 업로드할 수 있는 pre-signed URL',
-    example: 'https://example-bucket.s3.amazonaws.com/?AWSAccessKeyId=ASIA...&Policy=...&Signature=...',
-  })
-  url: string;
-
+export class UploadInfoResponseDto extends PresignedUrlResponseDto {
   @ApiProperty({
     description: 'S3에 파일을 업로드하기 위해 요청에 포함해야 할 필드들',
     type: 'object',

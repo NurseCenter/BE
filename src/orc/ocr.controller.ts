@@ -8,6 +8,7 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 export class OcrController {
   constructor(private readonly ocrService: OcrService) {}
 
+  @Get('detect-text')
   @ApiOperation({ summary: '이미지 URI를 통해 텍스트를 추출합니다.' })
   @ApiQuery({ name: 'imageUri', type: String, description: 'S3 버킷에 저장된 이미지의 URI' })
   @ApiResponse({
@@ -41,7 +42,6 @@ export class OcrController {
       },
     },
   })
-  @Get('detect-text')
   async detectText(@Body('imageUri') imageUri: string): Promise<string> {
     return await this.ocrService.detextTextFromImage(imageUri);
   }

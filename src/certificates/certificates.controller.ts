@@ -8,11 +8,10 @@ import { UploadInfoResponseDto } from './dto';
 export class CertificatesController {
   constructor(private readonly certificatesService: CertificatesService) {}
 
-  // S3 업로드를 위한 pre-signed URL을 제공
   @Get('upload-info')
   @ApiOperation({
-    summary: 'S3 업로드 인증 정보 제공',
-    description: '주어진 파일 타입에 대한 S3 업로드를 위한 pre-signed URL과 관련된 정보를 제공합니다.',
+    summary: 'S3 버킷에 파일 업로드를 위한 pre-signed URL 포함 인증 정보 제공',
+    description: '주어진 파일 타입에 대한 S3 업로드를 위한 pre-signed URL과 관련된 정보를 제공함.',
   })
   @ApiQuery({
     name: 'fileType',
@@ -117,9 +116,6 @@ export class CertificatesController {
       },
     },
   })
-  @Get('upload-info')
-  @ApiOperation({ summary: 'S3 업로드 인증 정보 제공' })
-  @ApiResponse({ status: 200, description: 'S3 업로드 인증 정보 제공 성공' })
   async getUploadInfo(@Query('fileType') fileType: string): Promise<UploadInfoResponseDto> {
     return await this.certificatesService.generatePreSignedUrl(fileType);
   }

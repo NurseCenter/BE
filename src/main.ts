@@ -48,7 +48,21 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
   app.setViewEngine('ejs');
 
-  app.enableCors();
+  app.enableCors({
+    origin: (origin, cb) => {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173'
+      ];
+
+      if (allowedOrigins.includes(origin) || !origin) {
+        cb(null, true);
+      } else {
+        cb(new Error("CORS에 의해 허용되지 않는 요청입니다."))
+      }
+    },
+    credentials: true,
+  });
 
   await app.listen(3000);
 }

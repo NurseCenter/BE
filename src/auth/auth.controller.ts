@@ -352,7 +352,6 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getStatus(
     @SessionUser() sessionUser: IUserWithoutPassword,
-    @Res() res: Response,
   ): Promise<{ message: string }> {
     const { userId } = sessionUser;
     return await this.authService.sendStatus(userId);

@@ -1,10 +1,11 @@
-import { Controller, Get, Patch, Body, Query, Post, Param, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Query, Post, Param, UseGuards, HttpCode, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SessionUser } from 'src/auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
+import { Request } from 'express';
 
 @ApiTags('Users')
 @Controller('me')
@@ -77,8 +78,8 @@ export class UsersController {
       },
     },
   })
-  async patchMyInfo(@SessionUser() user: IUserWithoutPassword, @Body() updateNicknameDto: UpdateNicknameDto) {
-    return this.usersService.updateMyNickname(user, updateNicknameDto);
+  async patchMyInfo(@SessionUser() user: IUserWithoutPassword, @Body() updateNicknameDto: UpdateNicknameDto, @Req() req: Request) {
+    return this.usersService.updateMyNickname(user, updateNicknameDto, req);
   }
 
   // 본인 비밀번호 수정

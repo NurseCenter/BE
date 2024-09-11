@@ -20,7 +20,7 @@ export class AuthSessionService {
     // 직접 Redis에서 세션 데이터 가져오기
     const sessionData = await this.redisClient.get(`sess:${sessionId}`);
 
-    console.log('sessionData', sessionData);
+    // console.log('sessionData', sessionData);
 
     // 세션 데이터가 존재하는지 확인
     if (sessionData) {
@@ -67,7 +67,7 @@ export class AuthSessionService {
   private async updateSessionInRedis(sessionId: string, sessionData: any): Promise<void> {
     try {
       await this.redisClient.set(`sess:${sessionId}`, JSON.stringify((sessionData)));
-      console.log('세션 데이터 Redis에 성공적으로 저장됨');
+      // console.log('세션 데이터 Redis에 성공적으로 저장됨');
     } catch (error) {
       console.error('Redis에 세션 데이터 저장 실패: ', error);
       throw new Error('Redis에 세션 데이터 저장 실패');

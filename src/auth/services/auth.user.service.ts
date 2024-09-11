@@ -107,8 +107,6 @@ export class AuthUserService {
     const user = await this.usersDAO.findUserByUserId(userId);
     const status = user.membershipStatus;
 
-    console.log("auth user Service의 함수", user, status)
-
     switch (status) {
       case EMembershipStatus.NON_MEMBER:
         return { status: 'non_member', message: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' };

@@ -1,6 +1,4 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { UsersEntity } from 'src/users/entities/users.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { EMembershipStatus } from 'src/users/enums';
 import { dateToISOString } from 'src/common/utils/data.utils';
 import { UsersDAO } from 'src/users/users.dao';
@@ -11,7 +9,6 @@ import { IUserWithoutPassword, IMembershipStatusResponse } from '../interfaces';
 @Injectable()
 export class AuthUserService {
   constructor(
-    @InjectRepository(UsersEntity)
     private readonly authPasswordService: AuthPasswordService,
     private readonly usersDAO: UsersDAO,
   ) {}

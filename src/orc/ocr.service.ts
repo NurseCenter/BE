@@ -23,7 +23,7 @@ export class OcrService {
 
       const extractedName = this.extractNameFromText(detections.text);
       if (!extractedName) throw new NotFoundException('추출된 이름을 찾을 수 없습니다.');
-      console.log('추출된 이름', extractedName);
+      // console.log('추출된 이름', extractedName);
 
       return extractedName;
     } catch (error) {

@@ -90,8 +90,7 @@ export class CommentsController {
             updatedAt: '2024-01-01T00:00:00.000Z',
             user: {
               userId: 1,
-              username: '사용자1',
-              profileImage: 'https://example.com/profile1.jpg',
+              nickname: '사용자2닉네임',
             },
           },
           {
@@ -102,8 +101,7 @@ export class CommentsController {
             updatedAt: '2024-01-01T01:00:00.000Z',
             user: {
               userId: 3,
-              username: '사용자3',
-              profileImage: 'https://example.com/profile3.jpg',
+              nickname: '사용자3닉네임',
             },
           },
         ],

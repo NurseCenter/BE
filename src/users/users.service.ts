@@ -2,11 +2,12 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { IUserInfoResponse } from './interfaces/user-info-response.interface';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
-import { AuthPasswordService } from 'src/auth/services';
+import { AuthPasswordService, AuthSessionService } from 'src/auth/services';
 import { UsersDAO } from './users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { OcrService } from 'src/orc/ocr.service';
+import { Request } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,7 @@ export class UsersService {
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
     private readonly ocrService: OcrService,
+    private readonly authSessionService: AuthSessionService,
   ) {}
 
   // 나의 정보 조회
@@ -25,7 +27,7 @@ export class UsersService {
   }
 
   // 나의 닉네임 수정
-  async updateMyNickname(sessionUser: IUserWithoutPassword, updateNicknameDto: UpdateNicknameDto) {
+  async updateMyNickname(sessionUser: IUserWithoutPassword, updateNicknameDto: UpdateNicknameDto, req: Request) {
     const { userId } = sessionUser;
     const { newNickname } = updateNicknameDto;
 
@@ -35,8 +37,12 @@ export class UsersService {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
 
+    // 닉네임 업데이트
     user.nickname = newNickname;
-    await this.userDAO.saveUser(user);
+    const updatedUser = await this.userDAO.saveUser(user);
+
+    // 세션 정보 업데이트
+    await this.authSessionService.updateSessionInfo(req, userId, updatedUser)
     return { message: '닉네임이 수정되었습니다.' };
   }
 
@@ -93,6 +99,9 @@ export class UsersService {
     if (!certificationUrl) throw new NotFoundException('해당 회원의 인증서류 URL을 찾을 수 없습니다.');
 
     const extractedUserName = await this.ocrService.detextTextFromImage(certificationUrl);
+
+    user.username = extractedUserName;
+    await this.userDAO.saveUser(user);
 
     return extractedUserName;
   }

@@ -15,7 +15,7 @@ export class CommentsController {
 
   // 댓글 작성
   @UseGuards(RegularMemberGuard)
-  @Post('posts/:boardType/:postId')
+  @Post('posts/:boardType/:postId/comments')
   @HttpCode(201)
   @ApiOperation({ summary: '댓글 작성' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
@@ -68,14 +68,14 @@ export class CommentsController {
 
   // 특정 게시물 댓글 전체 조회
   @UseGuards(RegularMemberGuard)
-  @Get('posts/:boardType/:postId')
+  @Get('posts/:boardType/:postId/comments')
   @HttpCode(200)
   @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '댓글 조회' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
   @ApiParam({ name: 'postId', type: 'number', description: '게시물 ID' })
-  @ApiQuery({ name: 'page', type: 'number', description: '페이지 번호' })
-  @ApiQuery({ name: 'limit', type: 'number', description: '페이지 당 항목 수' })
+  @ApiQuery({ name: 'page', type: 'number', required: false, description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: 'number', required: false, description: '페이지 당 항목 수' })
   @ApiResponse({
     status: 200,
     description: '댓글 조회 성공',

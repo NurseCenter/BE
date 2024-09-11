@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { IUserInfoResponse } from './interfaces/user-info-response.interface';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
-import { AuthPasswordService, AuthSessionService } from 'src/auth/services';
+import { AuthPasswordService, AuthSessionService, AuthSignInService } from 'src/auth/services';
 import { UsersDAO } from './users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
@@ -18,6 +18,7 @@ export class UsersService {
     private readonly commentsDAO: CommentsDAO,
     private readonly ocrService: OcrService,
     private readonly authSessionService: AuthSessionService,
+    private readonly authSignInService: AuthSignInService
   ) {}
 
   // 나의 정보 조회
@@ -50,6 +51,7 @@ export class UsersService {
   async updateMyPassword(sessionUser: IUserWithoutPassword, updatePasswordDto: UpdatePasswordDto) {
     const { userId } = sessionUser;
     const { oldPassword, newPassword } = updatePasswordDto;
+    const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 
     const user = await this.userDAO.findUserByUserId(userId);
 
@@ -67,8 +69,13 @@ export class UsersService {
       throw new BadRequestException('현재 비밀번호와 새 비밀번호는 서로 달라야 합니다.');
     }
 
-    const newHashedPassword = await this.authPasswordService.createPassword(newPassword);
+    const newHashedPassword = await this.authPasswordService.createHashedPassword(newPassword);
     user.password = newHashedPassword;
+
+    if (isTempPasswordSignIn) {
+      user.tempPasswordIssuedDate = null
+    }
+
     await this.userDAO.saveUser(user);
 
     return { message: '비밀번호가 수정되었습니다.' };

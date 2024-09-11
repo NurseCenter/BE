@@ -48,19 +48,27 @@ export class AuthService {
     const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
     if (!isPasswordMatch) throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
 
-    // 4. req.login을 통해 세션에 사용자 정보 저장
+    // 4. 임시 비밀번호로 로그인했는지 확인
+    const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(user.userId);
+
+    // 5. req.login을 통해 세션에 사용자 정보 저장
     req.login(user, async (err) => {
       if (err) {
         console.error('로그인 실패: ', err);
         return res.status(401).json({ message: '로그인에 실패하였습니다.' });
       }
 
-      // 5. MySQL에 회원 로그인 기록을 저장
+      // 6. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
-      // 6. 응답 전송
+      // 전송할 메시지 설정
+      const message = isTempPasswordSignIn
+      ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
+      : '로그인이 완료되었습니다.';
+
+      // 7. 응답 전송
       return res.status(200).json({
-        message: '로그인이 완료되었습니다.',
+        message,
         user: {
           userId: user.userId,
           email: user.email,
@@ -72,9 +80,9 @@ export class AuthService {
 
   // 로그아웃
   async signOut(req: Request, res: Response): Promise<void> {
-    const sessionId = req.sessionID;
+    // const sessionId = req.sessionID;
 
-    await this.redisClient.del(`sessionId:${sessionId}`);
+    // await this.redisClient.del(`sess:${sessionId}`);await this.redisClient.del(`sess:${sessionId}`, JSON.stringify((sessionData)))
     res.clearCookie('connect.sid');
 
     res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
@@ -146,13 +154,14 @@ export class AuthService {
 
     const tempPassword = await this.authPasswordService.createTempPassword();
 
-    await this.redisClient.hmset(`tempPassword:${user.userId}`, {
+    await this.redisClient.hset(`tempPassword:${user.userId}`, {
       userId: user.userId,
       tempPassword,
     });
-    await this.redisClient.expire(`tempPassword:${user.userId}`, 7200);
+    await this.redisClient.expire(`tempPassword:${user.userId}`, 7200); // 유효기간 : 2시간
 
-    user.isTempPassword = true;
+    user.tempPasswordIssuedDate = new Date();
+    user.password = await this.authPasswordService.createHashedPassword(tempPassword);
     await this.usersDAO.saveUser(user);
 
     await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);

@@ -7,6 +7,7 @@ import { promises as fs } from 'fs';
 @Injectable()
 export class EmailService {
   private transpoter: nodemailer.Transporter;
+  private readonly frontEndLoginPageUrl: string;
 
   constructor() {
     this.transpoter = nodemailer.createTransport({
@@ -18,6 +19,8 @@ export class EmailService {
         pass: process.env.EMAIL_PASS,
       },
     });
+
+    this.frontEndLoginPageUrl = process.env.FRONT_END_LOGIN_PAGE_URL || 'http://localhost:5173';
   }
 
   private async renderTemplate(templateName: string, data: any): Promise<string> {
@@ -34,7 +37,8 @@ export class EmailService {
 
   private async send(to: string, subject: string, templateName: string, data: any): Promise<void> {
     try {
-      const html = await this.renderTemplate(templateName, data);
+      const emailData = { ...data, frontEndLoginPageUrl: this.frontEndLoginPageUrl }
+      const html = await this.renderTemplate(templateName, emailData);
       const mailOptions = {
         from: process.env.EMAIL_FROM,
         to,

@@ -38,4 +38,10 @@ export class AuthSignInService {
     const user = await this.usersDAO.findUserByEmail(email);
     if (!user.isAdmin) throw new ForbiddenException('관리자 계정이 아닙니다.');
   }
+
+  // 임시 비밀번호로 로그인 여부
+  async checkTempPasswordSignIn(userId: number){
+    const user = await this.usersDAO.findUserByUserId(userId);
+    return user.tempPasswordIssuedDate !== null ? true : false;
+  }
 }

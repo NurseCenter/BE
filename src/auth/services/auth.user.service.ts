@@ -30,7 +30,7 @@ export class AuthUserService {
     }
 
     // 해싱된 비밀번호 가져오기
-    const hashedPassword = await this.authPasswordService.createPassword(password);
+    const hashedPassword = await this.authPasswordService.createHashedPassword(password);
 
     // 사용자 엔티티 생성 및 비밀번호 설정
     const newUser = await this.usersDAO.createUser(createUserDto);
@@ -125,6 +125,8 @@ export class AuthUserService {
   async updateUserStatusToPending(email: string) {
     const user = await this.usersDAO.findUserByEmail(email);
     if (!user) throw new ConflictException('사용자를 찾을 수 없습니다.');
+    if (user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED) throw new ConflictException('이미 이메일 인증이 완료된 회원입니다.');
+    if (user.membershipStatus === EMembershipStatus.APPROVED_MEMBER) throw new ConflictException('이미 정회원으로 이메일 인증이 필요하지 않습니다.');
 
     user.membershipStatus = EMembershipStatus.PENDING_VERIFICATION;
     await this.usersDAO.saveUser(user);

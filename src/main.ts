@@ -55,6 +55,7 @@ async function bootstrap() {
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
         'http://localhost:3000',
+        'http://127.0.0.1:5500' // 이메일 인증 확인용
       ];
 
       if (allowedOrigins.includes(origin) || !origin) {

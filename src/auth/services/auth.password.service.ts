@@ -5,7 +5,7 @@ import { randomBytes } from 'crypto';
 @Injectable()
 export class AuthPasswordService {
   // 비밀번호 생성
-  async createPassword(plainPassword: string): Promise<string> {
+  async createHashedPassword(plainPassword: string): Promise<string> {
     const hashedPassword = await bcrypt.hash(plainPassword, 15);
     return hashedPassword;
   }
@@ -18,6 +18,6 @@ export class AuthPasswordService {
 
   // 임시 비밀번호 생성
   async createTempPassword(): Promise<string> {
-    return randomBytes(32).toString('hex');
+    return randomBytes(8).toString('hex');
   }
 }

@@ -7,9 +7,14 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesModule } from '../images/images.module';
 import { ReportPostsEntity } from 'src/reports/entities';
+import { ScrapsEntity } from '../scraps/entities/scraps.entity';
+import { LikeEntity } from '../likes/entities/likes.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CommentsEntity, PostsEntity, ReportPostsEntity, ImageEntity]), ImagesModule],
+  imports: [
+    TypeOrmModule.forFeature([CommentsEntity, PostsEntity, ReportPostsEntity, ImageEntity, ScrapsEntity, LikeEntity]),
+    ImagesModule,
+  ],
   controllers: [PostsController],
   providers: [PostsService],
   exports: [PostsModule],

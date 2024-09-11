@@ -24,6 +24,8 @@ import { EReportReason } from 'src/reports/enum';
 import Redis from 'ioredis';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { performance } from 'perf_hooks';
+import { ScrapsEntity } from '../scraps/entities/scraps.entity';
+import { LikeEntity } from '../likes/entities/likes.entity';
 
 @Injectable()
 export class PostsService {
@@ -37,6 +39,10 @@ export class PostsService {
     private reportPostRepository: Repository<ReportPostsEntity>,
     @InjectRepository(ImageEntity)
     private imageRepository: Repository<ImageEntity>,
+    @InjectRepository(ScrapsEntity)
+    private scrapRepository: Repository<ScrapsEntity>,
+    @InjectRepository(LikeEntity)
+    private likeRepository: Repository<LikeEntity>,
   ) {
     this.redis = new Redis();
   }
@@ -54,6 +60,8 @@ export class PostsService {
       let query = this.postRepository.createQueryBuilder('post');
 
       query = query.where('post.boardType = :boardType', { boardType });
+
+      const boardTotal = await query.getCount();
 
       if (search) {
         query = query.where('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
@@ -81,13 +89,17 @@ export class PostsService {
       query = query.skip(skip).take(limit);
 
       const [posts, total] = await query.getManyAndCount();
+      console.log(posts);
 
       return {
         posts,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        meta: {
+          total,
+          boardTotal,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
       };
     } catch (err) {
       throw err;
@@ -139,7 +151,8 @@ export class PostsService {
   }
 
   //특정 게시글 조회
-  async getPostDetails(boardType: EBoardType, postId: number) {
+  async getPostDetails(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword) {
+    const { userId } = sessionUser;
     try {
       const result = await this.postRepository.findOne({
         where: {
@@ -154,6 +167,10 @@ export class PostsService {
       // 조회수 증가 (반환값은 증가된 후의 값을 문자열로 반환)
       const viewCounts = await this.redis.incr(redisKey);
 
+      const isLiked = await this.likeRepository.exists({ where: { userId, postId } });
+
+      const isScraped = await this.scrapRepository.exists({ where: { userId, postId } });
+
       // viewCounts를 숫자로 파싱 (필요한 경우)
       return {
         postId: result.postId,
@@ -163,8 +180,10 @@ export class PostsService {
         like: result.like,
         viewCounts: result.viewCounts + Number(viewCounts),
         createdAt: result.createdAt,
+        isLiked,
+        isScraped,
         images: result.images,
-      } as PostsEntity;
+      };
     } catch (err) {
       throw err;
     }
@@ -251,7 +270,7 @@ export class PostsService {
     return result;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async syncViewCountsToDB() {
     const startTime = performance.now();
     this.logger.log('조회수 동기화 진행중');

@@ -41,17 +41,21 @@ export class PostsController {
     }
   }
   //특정 게시글 조회
-  @Get(':boardType/:id')
+  @Get(':boardType/:postId')
   @HttpCode(200)
   @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '특정 게시글 조회' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
-  @ApiParam({ name: 'id', type: Number, description: '게시글 ID' })
+  @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })
   @ApiResponse({ status: 200, description: '게시글 조회 성공' })
   @ApiResponse({ status: 404, description: '게시글을 찾을 수 없음' })
-  async getPostDetails(@Param('boardType') boardType: EBoardType, @Param('id') id: number) {
+  async getPostDetails(
+    @Param('boardType') boardType: EBoardType,
+    @Param('postId') postId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ) {
     try {
-      const result = await this.postsService.getPostDetails(boardType, id);
+      const result = await this.postsService.getPostDetails(boardType, postId, sessionUser);
 
       return result;
     } catch (err) {

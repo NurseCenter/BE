@@ -4,6 +4,7 @@ import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { DataSource, Repository } from 'typeorm';
 import { LikeEntity } from './entities/likes.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
+import { ILikeActionResponse } from './interfaces/like-action-response.interface';
 
 @Injectable()
 export class LikesService {
@@ -13,7 +14,7 @@ export class LikesService {
   @InjectRepository(LikeEntity)
   private likeRepository: Repository<LikeEntity>;
 
-  async toggleLike(postId: number, sessionUser: IUserWithoutPassword) {
+  async toggleLike(postId: number, sessionUser: IUserWithoutPassword): Promise<ILikeActionResponse>  {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
@@ -45,7 +46,7 @@ export class LikesService {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      queryRunner.release;
+      await queryRunner.release();
     }
   }
 }

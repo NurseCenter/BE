@@ -30,6 +30,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   // 관리자 계정 로그인
+  @UseGuards(AdminGuard)
   @Post('sign-in')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '관리자 계정 로그인' })
@@ -69,8 +70,9 @@ export class AdminController {
   }
 
   // 관리자 회원 탈퇴 처리
+  @UseGuards(AdminGuard)
   @Delete('withdrawal')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(204)
   @ApiOperation({ summary: '회원 탈퇴 처리' })
   @ApiBody({
     type: DeletionUserDto,
@@ -104,6 +106,7 @@ export class AdminController {
   }
 
   // 관리자 회원 탈퇴 취소
+  @UseGuards(AdminGuard)
   @Post('withdrawal/cancel')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 탈퇴 취소' })
@@ -135,6 +138,7 @@ export class AdminController {
   }
 
   // 관리자 회원 정지 처리
+  @UseGuards(AdminGuard)
   @Post('suspension')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 정지 처리' })
@@ -171,6 +175,7 @@ export class AdminController {
   }
 
   // 관리자 회원 정지 취소
+  @UseGuards(AdminGuard)
   @Post('suspension/cancel')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 정지 취소' })
@@ -202,6 +207,7 @@ export class AdminController {
   }
 
   // 관리자 전체 회원 조회
+  @UseGuards(AdminGuard)
   @Get('users')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 회원 조회' })
@@ -244,6 +250,7 @@ export class AdminController {
   }
 
   // 관리자 특정 회원 정보 조회
+  @UseGuards(AdminGuard)
   @Get('users/:userId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '특정 회원 정보 조회' })
@@ -270,6 +277,7 @@ export class AdminController {
   }
 
   // 관리자 회원 가입 대기자 목록 조회
+  @UseGuards(AdminGuard)
   @Get('approval')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 대기자 목록 조회' })
@@ -309,6 +317,7 @@ export class AdminController {
   }
 
   // 관리자 회원 가입 승인 및 거절 처리
+  @UseGuards(AdminGuard)
   @Post('approval')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 승인 및 거절 처리' })
@@ -345,6 +354,7 @@ export class AdminController {
   }
 
   // 관리자 게시물 전체 조회 및 검색
+  @UseGuards(AdminGuard)
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
@@ -384,8 +394,9 @@ export class AdminController {
   }
 
   // 관리자 특정 게시물 삭제
+  @UseGuards(AdminGuard)
   @Delete('posts/:postId')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(204)
   @ApiOperation({ summary: '특정 게시물 삭제' })
   @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
   @ApiResponse({
@@ -408,6 +419,7 @@ export class AdminController {
   }
 
   // 관리자 댓글 및 답글 전체 조회
+  @UseGuards(AdminGuard)
   @Get('comments')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 댓글 및 답글 조회' })
@@ -448,8 +460,9 @@ export class AdminController {
 
   // 관리자 특정 댓글 혹은 답글 삭제
   // 댓글이나 답글 ID 넘겨주면 삭제함.
+  @UseGuards(AdminGuard)
   @Delete('comments/:commentId')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(204)
   @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
   @ApiParam({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
   @ApiResponse({

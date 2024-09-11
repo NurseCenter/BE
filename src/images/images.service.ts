@@ -3,6 +3,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import * as dayjs from 'dayjs';
+import { CreatePresignedUrlDto, PresignedUrlResponseDto } from './dto';
 
 @Injectable()
 export class ImagesService {
@@ -18,7 +19,8 @@ export class ImagesService {
     });
   }
 
-  async generatePresignedUrl(fileType: string): Promise<{ url: string; fields: Record<string, string>; key: string }> {
+  async generatePresignedUrl(createPresignedUrlDto: CreatePresignedUrlDto): Promise<PresignedUrlResponseDto> {
+    const { fileType } = createPresignedUrlDto;
     const bucket = process.env.S3_BUCKET_NAME;
     const now = dayjs();
     const year = now.year();
@@ -27,6 +29,7 @@ export class ImagesService {
 
     const monthStr = String(month).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
+    
     //폴더 및 확장자 선택
     let folder: string;
     let extension: string;
@@ -63,7 +66,7 @@ export class ImagesService {
         Expires: 3600,
       });
 
-      return { url, fields, key };
+      return { url, fields, key } as PresignedUrlResponseDto;
     } catch (error) {
       console.error('Error generating presigned post data:', error);
       throw error;

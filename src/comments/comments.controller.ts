@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportPostDto } from '../posts/dto/report-post.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from '../auth/guards';
 
 @ApiTags('comments')
@@ -35,8 +35,19 @@ export class CommentsController {
   //특정 게시물 댓글 전체 조회
   @Get('posts/:boardType/:postId/comments')
   @HttpCode(200)
-  async getComments(@Param('boardType') boardType: EBoardType, @Param('postId') postId: number) {
-    const result = await this.commentsService.getComments(boardType, postId);
+  @UseGuards(RegularMemberGuard)
+  @ApiOperation({ summary: '댓글 조회' })
+  @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
+  @ApiParam({ name: 'postId', type: 'number', description: '게시물 ID' })
+  @ApiQuery({ name: 'page', type: 'number', description: '페이지 번호' })
+  @ApiQuery({ name: 'limit', type: 'number', description: '페이지 당 항목 수' })
+  async getComments(
+    @Param('boardType') boardType: EBoardType,
+    @Param('postId') postId: number,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const result = await this.commentsService.getComments(boardType, postId, page, limit);
     return result;
   }
   //댓글 수정

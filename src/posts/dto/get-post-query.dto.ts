@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { ESortOrder, ESortType } from '../enum/sort-type.enum';
+import { Type } from 'class-transformer';
 
 export class PaginateQueryDto {
   @IsOptional()
@@ -9,16 +10,16 @@ export class PaginateQueryDto {
   sortType?: ESortType = ESortType.DATE;
 
   @IsOptional()
-  @IsNumber()
-  @Min(1)
+  @IsInt()
+  @Type(() => Number)
   @ApiProperty({ required: false, description: '페이지 번호' })
-  page?: number = null;
+  page?: number = 1;
 
   @IsOptional()
-  @IsNumber()
-  @Min(1)
+  @IsInt()
+  @Type(() => Number)
   @ApiProperty({ required: false, description: '페이지당 항목 수', type: Number })
-  limit?: number = null;
+  limit?: number = 10;
 
   @IsOptional()
   @IsString()

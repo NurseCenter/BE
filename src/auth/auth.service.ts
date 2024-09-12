@@ -80,9 +80,12 @@ export class AuthService {
 
   // 로그아웃
   async signOut(req: Request, res: Response): Promise<void> {
-    // const sessionId = req.sessionID;
+    const sessionId = req.sessionID;
 
-    // await this.redisClient.del(`sess:${sessionId}`);await this.redisClient.del(`sess:${sessionId}`, JSON.stringify((sessionData)))
+    console.log("로그아웃 메서드 sessionId", sessionId)
+
+    await this.redisClient.del(`sess:${sessionId}`);
+
     res.clearCookie('connect.sid');
 
     res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });

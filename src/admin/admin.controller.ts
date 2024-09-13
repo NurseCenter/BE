@@ -25,12 +25,10 @@ import { Request, Response } from 'express';
 
 @ApiTags('Admin')
 @Controller('admin')
-@UseGuards(AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   // 관리자 계정 로그인
-  @UseGuards(AdminGuard)
   @Post('sign-in')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '관리자 계정 로그인' })

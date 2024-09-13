@@ -19,8 +19,9 @@ export class SessionConfigService {
       store: redisStore,
       secret: this.configService.get<string>('SESSION_SECRET') || 'gannies_session_default',
       resave: ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_RESAVE')) || false,
-      saveUninitialized: ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_SAVE_UNINITIALIZED')) || false,
-      cookie: cookieOptions
+      saveUninitialized:
+        ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_SAVE_UNINITIALIZED')) || false,
+      cookie: cookieOptions,
     };
   }
 }

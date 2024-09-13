@@ -123,11 +123,11 @@ export class ReportsController {
   // 신고된 특정 게시물 삭제
   @UseGuards(AdminGuard)
   @Delete('posts/:postId')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '신고된 특정 게시물 삭제' })
   @ApiParam({ name: 'postId', type: 'string', description: '게시물 ID' })
   @ApiResponse({
-    status: 204,
+    status: 200,
     description: '신고된 게시물 삭제 성공',
     schema: {
       type: 'object',
@@ -364,11 +364,11 @@ export class ReportsController {
   // 신고된 특정 댓글 삭제
   @UseGuards(AdminGuard)
   @Delete('comments/:commentId')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '신고된 특정 댓글 삭제' })
   @ApiParam({ name: 'commentId', type: 'string', description: '댓글 ID' })
   @ApiResponse({
-    status: 204,
+    status: 200,
     description: '신고된 댓글 삭제 성공',
     schema: {
       type: 'object',

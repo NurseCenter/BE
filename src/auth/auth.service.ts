@@ -8,7 +8,6 @@ import { EmailService } from 'src/email/email.service';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { maskEmail } from 'src/common/utils/email.utils';
 import { UsersDAO } from 'src/users/users.dao';
-import getCookieOptions from './services/cookieOptions';
 
 @Injectable()
 export class AuthService {
@@ -30,8 +29,17 @@ export class AuthService {
   }
 
   // 회원탈퇴
-  async withDraw(userId: number): Promise<void> {
-    await this.authUserService.deleteUser(userId);
+  async withDraw(userId: number, req: Request): Promise<void> {
+    try {
+      // 1. 로그아웃
+      await this.signOut(req);
+
+      // 2. 회원정보 삭제
+      await this.authUserService.deleteUser(userId);
+    } catch (error) {
+      console.error('회원탈퇴 처리 중 오류: ', error);
+      throw new Error('회원탈퇴 처리 중 오류 발생');
+    }
   }
 
   // 로그인
@@ -59,7 +67,7 @@ export class AuthService {
         return res.status(401).json({ message: '로그인에 실패하였습니다.' });
       }
 
-      console.log("현재 로그인 후 req.sessionID", req.sessionID)
+      console.log('현재 로그인 후 req.sessionID', req.sessionID);
       // 6. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
@@ -80,34 +88,36 @@ export class AuthService {
     });
   }
 
-  async signOut(req: Request, res: Response): Promise<void> {
-    try {
-      // 세션 ID와 Redis 키 설정
-      const sessionId = req.sessionID;
-      const keyToDelete = `sess:${sessionId}`;
+  async signOut(req: Request): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        // 세션 ID와 Redis 키 설정
+        const sessionId = req.sessionID;
+        const keyToDelete = `sess:${sessionId}`;
 
-      // Redis에서 세션 삭제
-      await this.redisClient.del(keyToDelete);
-      // console.log('삭제 결과', result); // 결과가 1이어야 정상 삭제된 것임.
-  
-      // 세션 제거
-      req.session.destroy((err) => {
-        if (err) {
-          console.error("세션 삭제 오류: ", err);
-          return res.status(500).json({ message: "세션 삭제 중 오류 발생" });
-        }
-  
-        // 쿠키 삭제
-        const cookieOptions = getCookieOptions();
-        res.clearCookie('connect.sid', cookieOptions);
-  
-        // 응답 전송
-        res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
-      });
-    } catch (error) {
-      console.error('Redis에서 키 삭제 중 오류: ', error);
-      res.status(500).json({ message: 'Redis에서 키 삭제 중 오류 발생' });
-    }
+        // Redis에서 세션 삭제
+        this.redisClient.del(keyToDelete, (err) => {
+          if (err) {
+            console.error('Redis에서 키 삭제 중 오류: ', err);
+            reject(new Error('Redis에서 키 삭제 중 오류 발생'));
+            return;
+          }
+
+          // 세션 제거
+          req.session.destroy((err) => {
+            if (err) {
+              console.error('세션 삭제 오류: ', err);
+              reject(new Error('세션 삭제 중 오류 발생'));
+              return;
+            }
+
+            resolve();
+          });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   // 회원가입 후 이메일 발송

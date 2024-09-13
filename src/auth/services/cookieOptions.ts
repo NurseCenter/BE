@@ -1,4 +1,4 @@
-import { CookieOptions } from "express";
+import { CookieOptions } from 'express';
 
 const commonOptions = {
   domain: process.env.COOKIE_DOMAIN,
@@ -14,7 +14,7 @@ const getCookieOptions = (): CookieOptions => {
       secure: true,
       sameSite: 'none',
     };
-  // 개발환경
+    // 개발환경
   } else {
     return {
       ...commonOptions,

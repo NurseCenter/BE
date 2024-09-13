@@ -60,10 +60,10 @@ export class AuthController {
 
   // 회원탈퇴
   @Delete('withdrawal')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원탈퇴' })
   @ApiResponse({
-    status: 204,
+    status: 200,
     description: '회원탈퇴가 성공적으로 완료되었습니다.',
     schema: {
       example: {
@@ -72,10 +72,20 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async deleteWithdrawal(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
-    const { userId } = sessionUser;
-    await this.authService.withDraw(userId);
-    return { message: '회원탈퇴가 성공적으로 완료되었습니다.' };
+  @ApiResponse({ status: 401, description: '권한이 없음' })
+  async deleteWithdrawal(
+    @SessionUser() sessionUser: IUserWithoutPassword,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      const { userId } = sessionUser;
+      await this.authService.withDraw(userId, req);
+      res.status(200).json({ message: '회원탈퇴가 성공적으로 완료되었습니다.' })
+    } catch (error) {
+      console.error('회원탈퇴 처리 중 오류: ', error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: '회원탈퇴 처리 중 오류 발생' });
+    }
   }
 
   // 로그인
@@ -138,7 +148,7 @@ export class AuthController {
       return { message: '로그인이 완료되었습니다.' };
     } catch (error) {
       if (!res.headersSent) {
-        res.status(HttpStatus.BAD_REQUEST).json({ error: '로그인 중 오류가 발생했습니다.' });
+        res.status(HttpStatus.BAD_REQUEST).json({ error: error.message });
       }
     }
   }
@@ -157,10 +167,10 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+  async postSignOut(@Req() req: Request, @Res() res: Response): Promise<void> {
     try {
-      await this.authService.signOut(req, res);
-      return { message: '로그아웃이 완료되었습니다.' };
+      await this.authService.signOut(req);
+      res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
     } catch (error) {
       if (!res.headersSent) {
         res.status(HttpStatus.BAD_REQUEST).json({ error: '로그아웃 중 오류가 발생했습니다.' });

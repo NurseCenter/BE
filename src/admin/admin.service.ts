@@ -171,12 +171,12 @@ export class AdminService {
       }
 
       return {
-        userId: user.userId, // 회원 ID (렌더링 X)
-        nickname: user.nickname, // 닉네임
-        email: user.email, // 이메일
+        userId: user.user_userId, // 회원 ID (렌더링 X)
+        nickname: user.user_nickname, // 닉네임
+        email: user.user_email, // 이메일
         postCount: Number(user.postCount) || 0, // 게시물 수
         commentCount: Number(user.commentCount) || 0, // 댓글 수
-        createdAt: user.createdAt, // 가입일
+        createdAt: user.user_createdAt, // 가입일
         managementStatus, // 정지 또는 탈퇴 여부 (정지, 탈퇴, 해당없음)
         managementReason, // 관리 사유
       };

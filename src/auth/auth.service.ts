@@ -29,8 +29,17 @@ export class AuthService {
   }
 
   // 회원탈퇴
-  async withDraw(userId: number): Promise<void> {
-    await this.authUserService.deleteUser(userId);
+  async withDraw(userId: number, req: Request): Promise<void> {
+    try {
+      // 1. 로그아웃
+      await this.signOut(req);
+
+      // 2. 회원정보 삭제
+      await this.authUserService.deleteUser(userId);
+    } catch (error) {
+      console.error('회원탈퇴 처리 중 오류: ', error);
+      throw new Error('회원탈퇴 처리 중 오류 발생');
+    }
   }
 
   // 로그인
@@ -48,19 +57,28 @@ export class AuthService {
     const isPasswordMatch = await this.authPasswordService.matchPassword(password, user.password);
     if (!isPasswordMatch) throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
 
-    // 4. req.login을 통해 세션에 사용자 정보 저장
+    // 4. 임시 비밀번호로 로그인했는지 확인
+    const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(user.userId);
+
+    // 5. req.login을 통해 세션에 사용자 정보 저장
     req.login(user, async (err) => {
       if (err) {
         console.error('로그인 실패: ', err);
         return res.status(401).json({ message: '로그인에 실패하였습니다.' });
       }
 
-      // 5. MySQL에 회원 로그인 기록을 저장
+      console.log('현재 로그인 후 req.sessionID', req.sessionID);
+      // 6. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
-      // 6. 응답 전송
+      // 전송할 메시지 설정
+      const message = isTempPasswordSignIn
+        ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
+        : '로그인이 완료되었습니다.';
+
+      // 7. 응답 전송
       return res.status(200).json({
-        message: '로그인이 완료되었습니다.',
+        message,
         user: {
           userId: user.userId,
           email: user.email,
@@ -70,14 +88,36 @@ export class AuthService {
     });
   }
 
-  // 로그아웃
-  async signOut(req: Request, res: Response): Promise<void> {
-    const sessionId = req.sessionID;
+  async signOut(req: Request): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        // 세션 ID와 Redis 키 설정
+        const sessionId = req.sessionID;
+        const keyToDelete = `sess:${sessionId}`;
 
-    await this.redisClient.del(`sessionId:${sessionId}`);
-    res.clearCookie('connect.sid');
+        // Redis에서 세션 삭제
+        this.redisClient.del(keyToDelete, (err) => {
+          if (err) {
+            console.error('Redis에서 키 삭제 중 오류: ', err);
+            reject(new Error('Redis에서 키 삭제 중 오류 발생'));
+            return;
+          }
 
-    res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
+          // 세션 제거
+          req.session.destroy((err) => {
+            if (err) {
+              console.error('세션 삭제 오류: ', err);
+              reject(new Error('세션 삭제 중 오류 발생'));
+              return;
+            }
+
+            resolve();
+          });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   // 회원가입 후 이메일 발송
@@ -146,13 +186,14 @@ export class AuthService {
 
     const tempPassword = await this.authPasswordService.createTempPassword();
 
-    await this.redisClient.hmset(`tempPassword:${user.userId}`, {
+    await this.redisClient.hset(`tempPassword:${user.userId}`, {
       userId: user.userId,
       tempPassword,
     });
-    await this.redisClient.expire(`tempPassword:${user.userId}`, 7200);
+    await this.redisClient.expire(`tempPassword:${user.userId}`, 7200); // 유효기간 : 2시간
 
-    user.isTempPassword = true;
+    user.tempPasswordIssuedDate = new Date();
+    user.password = await this.authPasswordService.createHashedPassword(tempPassword);
     await this.usersDAO.saveUser(user);
 
     await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);

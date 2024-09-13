@@ -25,6 +25,11 @@ export class UsersDAO {
   }
 
   // 이메일로 회원 찾기
+  async findUserByNickname(nickname: string): Promise<UsersEntity | undefined> {
+    return this.usersRepository.findOne({ where: { nickname} });
+  }
+
+  // 이메일로 회원 찾기
   async findUserByEmail(email: string): Promise<UsersEntity | undefined> {
     return this.usersRepository.findOne({ where: { email } });
   }
@@ -45,7 +50,7 @@ export class UsersDAO {
   }
 
   // 페이지네이션 회원 조회
-  async findUsersWithDetails(page: number, limit: number = 10): Promise<[any[], number]> {
+  async findUsersWithDetails(page: number = 1, limit: number = 10): Promise<[any[], number]> {
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'posts')
@@ -54,18 +59,24 @@ export class UsersDAO {
         'user.userId', // 회원 ID (렌터링 X)
         'user.nickname', // 닉네임
         'user.email', // 이메일
-        'COUNT(posts.id) AS postCount', // 게시물 수
-        'COUNT(comments.id) AS commentCount', // 댓글 수
+        'COUNT(posts.postId) AS postCount', // 게시물 수
+        'COUNT(comments.commentId) AS commentCount', // 댓글 수
         'user.createdAt', // 가입날짜
       ])
-      .groupBy('user.userId')
-      .orderBy('user.createdAt', 'DESC') // 가입일 기준 내림차순 정렬
-      .skip((page - 1) * limit)
-      .take(limit);
+      .groupBy('user.userId')  
+      .orderBy('user.userId', 'DESC') // 1) userId 기준 내림차순
+      .addOrderBy('user.createdAt', 'DESC') // 2) 가입일 기준 내림차순 (userId가 같은 경우)
 
-    const [rawUsers, total] = await Promise.all([queryBuilder.getRawMany(), this.countTotalUsers()]);
-
-    return [rawUsers, total];
+    const allUsers = await queryBuilder.getRawMany();
+    const total = await this.countTotalUsers();
+  
+    // 페이지네이션 적용
+    const startIndex = (page - 1) * limit;
+    const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
+  
+    // console.log('Paginated Users:', paginatedUsers);
+  
+    return [paginatedUsers, total];
   }
 
   // 전체 사용자 수 계산

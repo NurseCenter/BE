@@ -1,25 +1,47 @@
+import { CookieOptions } from 'express';
+
 const commonOptions = {
   domain: process.env.COOKIE_DOMAIN,
-  maxAge: 24 * 60 * 60 * 1000,
+  maxAge: 24 * 60 * 60 * 1000, // 24시간 (세션 유효기간: 1일)
   httpOnly: true,
 };
 
-const getCookieOptions = async () => {
-  let additionalOptions = {};
-
+const getCookieOptions = (): CookieOptions => {
+  // 배포환경
   if (process.env.NODE_ENV === 'production') {
-    additionalOptions = {
+    return {
+      ...commonOptions,
       secure: true,
       sameSite: 'none',
     };
+    // 개발환경
   } else {
-    additionalOptions = {
-      httpOnly: false,
-      sameSite: true,
+    return {
+      ...commonOptions,
+      secure: false,
+      sameSite: 'lax',
     };
   }
-
-  return { ...commonOptions, ...additionalOptions };
 };
 
 export default getCookieOptions;
+
+/*
+개발환경
+{
+  "domain": process.env.COOKIE_DOMAIN,
+  "maxAge": 86400000,
+  "httpOnly": true,
+    "secure": false,
+  "sameSite": "lax" 
+}
+
+배포환경
+{
+  "domain": process.env.COOKIE_DOMAIN,
+  "maxAge": 86400000,
+  "httpOnly": true,
+  "secure": true,
+  "sameSite": "none" 
+}
+*/

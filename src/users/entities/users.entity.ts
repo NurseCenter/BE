@@ -38,7 +38,7 @@ export class UsersEntity {
   // 임시비밀번호 발급 여부
   // 기본 null, 발급시 해당 날짜
   @Column({ type: 'date', nullable: true, default: null })
-  isTempPassword: boolean;
+  tempPasswordIssuedDate: Date;
 
   // 회원 가입 인증 상태
   @Column({

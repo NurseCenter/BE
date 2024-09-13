@@ -14,7 +14,7 @@ export class LikesService {
   @InjectRepository(LikeEntity)
   private likeRepository: Repository<LikeEntity>;
 
-  async toggleLike(postId: number, sessionUser: IUserWithoutPassword): Promise<ILikeActionResponse>  {
+  async toggleLike(postId: number, sessionUser: IUserWithoutPassword): Promise<ILikeActionResponse> {
     const { userId } = sessionUser;
     const post = await this.postRepository.findOneBy({ postId });
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);

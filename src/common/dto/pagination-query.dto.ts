@@ -1,12 +1,14 @@
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsOptional, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class PaginationQueryDto {
   @ApiProperty({
     description: '페이지 번호',
     example: 1,
   })
-  @IsNumber()
+  @Min(1, { message: '페이지 번호는 양의 정수로, 최소값은 1입니다.' })
+  @Type(() => Number)
   page: number;
 
   @ApiProperty({
@@ -14,7 +16,8 @@ export class PaginationQueryDto {
     example: 10,
     required: false,
   })
-  @IsNumber()
+  @Type(() => Number)
+  @Min(1, { message: '1페이지에 최소 1개 이상의 내용이 첨부되어야 합니다.' })
   @IsOptional()
   limit?: number;
 }

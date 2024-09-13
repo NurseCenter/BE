@@ -39,11 +39,10 @@ async function bootstrap() {
   const sessionConfigService = app.get(SessionConfigService);
   const sessionOptions = sessionConfigService.createSessionOptions();
 
+  app.use(cookieParser());
   app.use(session(sessionOptions));
   app.use(passport.initialize());
   app.use(passport.session());
-
-  app.use(cookieParser());
 
   app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
   app.setViewEngine('ejs');
@@ -55,6 +54,8 @@ async function bootstrap() {
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
         'http://localhost:3000',
+        'http://127.0.0.1:5500', // 이메일 인증 확인용
+        'http://localhost:3001', // 로그인/로그아웃 확인용
       ];
 
       if (allowedOrigins.includes(origin) || !origin) {

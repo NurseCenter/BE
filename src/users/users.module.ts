@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
+import { MeController } from './me.controller';
 import { UsersService } from './users.service';
 import { ScrapModule } from 'src/scraps/scraps.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,6 +12,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { DataAccessModule } from '../common/data-access.module';
 import { OcrModule } from 'src/orc/ocr.module';
 import { UsersDAO } from './users.dao';
+import { UsersController } from './users.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { UsersDAO } from './users.dao';
     DataAccessModule,
     OcrModule,
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, MeController],
   providers: [UsersService, UsersDAO],
   exports: [UsersDAO],
 })

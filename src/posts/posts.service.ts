@@ -76,7 +76,6 @@ export class PostsService {
         query = query.where('post.boardType = :boardType', { boardType });
       }
 
-
       const boardTotal = await query.getCount();
 
       if (search) {

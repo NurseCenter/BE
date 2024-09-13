@@ -13,7 +13,7 @@ import { Request } from 'express';
 export class UsersService {
   constructor(
     private readonly authPasswordService: AuthPasswordService,
-    private readonly userDAO: UsersDAO,
+    private readonly usersDAO: UsersDAO,
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
     private readonly ocrService: OcrService,
@@ -32,7 +32,7 @@ export class UsersService {
     const { userId } = sessionUser;
     const { newNickname } = updateNicknameDto;
 
-    const user = await this.userDAO.findUserByUserId(userId);
+    const user = await this.usersDAO.findUserByUserId(userId);
 
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -40,7 +40,7 @@ export class UsersService {
 
     // 닉네임 업데이트
     user.nickname = newNickname;
-    const updatedUser = await this.userDAO.saveUser(user);
+    const updatedUser = await this.usersDAO.saveUser(user);
 
     // 세션 정보 업데이트
     await this.authSessionService.updateSessionInfo(req, userId, updatedUser);
@@ -53,7 +53,7 @@ export class UsersService {
     const { oldPassword, newPassword } = updatePasswordDto;
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 
-    const user = await this.userDAO.findUserByUserId(userId);
+    const user = await this.usersDAO.findUserByUserId(userId);
 
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -76,7 +76,7 @@ export class UsersService {
       user.tempPasswordIssuedDate = null;
     }
 
-    await this.userDAO.saveUser(user);
+    await this.usersDAO.saveUser(user);
 
     return { message: '비밀번호가 수정되었습니다.' };
   }
@@ -99,7 +99,7 @@ export class UsersService {
 
   // 회원 인증서류 URL에서 실명 추출
   async extractUserName(userId: number) {
-    const user = await this.userDAO.findUserByUserId(userId);
+    const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
     const certificationUrl = user.certificationDocumentUrl;
@@ -108,8 +108,18 @@ export class UsersService {
     const extractedUserName = await this.ocrService.detextTextFromImage(certificationUrl);
 
     user.username = extractedUserName;
-    await this.userDAO.saveUser(user);
+    await this.usersDAO.saveUser(user);
 
     return extractedUserName;
+  }
+
+  async isNicknameAvailable(nickname: string): Promise<boolean> {
+    const user = await this.usersDAO.findUserByNickname(nickname);
+    return !user;
+  }
+
+  async isEmailAvailable(email: string): Promise<boolean> {
+    const user = await this.usersDAO.findUserByEmail(email);
+    return !user;
   }
 }

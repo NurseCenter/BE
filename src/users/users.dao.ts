@@ -25,6 +25,11 @@ export class UsersDAO {
   }
 
   // 이메일로 회원 찾기
+  async findUserByNickname(nickname: string): Promise<UsersEntity | undefined> {
+    return this.usersRepository.findOne({ where: { nickname} });
+  }
+
+  // 이메일로 회원 찾기
   async findUserByEmail(email: string): Promise<UsersEntity | undefined> {
     return this.usersRepository.findOne({ where: { email } });
   }

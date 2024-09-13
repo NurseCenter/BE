@@ -167,7 +167,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
+  async postSuspensionByAdmin(@Body() suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
     await this.adminService.suspendUserByAdmin(suspensionUserDto);
     return { message: '회원 정지 처리가 완료되었습니다.' };
   }

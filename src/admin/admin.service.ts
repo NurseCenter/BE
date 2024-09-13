@@ -3,11 +3,9 @@ import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
 import { EmanagementStatus, ESuspensionDuration } from './enums';
-import dayjs from 'dayjs';
-import dataSource from 'data-source';
+import * as dayjs from 'dayjs';
 import { EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
-import { error } from 'console';
 import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList, ICommentOrReply } from './interfaces';
@@ -43,10 +41,6 @@ export class AdminService {
 
   // 회원 계정 탈퇴 처리
   async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     const { userId, deletionReason } = deletionUserDto;
 
     try {
@@ -60,22 +54,13 @@ export class AdminService {
 
       newDeletedUser.deletionReason = deletionReason;
       await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
-
-      await queryRunner.commitTransaction();
-    } catch {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+    } catch (error) {
+      console.error("실행중 에러", error)
     }
   }
 
   // 회원 탈퇴 취소
   async cancelWithdrawal(userId: number): Promise<{ message: string }> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
       // 탈퇴된 사용자 조회
       const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
@@ -87,22 +72,14 @@ export class AdminService {
       user.deletedAt = null;
       await this.usersDAO.saveUser(user);
 
-      await queryRunner.commitTransaction();
       return { message: '회원 탈퇴 취소가 완료되었습니다.' };
     } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+      console.error("실행중 에러", error)
     }
   }
 
   // 회원 계정 정지 처리
   async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<void> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     try {
@@ -122,13 +99,11 @@ export class AdminService {
       user.suspensionEndDate = suspensionEndDate;
       await this.usersDAO.saveUser(user);
 
-      await queryRunner.commitTransaction();
-    } catch {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+      newSuspendedUser.suspensionEndDate = suspensionEndDate;
+      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
+    } catch (error) {
+      console.error("실행중 에러", error)
+    } 
   }
 
   // 회원 계정 정지 취소

@@ -111,8 +111,7 @@ export class PostsController {
         ],
         user: {
           userId: 1,
-          username: '사용자명',
-          profileImage: 'https://example.com/profile.jpg',
+          nickname: '사용자닉네임'
         },
       },
     },
@@ -170,17 +169,48 @@ export class PostsController {
   @HttpCode(201)
   @ApiOperation({ summary: '게시글 생성' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
-  @ApiBody({
-    description: '게시글 생성 데이터',
-    type: CreatePostDto,
-    schema: {
-      example: {
-        title: 'New Post Title',
-        content: 'New Post Content',
+@ApiBody({
+  description: '게시글 생성 데이터',
+  schema: {
+    type: 'object',
+    properties: {
+      title: {
+        type: 'string',
+        example: '새 게시글 제목',
+      },
+      content: {
+        type: 'string',
+        example: '새 게시글 내용',
+      },
+      imageTypes: {
+        type: 'array',
+        items: {
+          type: 'string',
+          example: 'image/jpeg',
+        },
+        example: ['image/jpeg'],
+      },
+    },
+    required: ['title', 'content'], 
+  },
+  examples: {
+    '텍스트만': {
+      summary: '이미지 없이 텍스트만 포함된 게시글',
+      value: {
+        title: '새 게시글 제목이죵',
+        content: '새 게시글 내용입니당',
+      },
+    },
+    '이미지 포함': {
+      summary: '이미지를 포함한 게시글',
+      value: {
+        title: '새 게시글 제목이죵',
+        content: '새 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
         imageTypes: ['image/jpeg'],
       },
     },
-  })
+  },
+})
   @ApiResponse({
     status: 201,
     description: '게시글 생성 성공',
@@ -188,8 +218,8 @@ export class PostsController {
       example: {
         postId: 2,
         userId: 1,
-        title: 'New Post Title',
-        content: 'New Post Content',
+        title: '새 게시글 제목',
+        content: '새 게시글 내용',
         like: 0,
         viewCounts: 0,
         createdAt: '2024-01-02T00:00:00.000Z',
@@ -332,7 +362,7 @@ export class PostsController {
   // 게시글 삭제
   @UseGuards(RegularMemberGuard)
   @Delete(':boardType/posts/:postId')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiParam({
     name: 'boardType',
@@ -349,8 +379,10 @@ export class PostsController {
     description: '게시글 삭제 성공',
     schema: {
       example: {
-        affected: 1,
-      },
+        "generatedMaps": [],
+        "raw": [],
+        "affected": 1
+      }
     },
   })
   @ApiResponse({
@@ -401,6 +433,7 @@ export class PostsController {
   @UseGuards(RegularMemberGuard)
   @Post(':boardType/:postId/reports')
   @HttpCode(200)
+  @ApiOperation({ summary: '특정 게시글 신고' })
   @ApiParam({
     name: 'boardType',
     description: '게시판 종류',

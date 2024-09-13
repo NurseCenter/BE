@@ -10,10 +10,10 @@ export class PresignedUrlResponseDto {
   @ApiProperty({
     description: 'S3에 파일을 업로드할 때 필요한 폼 필드들',
     example: {
-      'key': 'images/2024/09/10/uuid-file.png',
-      'bucket': 'example-bucket',
-      'policy': 'base64-policy',
-      'signature': 'signature',
+      key: 'images/2024/09/10/uuid-file.png',
+      bucket: 'example-bucket',
+      policy: 'base64-policy',
+      signature: 'signature',
       'x-amz-algorithm': 'AWS4-HMAC-SHA256',
     },
   })

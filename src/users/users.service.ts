@@ -18,7 +18,7 @@ export class UsersService {
     private readonly commentsDAO: CommentsDAO,
     private readonly ocrService: OcrService,
     private readonly authSessionService: AuthSessionService,
-    private readonly authSignInService: AuthSignInService
+    private readonly authSignInService: AuthSignInService,
   ) {}
 
   // 나의 정보 조회
@@ -43,7 +43,7 @@ export class UsersService {
     const updatedUser = await this.userDAO.saveUser(user);
 
     // 세션 정보 업데이트
-    await this.authSessionService.updateSessionInfo(req, userId, updatedUser)
+    await this.authSessionService.updateSessionInfo(req, userId, updatedUser);
     return { message: '닉네임이 수정되었습니다.' };
   }
 
@@ -73,7 +73,7 @@ export class UsersService {
     user.password = newHashedPassword;
 
     if (isTempPasswordSignIn) {
-      user.tempPasswordIssuedDate = null
+      user.tempPasswordIssuedDate = null;
     }
 
     await this.userDAO.saveUser(user);

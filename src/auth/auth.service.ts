@@ -8,6 +8,7 @@ import { EmailService } from 'src/email/email.service';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { maskEmail } from 'src/common/utils/email.utils';
 import { UsersDAO } from 'src/users/users.dao';
+import getCookieOptions from './services/cookieOptions';
 
 @Injectable()
 export class AuthService {
@@ -58,13 +59,14 @@ export class AuthService {
         return res.status(401).json({ message: '로그인에 실패하였습니다.' });
       }
 
+      console.log("현재 로그인 후 req.sessionID", req.sessionID)
       // 6. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
       // 전송할 메시지 설정
       const message = isTempPasswordSignIn
-      ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
-      : '로그인이 완료되었습니다.';
+        ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
+        : '로그인이 완료되었습니다.';
 
       // 7. 응답 전송
       return res.status(200).json({
@@ -78,17 +80,34 @@ export class AuthService {
     });
   }
 
-  // 로그아웃
   async signOut(req: Request, res: Response): Promise<void> {
-    const sessionId = req.sessionID;
+    try {
+      // 세션 ID와 Redis 키 설정
+      const sessionId = req.sessionID;
+      const keyToDelete = `sess:${sessionId}`;
 
-    console.log("로그아웃 메서드 sessionId", sessionId)
-
-    await this.redisClient.del(`sess:${sessionId}`);
-
-    res.clearCookie('connect.sid');
-
-    res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
+      // Redis에서 세션 삭제
+      await this.redisClient.del(keyToDelete);
+      // console.log('삭제 결과', result); // 결과가 1이어야 정상 삭제된 것임.
+  
+      // 세션 제거
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("세션 삭제 오류: ", err);
+          return res.status(500).json({ message: "세션 삭제 중 오류 발생" });
+        }
+  
+        // 쿠키 삭제
+        const cookieOptions = getCookieOptions();
+        res.clearCookie('connect.sid', cookieOptions);
+  
+        // 응답 전송
+        res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
+      });
+    } catch (error) {
+      console.error('Redis에서 키 삭제 중 오류: ', error);
+      res.status(500).json({ message: 'Redis에서 키 삭제 중 오류 발생' });
+    }
   }
 
   // 회원가입 후 이메일 발송

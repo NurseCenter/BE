@@ -17,9 +17,9 @@ export class UsersController {
   @Get()
   @HttpCode(200)
   @ApiOperation({ summary: '본인 정보 조회' })
-  @ApiResponse({ 
-    status: 200, 
-    description: '본인의 정보가 성공적으로 조회되었습니다.', 
+  @ApiResponse({
+    status: 200,
+    description: '본인의 정보가 성공적으로 조회되었습니다.',
     schema: {
       example: {
         nickname: 'exampleNickname',
@@ -29,7 +29,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: '인증 실패', 
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
     schema: {
       example: {
         statusCode: 401,
@@ -55,14 +57,16 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: '닉네임이 성공적으로 수정되었습니다.',
     schema: {
       example: { message: '닉네임이 수정되었습니다.' },
     },
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청',
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
     schema: {
       example: {
         statusCode: 400,
@@ -70,7 +74,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: '인증 실패',
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
     schema: {
       example: {
         statusCode: 401,
@@ -78,7 +84,11 @@ export class UsersController {
       },
     },
   })
-  async patchMyInfo(@SessionUser() user: IUserWithoutPassword, @Body() updateNicknameDto: UpdateNicknameDto, @Req() req: Request) {
+  async patchMyInfo(
+    @SessionUser() user: IUserWithoutPassword,
+    @Body() updateNicknameDto: UpdateNicknameDto,
+    @Req() req: Request,
+  ) {
     return this.usersService.updateMyNickname(user, updateNicknameDto, req);
   }
 
@@ -99,14 +109,16 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: '비밀번호가 성공적으로 수정되었습니다.',
     schema: {
       example: { message: '비밀번호가 수정되었습니다.' },
     },
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청',
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
     schema: {
       example: {
         statusCode: 400,
@@ -114,7 +126,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: '인증 실패',
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
     schema: {
       example: {
         statusCode: 401,
@@ -122,7 +136,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 403, description: '권한 없음',
+  @ApiResponse({
+    status: 403,
+    description: '권한 없음',
     schema: {
       example: {
         statusCode: 403,
@@ -141,17 +157,31 @@ export class UsersController {
   @ApiOperation({ summary: '본인 게시글 전체 조회' })
   @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', example: 1 })
   @ApiQuery({ name: 'limit', type: Number, description: '페이지당 게시글 수', required: false, example: 10 })
-  @ApiQuery({ name: 'sort', type: String, enum: ['latest', 'popular'], description: '정렬 기준', required: false, example: 'latest' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiQuery({
+    name: 'sort',
+    type: String,
+    enum: ['latest', 'popular'],
+    description: '정렬 기준',
+    required: false,
+    example: 'latest',
+  })
+  @ApiResponse({
+    status: 200,
     description: '본인의 게시글이 성공적으로 조회되었습니다.',
     schema: {
       example: [
-        { postId: 1, title: 'Example Post', content: 'This is an example post content.', createdAt: '2024-09-01T12:00:00Z' },
+        {
+          postId: 1,
+          title: 'Example Post',
+          content: 'This is an example post content.',
+          createdAt: '2024-09-01T12:00:00Z',
+        },
       ],
     },
   })
-  @ApiResponse({ status: 401, description: '인증 실패',
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
     schema: {
       example: {
         statusCode: 401,
@@ -170,17 +200,24 @@ export class UsersController {
   @ApiOperation({ summary: '본인 댓글 전체 조회' })
   @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', example: 1 })
   @ApiQuery({ name: 'limit', type: Number, description: '페이지당 댓글 수', required: false, example: 10 })
-  @ApiQuery({ name: 'sort', type: String, enum: ['latest', 'popular'], description: '정렬 기준', required: false, example: 'latest' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiQuery({
+    name: 'sort',
+    type: String,
+    enum: ['latest', 'popular'],
+    description: '정렬 기준',
+    required: false,
+    example: 'latest',
+  })
+  @ApiResponse({
+    status: 200,
     description: '본인의 댓글이 성공적으로 조회되었습니다.',
     schema: {
-      example: [
-        { commentId: 1, postId: 1, content: '이건 샘플 댓글이다.', createdAt: '2024-09-01T12:00:00Z' },
-      ],
+      example: [{ commentId: 1, postId: 1, content: '이건 샘플 댓글이다.', createdAt: '2024-09-01T12:00:00Z' }],
     },
   })
-  @ApiResponse({ status: 401, description: '인증 실패',
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
     schema: {
       example: {
         statusCode: 401,
@@ -196,8 +233,8 @@ export class UsersController {
   @Post('/:userId/name-extraction')
   @HttpCode(200)
   @ApiOperation({ summary: '인증서류 이미지에서 실명 추출' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: '실명 추출 및 회원 정보 업데이트 성공',
     schema: {
       example: {
@@ -206,7 +243,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청',
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
     schema: {
       example: {
         statusCode: 400,
@@ -214,7 +253,9 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 404, description: '회원 또는 인증서류를 찾을 수 없음',
+  @ApiResponse({
+    status: 404,
+    description: '회원 또는 인증서류를 찾을 수 없음',
     schema: {
       example: {
         statusCode: 404,

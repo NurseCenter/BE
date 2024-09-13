@@ -29,7 +29,7 @@ export class ImagesService {
 
     const monthStr = String(month).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
-    
+
     //폴더 및 확장자 선택
     let folder: string;
     let extension: string;

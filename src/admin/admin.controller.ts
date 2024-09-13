@@ -41,24 +41,24 @@ export class AdminController {
       'application/json': {
         value: {
           email: 'gildongtest1@example.com',
-          password: 'Password1!'
-        }
-      }
-    }
+          password: 'Password1!',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '관리자 계정으로 로그인에 성공하였습니다.',
     schema: {
-      example: { message: '관리자 계정으로 로그인이 완료되었습니다.' }
-    }
+      example: { message: '관리자 계정으로 로그인이 완료되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async postSignIn(
     @Body() signInUserDto: SignInUserDto,
@@ -81,24 +81,24 @@ export class AdminController {
       'application/json': {
         value: {
           userId: 123,
-          deletionReason: '탈퇴 사유'
-        }
-      }
-    }
+          deletionReason: '탈퇴 사유',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '회원 탈퇴 처리가 완료되었습니다.',
     schema: {
-      example: { message: '회원 탈퇴 처리가 완료되었습니다.' }
-    }
+      example: { message: '회원 탈퇴 처리가 완료되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string }> {
     await this.adminService.withdrawUserByAdmin(deleteUserDto);
@@ -115,23 +115,23 @@ export class AdminController {
     description: '탈퇴 취소에 필요한 사용자 ID',
     examples: {
       'application/json': {
-        value: 123
-      }
-    }
+        value: 123,
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '회원 탈퇴 취소가 완료되었습니다.',
     schema: {
-      example: { message: '회원 탈퇴 취소가 완료되었습니다.' }
-    }
+      example: { message: '회원 탈퇴 취소가 완료되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async postCancelWithdrawal(@Body() userId: number) {
     return this.adminService.cancelWithdrawal(userId);
@@ -150,24 +150,24 @@ export class AdminController {
         value: {
           userId: 123,
           suspensionReason: '정지 사유',
-          suspensionDuration: '1w'
-        }
-      }
-    }
+          suspensionDuration: '1w',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '회원 정지 처리가 완료되었습니다.',
     schema: {
-      example: { message: '회원 정지 처리가 완료되었습니다.' }
-    }
+      example: { message: '회원 정지 처리가 완료되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
     await this.adminService.suspendUserByAdmin(suspensionUserDto);
@@ -184,23 +184,23 @@ export class AdminController {
     description: '정지 취소에 필요한 사용자 ID',
     examples: {
       'application/json': {
-        value: 123
-      }
-    }
+        value: 123,
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '회원 정지 취소가 완료되었습니다.',
     schema: {
-      example: { message: '회원 정지 취소가 완료되었습니다.' }
-    }
+      example: { message: '회원 정지 취소가 완료되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async postCancelSuspension(@Body() userId: number) {
     return this.adminService.cancelSuspension(userId);
@@ -227,21 +227,21 @@ export class AdminController {
             commentCount: 5,
             createdAt: '2024-01-01T00:00:00.000Z',
             managementStatus: '정지',
-            managementReason: '정지 사유'
-          }
+            managementReason: '정지 사유',
+          },
         ],
         totalItems: 100,
         totalPages: 10,
-        currentPage: 1
-      }
-    }
+        currentPage: 1,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async getAllUsers(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IUserList>> {
     const { page, limit } = query;
@@ -261,16 +261,16 @@ export class AdminController {
     schema: {
       example: {
         nickname: 'user_nickname',
-        email: 'user@example.com'
-      }
-    }
+        email: 'user@example.com',
+      },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async getUserInfoByAdmin(@Param('userId') userId: number): Promise<IUserInfo> {
     return await this.adminService.fetchUserInfoByAdmin(userId);
@@ -295,21 +295,21 @@ export class AdminController {
             email: 'user@example.com',
             createdAt: '2024-01-01T00:00:00.000Z',
             studentStatus: 'PENDING_VERIFICATION',
-            certificationDocumentUrl: 'http://example.com/document'
-          }
+            certificationDocumentUrl: 'http://example.com/document',
+          },
         ],
         totalItems: 50,
         totalPages: 5,
-        currentPage: 1
-      }
-    }
+        currentPage: 1,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async getApprovalsByAdmin(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IApprovalUserList>> {
     const { page, limit } = query;
@@ -326,27 +326,27 @@ export class AdminController {
     examples: {
       '승인 완료': {
         value: { userId: 123, isApproved: true },
-        description: '회원 가입을 승인합니다.'
+        description: '회원 가입을 승인합니다.',
       },
       '승인 거절': {
         value: { userId: 123, isApproved: false },
-        description: '회원 가입을 거절합니다.'
-      }
-    }
+        description: '회원 가입을 거절합니다.',
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: '회원 가입 승인 또는 거절 처리 성공',
     schema: {
-      example: { message: '회원 가입 처리 결과가 성공적으로 반영되었습니다.' }
-    }
+      example: { message: '회원 가입 처리 결과가 성공적으로 반영되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
     const result = await this.adminService.processUserApproval(approvalDto);
@@ -372,21 +372,21 @@ export class AdminController {
             boardType: '공지사항',
             title: '게시물 제목',
             author: '홍길동',
-            createdAt: '2024-01-01T00:00:00Z'
-          }
+            createdAt: '2024-01-01T00:00:00Z',
+          },
         ],
         totalItems: 1,
         totalPages: 1,
-        currentPage: 1
-      }
-    }
+        currentPage: 1,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async getAllPosts(@Query() query: SearchQueryDto): Promise<IPaginatedResponse<IPostList>> {
     const { page, limit, search } = query;
@@ -403,15 +403,15 @@ export class AdminController {
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '게시물이 성공적으로 삭제되었습니다.' }
-    }
+      example: { message: '게시물이 성공적으로 삭제되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async deletePost(@Param('postId') postId: number): Promise<{ message: string }> {
     await this.adminService.deletePost(postId);
@@ -437,21 +437,21 @@ export class AdminController {
             postTitle: '게시물 제목',
             content: '댓글 내용',
             nickname: '홍길동',
-            createdAt: '2024-01-01T00:00:00Z'
-          }
+            createdAt: '2024-01-01T00:00:00Z',
+          },
         ],
         totalItems: 1,
         totalPages: 1,
-        currentPage: 1
-      }
-    }
+        currentPage: 1,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async getAllComments(@Query() query: PaginationQueryDto) {
     const { page, limit } = query;
@@ -469,15 +469,15 @@ export class AdminController {
     status: 200,
     description: '댓글 또는 답글 삭제 성공',
     schema: {
-      example: { message: '댓글이 성공적으로 삭제되었습니다.' }
-    }
+      example: { message: '댓글이 성공적으로 삭제되었습니다.' },
+    },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' }
-    }
+      example: { message: '잘못된 요청입니다.' },
+    },
   })
   async deleteComment(@Param('commentId') commentId: number): Promise<{ message: string }> {
     await this.adminService.deleteCommentOrReplyById(commentId);

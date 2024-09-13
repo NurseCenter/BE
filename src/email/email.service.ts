@@ -37,7 +37,7 @@ export class EmailService {
 
   private async send(to: string, subject: string, templateName: string, data: any): Promise<void> {
     try {
-      const emailData = { ...data, frontEndLoginPageUrl: this.frontEndLoginPageUrl }
+      const emailData = { ...data, frontEndLoginPageUrl: this.frontEndLoginPageUrl };
       const html = await this.renderTemplate(templateName, emailData);
       const mailOptions = {
         from: process.env.EMAIL_FROM,

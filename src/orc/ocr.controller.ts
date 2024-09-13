@@ -2,7 +2,6 @@ import { Controller, Get, Body } from '@nestjs/common';
 import { OcrService } from './ocr.service';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-
 @ApiTags('Ocr')
 @Controller('ocr')
 export class OcrController {

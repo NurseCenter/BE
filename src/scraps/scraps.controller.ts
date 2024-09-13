@@ -73,7 +73,7 @@ export class ScrapController {
     const result = await this.scrapsService.scrapPost(postId, sessionUser);
     return result;
   }
-  
+
   // 내가 스크랩한 게시물 조회
   @UseGuards(RegularMemberGuard)
   @Get()

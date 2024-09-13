@@ -108,9 +108,9 @@ export class AuthController {
               user: {
                 userId: 35,
                 email: 'happyday@example.com',
-                nickname: '명란젓코난'
-              }
-            }
+                nickname: '명란젓코난',
+              },
+            },
           },
           tempPassword: {
             summary: '임시 비밀번호 로그인 성공',
@@ -119,13 +119,13 @@ export class AuthController {
               user: {
                 userId: 35,
                 email: 'tempPassword@example.com',
-                nickname: '명란젓코난'
-              }
-            }
-          }
-        }
-      }
-    }
+                nickname: '명란젓코난',
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignIn(
@@ -133,8 +133,14 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<{ message: string }> {
-    await this.authService.signIn(signInUserDto, req, res);
-    return { message: '로그인이 완료되었습니다.' };
+    try {
+      await this.authService.signIn(signInUserDto, req, res);
+      return { message: '로그인이 완료되었습니다.' };
+    } catch (error) {
+      if (!res.headersSent) {
+        res.status(HttpStatus.BAD_REQUEST).json({ error: '로그인 중 오류가 발생했습니다.' });
+      }
+    }
   }
 
   // 로그아웃
@@ -152,8 +158,14 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignOut(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
-    await this.authService.signOut(req, res);
-    return { message: '로그아웃이 완료되었습니다.' };
+    try {
+      await this.authService.signOut(req, res);
+      return { message: '로그아웃이 완료되었습니다.' };
+    } catch (error) {
+      if (!res.headersSent) {
+        res.status(HttpStatus.BAD_REQUEST).json({ error: '로그아웃 중 오류가 발생했습니다.' });
+      }
+    }
   }
 
   // 이메일 인증 발송
@@ -373,9 +385,7 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getStatus(
-    @SessionUser() sessionUser: IUserWithoutPassword,
-  ): Promise<{ message: string }> {
+  async getStatus(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     const { userId } = sessionUser;
     return await this.authService.sendStatus(userId);
   }

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { ScrapService } from './scraps.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
@@ -74,52 +74,10 @@ export class ScrapController {
     return result;
   }
 
-  // 내가 스크랩한 게시물 조회
-  @UseGuards(RegularMemberGuard)
-  @Get()
-  @HttpCode(200)
-  @ApiOperation({ summary: '내가 스크랩한 게시물 조회' })
-  @ApiResponse({
-    status: 200,
-    description: '스크랩한 게시물 목록',
-    schema: {
-      example: [
-        {
-          scrapId: 1,
-          userId: 1,
-          postId: 1,
-          createdAt: '2024-01-01T00:00:00.000Z',
-          deletedAt: null,
-          post: {
-            postId: 1,
-            title: 'Sample Post',
-            content: 'This is a sample post content',
-            createdAt: '2024-01-01T00:00:00.000Z',
-            updatedAt: '2024-01-01T00:00:00.000Z',
-          },
-        },
-      ],
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: '인증 실패',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: '인증이 필요합니다.',
-      },
-    },
-  })
-  async getScrapPosts(@SessionUser() sessionUser: IUserWithoutPassword) {
-    const result = await this.scrapsService.getScrapPosts(sessionUser);
-    return result;
-  }
-
   // 스크랩한 게시물 삭제
   @UseGuards(RegularMemberGuard)
   @Delete('/:scrapId')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '스크랩한 게시물 삭제' })
   @ApiParam({ name: 'scrapId', type: 'number', description: '스크랩 ID' })
   @ApiResponse({

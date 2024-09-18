@@ -9,5 +9,6 @@ import { ScrapsEntity } from './entities/scraps.entity';
   imports: [TypeOrmModule.forFeature([PostsEntity, ScrapsEntity])],
   controllers: [ScrapController],
   providers: [ScrapService],
+  exports: [ScrapService],
 })
 export class ScrapModule {}

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 
 @Entity('deleted_users')
 export class DeletedUsersEntity {
@@ -16,5 +16,10 @@ export class DeletedUsersEntity {
 
   // 탈퇴처리된 날짜
   @CreateDateColumn()
+  createdAt: Date;
+
+  // 탈퇴처리 해제된 날짜
+  // 원래 상태로 돌아감
+  @DeleteDateColumn()
   deletedAt: Date;
 }

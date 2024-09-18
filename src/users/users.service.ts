@@ -113,11 +113,13 @@ export class UsersService {
     return extractedUserName;
   }
 
+  // 회원가입시 닉네임 중복여부 확인
   async isNicknameAvailable(nickname: string): Promise<boolean> {
     const user = await this.usersDAO.findUserByNickname(nickname);
     return !user;
   }
 
+  // 회원가입시 이메일 중복여부 확인
   async isEmailAvailable(email: string): Promise<boolean> {
     const user = await this.usersDAO.findUserByEmail(email);
     return !user;

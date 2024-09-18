@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { EBoardType } from './enum/board-type.enum';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
@@ -17,7 +17,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   // 게시글 전체 및 검색 조회
-  @Get(':boardType/list')
+  @Get(':boardType')
   @ApiOperation({ summary: '게시글 조회' })
   @ApiParam({
     name: 'boardType',
@@ -79,7 +79,7 @@ export class PostsController {
     }
   }
   //특정 게시글 조회
-  @Get(':boardType/posts/:postId')
+  @Get(':boardType/:postId')
   @HttpCode(200)
   @UseGuards(RegularMemberGuard)
   @ApiOperation({ summary: '특정 게시글 조회' })
@@ -273,7 +273,7 @@ export class PostsController {
 
   // 게시글 수정
   @UseGuards(RegularMemberGuard)
-  @Patch(':boardType/posts/:postId')
+  @Put(':boardType/:postId')
   @HttpCode(200)
   @ApiOperation({ summary: '게시글 수정' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
@@ -361,7 +361,7 @@ export class PostsController {
 
   // 게시글 삭제
   @UseGuards(RegularMemberGuard)
-  @Delete(':boardType/posts/:postId')
+  @Delete(':boardType/:postId')
   @HttpCode(200)
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiParam({

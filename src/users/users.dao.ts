@@ -88,18 +88,17 @@ export class UsersDAO {
     return Number(result.total);
   }
 
-  // 승인 대기중, 승인 거절당한 회원 조회
+  // 승인 대기중인 회원 조회
+  // 승인 거절당하면 non_member(0)으로 상태 업데이트 시킬 것임.
   async findPendingAndRejectVerifications(page: number, limit: number = 10): Promise<[UsersEntity[], number]> {
-    return this.usersRepository.findAndCount({
-      where: [
-        { membershipStatus: EMembershipStatus.PENDING_VERIFICATION, deletedAt: null },
-        { rejected: false, deletedAt: null },
-      ],
-      skip: (page - 1) * limit,
-      take: limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+      const [users, total] = await this.usersRepository.createQueryBuilder('user')
+      .where('user.deletedAt IS NULL')
+      .andWhere('user.membershipStatus = :status', { status: EMembershipStatus.EMAIL_VERIFIED })
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('user.createdAt', 'DESC')
+      .getManyAndCount();
+
+    return [users, total];
   }
 }

@@ -8,6 +8,8 @@ import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
 import { Request } from 'express';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { ScrapService } from 'src/scraps/scraps.service';
+import { PaginationQueryDto } from 'src/common/dto';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @ApiTags('Me')
 @Controller('me')
@@ -238,29 +240,32 @@ export class MeController {
 
   // 내가 스크랩한 게시물 조회
   @UseGuards(RegularMemberGuard)
-  @Get('/scraps')
+  @Get('scraps')
   @HttpCode(200)
   @ApiOperation({ summary: '내가 스크랩한 게시물 조회' })
   @ApiResponse({
     status: 200,
     description: '스크랩한 게시물 목록',
     schema: {
-      example: [
-        {
-          scrapId: 1,
-          userId: 1,
-          postId: 1,
-          createdAt: '2024-01-01T00:00:00.000Z',
-          deletedAt: null,
-          post: {
+      example: {
+        items: [
+          {
+            scrapId: 1,
+            userId: 1,
             postId: 1,
-            title: 'Sample Post',
-            content: 'This is a sample post content',
             createdAt: '2024-01-01T00:00:00.000Z',
-            updatedAt: '2024-01-01T00:00:00.000Z',
+            post: {
+              postId: 1,
+              boardType: 'job',
+              title: 'Sample Post',
+              createdAt: '2024-01-01T00:00:00.000Z',
+            },
           },
-        },
-      ],
+        ],
+        totalItems: 1,
+        totalPages: 1,
+        currentPage: 1,
+      },
     },
   })
   @ApiResponse({
@@ -273,8 +278,8 @@ export class MeController {
       },
     },
   })
-  async getScrapPosts(@SessionUser() sessionUser: IUserWithoutPassword) {
-    const result = await this.scrapsService.getScrapPosts(sessionUser);
+  async getScrapPosts(@SessionUser() sessionUser: IUserWithoutPassword, @Query() paginationQueryDto: PaginationQueryDto): Promise<IPaginatedResponse<any>> {
+    const result = await this.scrapsService.getScrappedPosts(sessionUser, paginationQueryDto);
     return result;
   }
 

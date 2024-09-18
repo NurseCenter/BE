@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGu
 import { EBoardType } from './enum/board-type.enum';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
-import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
@@ -10,6 +9,7 @@ import { BasePostDto } from './dto/base-post.dto';
 import { ReportPostDto } from './dto/report-post.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
+import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -68,7 +68,7 @@ export class PostsController {
   async getPosts(
     @Param('boardType') boardType: EBoardType,
     @Query()
-    paginateQueryDto: PaginateQueryDto,
+    paginateQueryDto: GetPostsQueryDto,
   ) {
     try {
       const result = await this.postsService.getPosts(boardType, paginateQueryDto);

@@ -10,6 +10,8 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { DeletedUsersDAO, SuspendedUsersDAO } from 'src/admin/dao';
 import { DeletedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
+import { ScrapsDAO } from 'src/scraps/scraps.dao';
+import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 
 @Module({
   imports: [
@@ -20,9 +22,10 @@ import { DeletedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
       RepliesEntity,
       DeletedUsersEntity,
       SuspendedUsersEntity,
+      ScrapsEntity
     ]),
   ],
-  providers: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO],
-  exports: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO],
+  providers: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO, ScrapsDAO],
+  exports: [UsersDAO, CommentsDAO, PostsDAO, RepliesDAO, DeletedUsersDAO, SuspendedUsersDAO,  ScrapsDAO],
 })
 export class DataAccessModule {}

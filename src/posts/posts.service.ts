@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PaginateQueryDto } from './dto/get-post-query.dto';
 import { EBoardType } from './enum/board-type.enum';
 import { ESortOrder, ESortType } from './enum/sort-type.enum';
 import { PostsEntity } from './entities/base-posts.entity';
@@ -28,6 +27,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { performance } from 'perf_hooks';
 import { ScrapsEntity } from '../scraps/entities/scraps.entity';
 import { LikeEntity } from '../likes/entities/likes.entity';
+import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 
 @Injectable()
 export class PostsService {
@@ -49,7 +49,7 @@ export class PostsService {
 
   //게시글 조회
   //쿼리값이 하나도 없을 경우 전체조회, 쿼리값이 있을 경우 조건에 맞는 조회
-  async getPosts(boardType: EBoardType, paginateQueryDto: PaginateQueryDto) {
+  async getPosts(boardType: EBoardType, paginateQueryDto: GetPostsQueryDto) {
     let { page, limit, search, sortOrder, sortType } = paginateQueryDto;
     page = page && Number(page) > 0 ? Number(page) : 1;
     limit = limit && Number(limit) > 0 ? Number(limit) : 10;

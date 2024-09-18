@@ -10,6 +10,16 @@ export class PostsDAO {
     private readonly postsRepository: Repository<PostsEntity>,
   ) {}
 
+  // PostId로 게시물 조회
+  async findPostById(postId: number) {
+    return await this.postsRepository.findOneBy({ postId })
+  }
+
+  // 게시물 업데이트
+  async updatePost(postId: number, updatedPost: Partial<PostsEntity>): Promise<void> {
+    await this.postsRepository.update(postId, updatedPost);
+  }
+
   // 본인이 작성한 게시물 조회
   async findMyPosts(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
     const queryBuilder = this.postsRepository

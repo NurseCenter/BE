@@ -3,7 +3,7 @@ import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { ESortOrder, ESortType } from '../enum/sort-type.enum';
 import { Type } from 'class-transformer';
 
-export class PaginateQueryDto {
+export class GetPostsQueryDto {
   @IsOptional()
   @IsEnum(ESortType)
   @ApiProperty({ enum: ESortOrder, required: false, description: '정렬 순서' })

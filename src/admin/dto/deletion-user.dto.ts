@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsString, IsNotEmpty } from 'class-validator';
 
 export class DeletionUserDto {
@@ -7,6 +8,7 @@ export class DeletionUserDto {
     example: 123,
   })
   @IsNotEmpty()
+  @Type(() => Number)
   readonly userId: number;
 
   @ApiProperty({

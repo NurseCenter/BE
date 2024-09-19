@@ -13,7 +13,7 @@ export class RepliesController {
 
   // 답글 작성
   @UseGuards(RegularMemberGuard)
-  @Post(':commentId/replies')
+  @Post('comments/:commentId/replies')
   @HttpCode(201)
   @ApiOperation({ summary: '답글 작성' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
@@ -73,7 +73,7 @@ export class RepliesController {
 
   // 특정 댓글의 답글 전체 조회
   @UseGuards(RegularMemberGuard)
-  @Get(':commentId/replies')
+  @Get('comments/:commentId/replies')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 댓글의 답글 전체 조회' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
@@ -181,7 +181,7 @@ export class RepliesController {
   // 답글 삭제
   @UseGuards(RegularMemberGuard)
   @Delete('replies/:replyId')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '답글 삭제' })
   @ApiParam({ name: 'replyId', type: 'number', description: '답글 ID' })
   @ApiResponse({

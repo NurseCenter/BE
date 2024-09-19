@@ -22,6 +22,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { SignInUserDto } from 'src/auth/dto';
 import { Request, Response } from 'express';
+import { UserIdDto } from './dto/userId-dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -70,7 +71,7 @@ export class AdminController {
   // 관리자 회원 탈퇴 처리
   @UseGuards(AdminGuard)
   @Delete('withdrawal')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '회원 탈퇴 처리' })
   @ApiBody({
     type: DeletionUserDto,
@@ -131,8 +132,10 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postCancelWithdrawal(@Body() userId: number) {
-    return this.adminService.cancelWithdrawal(userId);
+  async postCancelWithdrawal(@Body() userIdDto: UserIdDto) {
+    const { userId } = userIdDto;
+    await this.adminService.cancelWithdrawal(userId);
+    return { message: '회원 탈퇴 취소가 완료되었습니다.' };
   }
 
   // 관리자 회원 정지 처리
@@ -167,7 +170,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSuspensionByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
+  async postSuspensionByAdmin(@Body() suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
     await this.adminService.suspendUserByAdmin(suspensionUserDto);
     return { message: '회원 정지 처리가 완료되었습니다.' };
   }
@@ -180,10 +183,8 @@ export class AdminController {
   @ApiBody({
     type: Number,
     description: '정지 취소에 필요한 사용자 ID',
-    examples: {
-      'application/json': {
-        value: 123,
-      },
+    schema: {
+      example: { userId: 123 },
     },
   })
   @ApiResponse({
@@ -200,7 +201,8 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postCancelSuspension(@Body() userId: number) {
+  async postCancelSuspension(@Body() userIdDto: UserIdDto) {
+    const { userId } = userIdDto;
     return this.adminService.cancelSuspension(userId);
   }
 
@@ -292,7 +294,7 @@ export class AdminController {
             nickname: 'user_nickname',
             email: 'user@example.com',
             createdAt: '2024-01-01T00:00:00.000Z',
-            studentStatus: 'PENDING_VERIFICATION',
+            membershipStatus: 'EMAIL_VERIFIED',
             certificationDocumentUrl: 'http://example.com/document',
           },
         ],
@@ -394,7 +396,7 @@ export class AdminController {
   // 관리자 특정 게시물 삭제
   @UseGuards(AdminGuard)
   @Delete('posts/:postId')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '특정 게시물 삭제' })
   @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
   @ApiResponse({
@@ -460,7 +462,7 @@ export class AdminController {
   // 댓글이나 답글 ID 넘겨주면 삭제함.
   @UseGuards(AdminGuard)
   @Delete('comments/:commentId')
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
   @ApiParam({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
   @ApiResponse({

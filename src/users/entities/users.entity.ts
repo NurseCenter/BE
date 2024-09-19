@@ -74,7 +74,7 @@ export class UsersEntity {
 
   // 활동 정지 종료 날짜
   // 기본 상태 null, 정지된 경우 정지가 종료되는 날짜를 저장
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @Column({ nullable: true, default: null })
   suspensionEndDate?: Date;
 
   // 탈퇴일

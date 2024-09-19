@@ -6,11 +6,19 @@ import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePas
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
 import { Request } from 'express';
+import { CommentsDAO } from 'src/comments/comments.dao';
+import { ScrapService } from 'src/scraps/scraps.service';
+import { PaginationQueryDto } from 'src/common/dto';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @ApiTags('Me')
 @Controller('me')
 export class MeController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly scrapsService: ScrapService,
+    private readonly commentsDAO: CommentsDAO,
+  ) {}
 
   // 본인 정보 조회
   @UseGuards(SignInGuard)
@@ -225,7 +233,65 @@ export class MeController {
       },
     },
   })
-  async getMyComments(@SessionUser() user: IUserWithoutPassword, @Query() query: GetMyCommentsQueryDto) {
-    return this.usersService.fetchMyComments(user, query.page, query.limit, query.sort);
+  async getMyComments(
+    @SessionUser() user: IUserWithoutPassword,
+    @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto,
+  ) {
+    const { page, limit, sort } = getmyCommentsQueryDto;
+    return this.usersService.fetchMyComments(user, page, limit, sort);
+  }
+
+  // 내가 스크랩한 게시물 조회
+  @UseGuards(RegularMemberGuard)
+  @Get('scraps')
+  @HttpCode(200)
+  @ApiOperation({ summary: '내가 스크랩한 게시물 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '스크랩한 게시물 목록',
+    schema: {
+      example: {
+        items: [
+          {
+            scrapId: 1,
+            userId: 1,
+            postId: 1,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            post: {
+              postId: 1,
+              boardType: 'job',
+              title: 'Sample Post',
+              createdAt: '2024-01-01T00:00:00.000Z',
+            },
+          },
+        ],
+        totalItems: 1,
+        totalPages: 1,
+        currentPage: 1,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: '인증이 필요합니다.',
+      },
+    },
+  })
+  async getScrapPosts(
+    @SessionUser() sessionUser: IUserWithoutPassword,
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<IPaginatedResponse<any>> {
+    const result = await this.scrapsService.getScrapedPosts(sessionUser, paginationQueryDto);
+    return result;
+  }
+
+  @Get('allcomments')
+  @HttpCode(200)
+  async test() {
+    return this.commentsDAO.findAllComments();
   }
 }

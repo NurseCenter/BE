@@ -1,13 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
 import { EmanagementStatus, ESuspensionDuration } from './enums';
-import dayjs from 'dayjs';
-import dataSource from 'data-source';
+import * as dayjs from 'dayjs';
 import { EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto, DeletionUserDto } from './dto';
-import { error } from 'console';
 import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList, ICommentOrReply } from './interfaces';
@@ -43,66 +41,53 @@ export class AdminService {
 
   // 회원 계정 탈퇴 처리
   async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     const { userId, deletionReason } = deletionUserDto;
+    console.log('userId', userId, 'deletionReason', deletionReason);
 
-    try {
-      const user = await this.usersDAO.findUserByUserId(userId);
-      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    // 사용자 조회
+    const user = await this.usersDAO.findUserByUserId(userId);
+    console.log('user', user);
 
-      await this.authUserService.deleteUser(userId);
-
-      const newDeletedUser = await this.deletedUsersDAO.createDeletedUser(userId);
-      if (!newDeletedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-
-      newDeletedUser.deletionReason = deletionReason;
-      await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
-
-      await queryRunner.commitTransaction();
-    } catch {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+    if (!user) {
+      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
+
+    // 사용자 삭제 처리
+    await this.authUserService.deleteUser(userId);
+
+    // 이미 삭제된 사용자 확인
+    const existingDeletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
+    if (existingDeletedUser?.deletedAt !== null) {
+      throw new ConflictException('이미 탈퇴처리가 된 회원입니다.');
+    }
+
+    // 새 삭제 사용자 생성
+    const newDeletedUser = await this.deletedUsersDAO.createDeletedUser(userId);
+    if (!newDeletedUser) {
+      throw new NotFoundException('해당 회원 탈퇴 처리 중 오류가 발생하였습니다.');
+    }
+
+    newDeletedUser.userId = userId;
+    newDeletedUser.deletionReason = deletionReason;
+    newDeletedUser.deletedAt = new Date(); // 현재 날짜로 설정
+    await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
   }
 
   // 회원 탈퇴 취소
-  async cancelWithdrawal(userId: number): Promise<{ message: string }> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  async cancelWithdrawal(userId: number): Promise<void> {
+    const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
+    if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
+    deletedUser.deletedAt = null;
+    await this.deletedUsersDAO.saveDeletedUser(deletedUser);
 
-    try {
-      // 탈퇴된 사용자 조회
-      const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
-      if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
-
-      // 사용자 복구
-      const user = await this.usersDAO.findUserByUserId(userId);
-      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-      user.deletedAt = null;
-      await this.usersDAO.saveUser(user);
-
-      await queryRunner.commitTransaction();
-      return { message: '회원 탈퇴 취소가 완료되었습니다.' };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    user.deletedAt = null;
+    await this.usersDAO.saveUser(user);
   }
 
   // 회원 계정 정지 처리
   async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<void> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     try {
@@ -122,12 +107,10 @@ export class AdminService {
       user.suspensionEndDate = suspensionEndDate;
       await this.usersDAO.saveUser(user);
 
-      await queryRunner.commitTransaction();
-    } catch {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+      newSuspendedUser.suspensionEndDate = suspensionEndDate;
+      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
+    } catch (error) {
+      console.error('실행중 에러', error);
     }
   }
 
@@ -155,8 +138,8 @@ export class AdminService {
     const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
 
     const userList = users.map((user) => {
-      const suspendedUser = suspendedUsers.find((su) => su.userId === user.userId);
-      const deletedUser = deletedUsers.find((du) => du.userId === user.userId);
+      const suspendedUser = suspendedUsers.find((su) => su.userId === user.user_userId);
+      const deletedUser = deletedUsers.find((du) => du.userId === user.user_userId);
 
       // 관리 상태 결정
       let managementStatus: EmanagementStatus = EmanagementStatus.NONE; // 없음(기본값)
@@ -259,12 +242,14 @@ export class AdminService {
     try {
       const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(page, limit);
 
+      console.log('users', users);
+
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)
         nickname: user.nickname, // 닉네임
         email: user.email, // 이메일
         createdAt: user.createdAt, // 가입 날짜
-        studentStatus: user.membershipStatus, // 재학여부
+        membershipStatus: user.membershipStatus, // 현재 회원상태
         certificationDocumentUrl: user.certificationDocumentUrl, // 첨부파일
         status: user.rejected ? '승인거절' : '승인대기', // 상태
       }));

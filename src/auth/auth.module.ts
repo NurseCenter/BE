@@ -11,7 +11,6 @@ import { SessionSerializer } from './session-serializer';
 import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from 'src/email/email.module';
 import { AuthTwilioService } from './services/auth.twilio.service';
-import { TestController } from './test-guard.controller';
 import { DataAccessModule } from 'src/common/data-access.module';
 
 @Module({
@@ -22,7 +21,7 @@ import { DataAccessModule } from 'src/common/data-access.module';
     EmailModule,
     DataAccessModule,
   ],
-  controllers: [AuthController, TestController],
+  controllers: [AuthController],
   providers: [
     AuthService,
     AuthUserService,

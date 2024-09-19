@@ -1,13 +1,4 @@
-import { UsersEntity } from 'src/users/entities/users.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ESuspensionDuration } from '../enums';
 
 @Entity('suspended_users')
@@ -17,8 +8,7 @@ export class SuspendedUsersEntity {
   id: number;
 
   // 정지된 회원 ID
-  @OneToOne(() => UsersEntity)
-  @JoinColumn({ name: 'suspended_user_id' })
+  @Column()
   userId: number;
 
   // 정지된 사유
@@ -32,12 +22,12 @@ export class SuspendedUsersEntity {
   })
   suspensionDuration: ESuspensionDuration;
 
-  // 정지된 날짜
+  // 정지 끝나는 날짜
   @Column({
-    type: 'timestamp',
     nullable: true,
+    default: null,
   })
-  suspensionEndDate?: Date;
+  suspensionEndDate: Date;
 
   // 정지당한 날짜
   @CreateDateColumn()

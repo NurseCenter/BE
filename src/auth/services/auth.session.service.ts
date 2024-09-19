@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import createCookieOptions from './cookieOptions';
 import Redis from 'ioredis';
 import { Request, Response } from 'express';
+import { sendCookieOptions } from '../cookie-options/send-cookie-options';
 
 @Injectable()
 export class AuthSessionService {
@@ -40,7 +40,7 @@ export class AuthSessionService {
 
   // 쿠키 생성하기
   async sendCookie(res: Response, sessionId: string): Promise<boolean> {
-    const returnedCookieOptions = await createCookieOptions();
+    const returnedCookieOptions = sendCookieOptions();
     res.cookie('sessionId', sessionId, returnedCookieOptions);
     return true;
   }

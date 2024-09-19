@@ -24,6 +24,7 @@ import { OcrModule } from './orc/ocr.module';
 import { CertificatesService } from './certificates/certificates.service';
 import { CertificatesController } from './certificates/certificates.controller';
 import { CertificatesModule } from './certificates/certificates.module';
+// import { TestModule } from './_api-test/test.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CertificatesModule } from './certificates/certificates.module';
     ImagesModule,
     OcrModule,
     CertificatesModule,
+    // TestModule
   ],
   controllers: [AppController, CertificatesController],
   providers: [AppService, SessionConfigService, CertificatesService],

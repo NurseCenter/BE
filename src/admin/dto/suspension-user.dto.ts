@@ -8,7 +8,7 @@ export class SuspensionUserDto {
     example: 123,
   })
   @IsNotEmpty()
-  readonly userId: number;
+  userId: number;
 
   @ApiProperty({
     description: '정지 사유',
@@ -16,7 +16,7 @@ export class SuspensionUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly suspensionReason: string;
+  suspensionReason: string;
 
   @ApiProperty({
     description: '정지 기간',
@@ -25,5 +25,5 @@ export class SuspensionUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly suspensionDuration: ESuspensionDuration;
+  suspensionDuration: ESuspensionDuration;
 }

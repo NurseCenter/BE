@@ -4,12 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import * as dayjs from 'dayjs';
 import { CreatePresignedUrlDto, PresignedUrlResponseDto } from './dto';
+import { ImagesDAO } from './images.dao';
+import { getExtensionFromMime } from 'src/common/utils';
+import { ImagesEntity } from './entities/image.entity';
 
 @Injectable()
 export class ImagesService {
   private s3Client: S3Client;
 
-  constructor() {
+  constructor(private imagesDAO: ImagesDAO) {
     this.s3Client = new S3Client({
       region: process.env.AWS_REGION,
       credentials: {
@@ -30,28 +33,24 @@ export class ImagesService {
     const monthStr = String(month).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
 
-    //폴더 및 확장자 선택
-    let folder: string;
-    let extension: string;
+    // 확장자 결정
+    const extension = getExtensionFromMime(fileType);
 
-    switch (fileType) {
-      case 'image/jpeg':
-      case 'image/png':
-      case 'image/gif':
-        folder = 'images';
-        extension = fileType.split('/')[1];
-        break;
-      case 'application/pdf':
-        folder = 'documents';
-        extension = 'pdf';
-        break;
-      case 'application/x-hwp':
-        folder = 'documents';
-        extension = 'hwp';
-        break;
-      default:
-        folder = 'others';
-        extension = 'bin';
+    // 폴더 결정
+    let folder: string;
+    if (['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
+      folder = 'images';
+    } else if (
+      [
+        'application/pdf',
+        'application/x-hwp',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ].includes(fileType)
+    ) {
+      folder = 'documents';
+    } else {
+      folder = 'others'; // zip 및 다른 파일 포함
     }
     const key = `${folder}/${year}/${monthStr}/${dayStr}/${uuidv4()}.${extension}`;
 
@@ -71,5 +70,11 @@ export class ImagesService {
       console.error('Error generating presigned post data:', error);
       throw error;
     }
+  }
+
+  async createImage(imageData: Partial<ImagesEntity>): Promise<ImagesEntity> {
+    const imageEntity = this.imagesDAO.createImage(imageData);
+    const savedImage = await this.imagesDAO.saveImage([imageEntity]);
+    return savedImage[0];
   }
 }

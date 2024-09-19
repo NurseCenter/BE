@@ -159,7 +159,7 @@ export class CommentsController {
 
   //댓글 수정
   @UseGuards(RegularMemberGuard)
-  @Patch(':commentId')
+  @Patch('comments/:commentId')
   @HttpCode(200)
   @ApiOperation({ summary: '댓글 수정' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
@@ -230,8 +230,8 @@ export class CommentsController {
 
   // 댓글 삭제
   @UseGuards(RegularMemberGuard)
-  @Delete(':commentId')
-  @HttpCode(204)
+  @Delete('comments/:commentId')
+  @HttpCode(200)
   @ApiOperation({ summary: '댓글 삭제' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
   @ApiResponse({
@@ -280,7 +280,7 @@ export class CommentsController {
 
   // 특정 댓글 신고
   @UseGuards(RegularMemberGuard)
-  @Post(':commentId/reports')
+  @Post('comments/:commentId/reports')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 댓글 신고' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })

@@ -1,23 +1,22 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { UploadInfoResponseDto } from './dto';
+import { CreatePresignedUrlDto } from 'src/images/dto';
 
 @ApiTags('Certificates')
 @Controller('certificates')
 export class CertificatesController {
   constructor(private readonly certificatesService: CertificatesService) {}
 
-  @Get('upload-info')
+  @Post('upload-info')
   @ApiOperation({
     summary: 'S3 버킷에 파일 업로드를 위한 pre-signed URL 포함 인증 정보 제공',
     description: '주어진 파일 타입에 대한 S3 업로드를 위한 pre-signed URL과 관련된 정보를 제공함.',
   })
-  @ApiQuery({
-    name: 'fileType',
-    type: String,
+  @ApiBody({
+    type: CreatePresignedUrlDto,
     description: '업로드할 파일의 MIME 타입 (예: image/jpeg, application/pdf)',
-    required: true,
   })
   @ApiResponse({
     status: 200,
@@ -116,7 +115,7 @@ export class CertificatesController {
       },
     },
   })
-  async getUploadInfo(@Query('fileType') fileType: string): Promise<UploadInfoResponseDto> {
-    return await this.certificatesService.generatePreSignedUrl(fileType);
+  async getUploadInfo(@Body() createPresignedUrlDto: { fileType: string }): Promise<UploadInfoResponseDto> {
+    return await this.certificatesService.generatePreSignedUrl(createPresignedUrlDto);
   }
 }

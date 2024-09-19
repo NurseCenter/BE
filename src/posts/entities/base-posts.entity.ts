@@ -12,11 +12,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
-import { LikeEntity } from '../../likes/entities/likes.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
-import { ImageEntity } from '../../images/entities/image.entity';
 import { EBoardType } from '../enum/board-type.enum';
 import { ReportPostsEntity } from 'src/reports/entities';
+import { LikesEntity } from 'src/likes/entities/likes.entity';
+import { ImagesEntity } from 'src/images/entities/image.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -57,16 +57,16 @@ export class PostsEntity {
   isReported: boolean;
 
   // 스크랩 횟수
-  // @Column({ type: 'int', default: 0 })
-  // scrapCounts: number;
+  @Column({ type: 'int', default: 0 })
+  scrapCounts: number;
 
   // 조회수
   @Column({ type: 'int', default: 0 })
   viewCounts: number;
 
-  // 좋아요 수
+  // 좋아요수
   @Column({ type: 'int', default: 0 })
-  like: number;
+  likeCounts: number;
 
   // 게시물 작성일
   @CreateDateColumn()
@@ -96,8 +96,8 @@ export class PostsEntity {
 
   // 좋아요와의 관계 설정
   // 하나의 게시글에 여러 개의 좋아요가 있을 수 있음
-  @OneToMany(() => LikeEntity, (like) => like.post)
-  likes: LikeEntity[];
+  @OneToMany(() => LikesEntity, (like) => like.post)
+  likes: LikesEntity[];
 
   // 스크랩과의 관계 설정
   // 하나의 게시글에 여러 개의 스크랩이 있을 수 있음
@@ -111,6 +111,6 @@ export class PostsEntity {
 
   // 이미지와의 관계 설정
   // 하나의 게시글에 여러 개의 이미지가 첨부될 수 있음
-  @OneToMany(() => ImageEntity, (image) => image.post)
-  images: ImageEntity[];
+  @OneToMany(() => ImagesEntity, (image) => image.post)
+  images: ImagesEntity[];
 }

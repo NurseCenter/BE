@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
 @Entity('images')
-export class ImageEntity {
+export class ImagesEntity {
   // 이미지 고유 ID
   @PrimaryGeneratedColumn()
   id: number;

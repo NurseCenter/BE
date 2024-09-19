@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import RedisStore from 'connect-redis';
 import Redis from 'ioredis';
-import getCookieOptions from 'src/auth/services/cookieOptions';
+import { sendCookieOptions } from 'src/auth/services';
 import { ConversionUtil } from 'src/common/utils/conversion.utils';
 
 export class SessionConfigService {
@@ -13,7 +13,7 @@ export class SessionConfigService {
 
   createSessionOptions() {
     const redisStore = new RedisStore({ client: this.redisClient });
-    const cookieOptions = getCookieOptions();
+    const cookieOptions = sendCookieOptions();
 
     return {
       store: redisStore,

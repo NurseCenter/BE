@@ -15,6 +15,6 @@ export class CreatePostDto {
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
-  @ApiProperty({ type: [String], description: '이미지 타입 배열' })
+  @ApiProperty({ type: [String], description: '파일 타입 배열' })
   imageTypes?: string[];
 }

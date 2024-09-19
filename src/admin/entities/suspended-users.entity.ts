@@ -1,10 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ESuspensionDuration } from '../enums';
 
 @Entity('suspended_users')
@@ -30,8 +24,8 @@ export class SuspendedUsersEntity {
 
   // 정지 끝나는 날짜
   @Column({
-    nullable: true, 
-    default: null
+    nullable: true,
+    default: null,
   })
   suspensionEndDate: Date;
 

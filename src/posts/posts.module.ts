@@ -4,19 +4,25 @@ import { PostsService } from './posts.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentsEntity } from '../comments/entities/comments.entity';
 import { PostsEntity } from './entities/base-posts.entity';
-import { ImageEntity } from '../images/entities/image.entity';
 import { ImagesModule } from '../images/images.module';
 import { ReportPostsEntity } from 'src/reports/entities';
 import { ScrapsEntity } from '../scraps/entities/scraps.entity';
-import { LikeEntity } from '../likes/entities/likes.entity';
+import { PostsMetricsService } from './metrics/posts-metrics.service';
+import { LikesEntity } from 'src/likes/entities/likes.entity';
+import { ImagesEntity } from 'src/images/entities/image.entity';
+import { PostsDAO } from './posts.dao';
+import { DataAccessModule } from 'src/common/data-access.module';
+import { FileUploader } from './file-uploader';
+import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CommentsEntity, PostsEntity, ReportPostsEntity, ImageEntity, ScrapsEntity, LikeEntity]),
+    TypeOrmModule.forFeature([CommentsEntity, PostsEntity, ReportPostsEntity, ImagesEntity, ScrapsEntity, LikesEntity]),
     ImagesModule,
+    DataAccessModule,
   ],
   controllers: [PostsController],
-  providers: [PostsService],
-  exports: [PostsModule],
+  providers: [PostsService, PostsMetricsService, PostsDAO, PostsMetricsDAO, FileUploader],
+  exports: [PostsModule, PostsMetricsService],
 })
 export class PostsModule {}

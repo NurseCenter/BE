@@ -4,7 +4,7 @@ import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
 @Entity('likes')
 @Unique(['userId', 'postId'])
-export class LikeEntity {
+export class LikesEntity {
   // 좋아요 고유 ID
   @PrimaryGeneratedColumn()
   likeId: number;

@@ -9,16 +9,11 @@ export class ScrapsDAO {
   private scrapsRepository: Repository<ScrapsEntity>;
 
   // 특정 사용자가 해당 게시물을 스크랩했는지 확인
-  async existsScrap(userId: number, postId: number) {
+  async checkIfScraped(userId: number, postId: number) {
     return await this.scrapsRepository.exists({ where: { userId, postId } });
   }
 
-  // 생성된 스크랩 엔티티 저장
-  async saveScrap(scrap: ScrapsEntity) {
-    return await this.scrapsRepository.save(scrap);
-  }
-
-  // 스크랩 인스턴스 생성
+  // 스크랩 엔티티 생성
   async createScrap(userId: number, postId: number): Promise<ScrapsEntity> {
     const newScrap = new ScrapsEntity();
     newScrap.userId = userId;
@@ -26,8 +21,17 @@ export class ScrapsDAO {
     return newScrap;
   }
 
+  // 생성된 스크랩 엔티티 저장
+  async saveScrap(scrap: ScrapsEntity) {
+    return await this.scrapsRepository.save(scrap);
+  }
+
   // 특정 회원이 스크랩한 게시물들 조회
-  async findScrapsByUser(userId: number, page: number = 1, limit: number = 10): Promise<{ items: any[]; totalItems: number }> {
+  async findScrapsByUser(
+    userId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ items: any[]; totalItems: number }> {
     const queryBuilder = this.scrapsRepository
       .createQueryBuilder('scrap')
       .leftJoinAndSelect('scrap.post', 'post')

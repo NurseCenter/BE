@@ -6,7 +6,7 @@ const commonOptions = {
   httpOnly: true,
 };
 
-const getCookieOptions = (): CookieOptions => {
+const sendCookieOptions = (): CookieOptions => {
   // 배포환경
   if (process.env.NODE_ENV === 'production') {
     return {
@@ -24,7 +24,7 @@ const getCookieOptions = (): CookieOptions => {
   }
 };
 
-export default getCookieOptions;
+export { sendCookieOptions };
 
 /*
 개발환경

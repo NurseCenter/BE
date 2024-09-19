@@ -17,7 +17,7 @@ export class MeController {
   constructor(
     private readonly usersService: UsersService,
     private readonly scrapsService: ScrapService,
-    private readonly commentsDAO: CommentsDAO
+    private readonly commentsDAO: CommentsDAO,
   ) {}
 
   // 본인 정보 조회
@@ -233,8 +233,11 @@ export class MeController {
       },
     },
   })
-  async getMyComments(@SessionUser() user: IUserWithoutPassword, @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto) {
-    const { page, limit, sort } = getmyCommentsQueryDto
+  async getMyComments(
+    @SessionUser() user: IUserWithoutPassword,
+    @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto,
+  ) {
+    const { page, limit, sort } = getmyCommentsQueryDto;
     return this.usersService.fetchMyComments(user, page, limit, sort);
   }
 
@@ -278,8 +281,11 @@ export class MeController {
       },
     },
   })
-  async getScrapPosts(@SessionUser() sessionUser: IUserWithoutPassword, @Query() paginationQueryDto: PaginationQueryDto): Promise<IPaginatedResponse<any>> {
-    const result = await this.scrapsService.getScrappedPosts(sessionUser, paginationQueryDto);
+  async getScrapPosts(
+    @SessionUser() sessionUser: IUserWithoutPassword,
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<IPaginatedResponse<any>> {
+    const result = await this.scrapsService.getScrapedPosts(sessionUser, paginationQueryDto);
     return result;
   }
 

@@ -10,6 +10,7 @@ import { ReportPostDto } from './dto/report-post.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -34,24 +35,21 @@ export class PostsController {
     description: '게시글 조회 성공',
     schema: {
       example: {
-        posts: [
+        items: [
           {
             postId: 1,
             boardType: 'employment',
             title: '취업에 성공하는 비결',
+            userId: 32,
             nickname: '명란젓코난',
             createdAt: '2024-01-01T00:00:00.000Z',
             viewCounts: 100,
-            like: 10,
+            likeCounts: 10,
           },
         ],
-        meta: {
-          total: 1,
-          boardTotal: 33,
-          page: 1,
-          limit: 10,
-          totalPages: 1,
-        },
+        totalItems: 1,
+        totalPages: 1,
+        currentPage: 1,
       },
     },
   })
@@ -68,17 +66,17 @@ export class PostsController {
   async getPosts(
     @Param('boardType') boardType: EBoardType,
     @Query()
-    paginateQueryDto: GetPostsQueryDto,
-  ) {
+    getPostsQueryDto: GetPostsQueryDto,
+  ): Promise<IPaginatedResponse<any>> {
     try {
-      const result = await this.postsService.getPosts(boardType, paginateQueryDto);
-
+      const result = await this.postsService.getAllPosts(boardType, getPostsQueryDto);
       return result;
     } catch (err) {
       throw err;
     }
   }
-  //특정 게시글 조회
+
+  // 특정 게시글 조회
   @Get(':boardType/:postId')
   @HttpCode(200)
   @UseGuards(RegularMemberGuard)
@@ -91,12 +89,14 @@ export class PostsController {
     schema: {
       example: {
         postId: 1,
-        userId: 1,
         title: '게시글 제목',
-        content: '게시글 내용',
-        like: 5,
+        content: '게시글 내용이다.',
+        likeCounts: 5,
         viewCounts: 100,
         createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-02T00:00:00.000Z',
+        userId: 23,
+        nickname: '쌈장법사',
         isLiked: true,
         isScraped: false,
         images: [
@@ -109,10 +109,6 @@ export class PostsController {
             imageUrl: 'https://example.com/image2.jpg',
           },
         ],
-        user: {
-          userId: 1,
-          nickname: '사용자닉네임'
-        },
       },
     },
   })
@@ -155,8 +151,7 @@ export class PostsController {
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     try {
-      const result = await this.postsService.getPostDetails(boardType, postId, sessionUser);
-
+      const result = await this.postsService.getOnePost(boardType, postId, sessionUser);
       return result;
     } catch (err) {
       throw err;
@@ -169,48 +164,49 @@ export class PostsController {
   @HttpCode(201)
   @ApiOperation({ summary: '게시글 생성' })
   @ApiParam({ name: 'boardType', enum: EBoardType, description: '게시판 유형' })
-@ApiBody({
-  description: '게시글 생성 데이터',
-  schema: {
-    type: 'object',
-    properties: {
-      title: {
-        type: 'string',
-        example: '새 게시글 제목',
-      },
-      content: {
-        type: 'string',
-        example: '새 게시글 내용',
-      },
-      imageTypes: {
-        type: 'array',
-        items: {
+  @ApiBody({
+    description: '게시글 생성 데이터',
+    schema: {
+      type: 'object',
+      properties: {
+        title: {
           type: 'string',
-          example: 'image/jpeg',
+          example: '새 게시글 제목',
         },
-        example: ['image/jpeg'],
+        content: {
+          type: 'string',
+          example: '새 게시글 내용',
+        },
+        imageTypes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            example: 'image/jpeg',
+          },
+          example: ['image/jpeg'],
+        },
+      },
+      required: ['title', 'content'],
+    },
+    examples: {
+      텍스트만: {
+        summary: '이미지 없이 텍스트만 포함된 게시글',
+        value: {
+          title: '새 게시글 제목이죵',
+          content: '새 게시글 내용입니당',
+        },
+      },
+      '이미지 포함': {
+        summary: '이미지를 포함한 게시글',
+        value: {
+          title: '새 게시글 제목이죵',
+          content:
+            '새 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
+          imageTypes: ['image/jpeg'],
+        },
       },
     },
-    required: ['title', 'content'], 
-  },
-  examples: {
-    '텍스트만': {
-      summary: '이미지 없이 텍스트만 포함된 게시글',
-      value: {
-        title: '새 게시글 제목이죵',
-        content: '새 게시글 내용입니당',
-      },
-    },
-    '이미지 포함': {
-      summary: '이미지를 포함한 게시글',
-      value: {
-        title: '새 게시글 제목이죵',
-        content: '새 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
-        imageTypes: ['image/jpeg'],
-      },
-    },
-  },
-})
+  })
   @ApiResponse({
     status: 201,
     description: '게시글 생성 성공',
@@ -219,9 +215,7 @@ export class PostsController {
         postId: 2,
         userId: 1,
         title: '새 게시글 제목',
-        content: '새 게시글 내용',
-        like: 0,
-        viewCounts: 0,
+        summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
         createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
           {
@@ -264,7 +258,6 @@ export class PostsController {
   ) {
     try {
       const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
-
       return result;
     } catch (err) {
       throw err;
@@ -280,11 +273,44 @@ export class PostsController {
   @ApiParam({ name: 'postId', type: Number, description: '게시글 ID' })
   @ApiBody({
     description: '게시글 수정 데이터',
-    type: UpdatePostDto,
     schema: {
-      example: {
-        title: '게시글 수정했답',
-        content: '이게 바로 수정한 게시글 내용이다!',
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          example: '수정된 게시글 제목',
+        },
+        content: {
+          type: 'string',
+          example: '수정된 게시글 내용',
+        },
+        imageTypes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            example: 'image/jpeg',
+          },
+          example: ['image/jpeg'],
+        },
+      },
+      required: ['title', 'content'],
+    },
+    examples: {
+      텍스트만: {
+        summary: '이미지 없이 텍스트만 포함된 게시글',
+        value: {
+          title: '수정된 게시글 제목이죵',
+          content: '수정된 게시글 내용입니당',
+        },
+      },
+      '이미지 포함': {
+        summary: '이미지를 포함한 게시글',
+        value: {
+          title: '수정된 게시글 제목이죵',
+          content:
+            '수정된 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
+          imageTypes: ['image/jpeg'],
+        },
       },
     },
   })
@@ -293,14 +319,22 @@ export class PostsController {
     description: '게시글 수정 성공',
     schema: {
       example: {
-        postId: 1,
+        postId: 2,
         userId: 1,
-        title: 'Updated Post Title',
-        content: 'Updated Post Content',
-        like: 10,
-        viewCounts: 100,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-02T00:00:00.000Z',
+        title: '새 게시글 제목',
+        summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        createdAt: '2024-01-02T00:00:00.000Z',
+        presignedPostData: [
+          {
+            url: 'https://example.com/upload',
+            fields: {
+              key: 'image-key',
+              policy: 'policy',
+              signature: 'signature',
+            },
+            key: 'image-key',
+          },
+        ],
       },
     },
   })
@@ -352,7 +386,6 @@ export class PostsController {
   ) {
     try {
       const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
-
       return result;
     } catch (err) {
       throw err;
@@ -378,11 +411,7 @@ export class PostsController {
     status: 200,
     description: '게시글 삭제 성공',
     schema: {
-      example: {
-        "generatedMaps": [],
-        "raw": [],
-        "affected": 1
-      }
+      example: { message: '게시물이 삭제되었습니다.' },
     },
   })
   @ApiResponse({
@@ -415,14 +444,13 @@ export class PostsController {
       },
     },
   })
-  async softDeletePost(
+  async deletePost(
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
     try {
       const result = await this.postsService.deletePost(boardType, postId, sessionUser);
-
       return result;
     } catch (err) {
       throw err;
@@ -459,13 +487,13 @@ export class PostsController {
     description: '게시글 신고 성공',
     schema: {
       example: {
-        reportId: 1,
-        postId: 1,
-        userId: 1,
-        reportedReason: 'SPAM',
-        otherReportedReason: null,
-        reportedUserId: 2,
-        createdAt: '2024-01-01T00:00:00.000Z',
+        reportId: 1, // 신고 ID
+        postId: 1, // 게시글 ID
+        userId: 1, // 신고한 사용자 ID
+        reportedReason: 'SPAM', // 신고 이유
+        otherReportedReason: null, // 기타 신고 이유
+        reportedUserId: 2, // 신고된 사용자 ID
+        createdAt: '2024-01-01T00:00:00.000Z', // 신고 일자
       },
     },
   })
@@ -491,11 +519,11 @@ export class PostsController {
   })
   @ApiResponse({
     status: 403,
-    description: '자기 게시물 신고 시',
+    description: '본인 게시물 신고 시',
     schema: {
       example: {
         statusCode: 403,
-        message: '자기 자신의 게시물을 신고할 수 없습니다.',
+        message: '본인의 게시물은 본인이 신고할 수 없습니다.',
       },
     },
   })

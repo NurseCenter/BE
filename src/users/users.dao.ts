@@ -26,7 +26,7 @@ export class UsersDAO {
 
   // 이메일로 회원 찾기
   async findUserByNickname(nickname: string): Promise<UsersEntity | undefined> {
-    return this.usersRepository.findOne({ where: { nickname} });
+    return this.usersRepository.findOne({ where: { nickname } });
   }
 
   // 이메일로 회원 찾기
@@ -63,19 +63,19 @@ export class UsersDAO {
         'COUNT(comments.commentId) AS commentCount', // 댓글 수
         'user.createdAt', // 가입날짜
       ])
-      .groupBy('user.userId')  
+      .groupBy('user.userId')
       .orderBy('user.userId', 'DESC') // 1) userId 기준 내림차순
-      .addOrderBy('user.createdAt', 'DESC') // 2) 가입일 기준 내림차순 (userId가 같은 경우)
+      .addOrderBy('user.createdAt', 'DESC'); // 2) 가입일 기준 내림차순 (userId가 같은 경우)
 
     const allUsers = await queryBuilder.getRawMany();
     const total = await this.countTotalUsers();
-  
+
     // 페이지네이션 적용
     const startIndex = (page - 1) * limit;
     const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
-  
+
     // console.log('Paginated Users:', paginatedUsers);
-  
+
     return [paginatedUsers, total];
   }
 
@@ -91,7 +91,8 @@ export class UsersDAO {
   // 승인 대기중인 회원 조회
   // 승인 거절당하면 non_member(0)으로 상태 업데이트 시킬 것임.
   async findPendingAndRejectVerifications(page: number, limit: number = 10): Promise<[UsersEntity[], number]> {
-      const [users, total] = await this.usersRepository.createQueryBuilder('user')
+    const [users, total] = await this.usersRepository
+      .createQueryBuilder('user')
       .where('user.deletedAt IS NULL')
       .andWhere('user.membershipStatus = :status', { status: EMembershipStatus.EMAIL_VERIFIED })
       .skip((page - 1) * limit)

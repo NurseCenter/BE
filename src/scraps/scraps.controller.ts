@@ -47,7 +47,7 @@ export class ScrapController {
     description: '특정 게시물 스크랩 취소 완료',
     schema: {
       example: {
-        message: '스크랩이 취소되었습니다.'
+        message: '스크랩이 취소되었습니다.',
       },
     },
   })
@@ -91,7 +91,10 @@ export class ScrapController {
       },
     },
   })
-  async deleteScrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }>{
-    return await this.scrapsService.deleteScrappedPost(postId, sessionUser);
+  async deleteScrapPost(
+    @Param('postId') postId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ): Promise<{ message: string }> {
+    return await this.scrapsService.deleteScrapedPost(postId, sessionUser);
   }
 }

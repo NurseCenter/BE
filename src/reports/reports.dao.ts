@@ -14,6 +14,25 @@ export class ReportsDAO {
     private readonly reportCommentsRepository: Repository<ReportCommentsEntity>,
   ) {}
 
+  // 게시물 신고 엔티티 생성
+  async createPostReport(data: Partial<ReportPostsEntity>) {
+    const reportedPost = this.reportPostsRepository.create(data);
+    return reportedPost;
+  }
+
+  // 댓글 신고 엔티티 생성
+  async createCommentReport(data: Partial<ReportCommentsEntity>) {
+    const reportedComment = this.reportCommentsRepository.create(data);
+    return reportedComment;
+  }
+
+  // 신고된 특정 게시물 조회
+  async findReportByPostIdAndUserId(postId: number, userId: number) {
+    return this.reportPostsRepository.findOne({
+      where: { postId, userId },
+    });
+  }
+
   // 신고된 게시물 전체 조회
   async findAllReportedPosts(): Promise<any[]> {
     return await this.reportPostsRepository

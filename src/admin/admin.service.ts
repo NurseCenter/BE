@@ -42,48 +42,48 @@ export class AdminService {
   // 회원 계정 탈퇴 처리
   async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
     const { userId, deletionReason } = deletionUserDto;
-    console.log("userId", userId, "deletionReason", deletionReason);
-    
+    console.log('userId', userId, 'deletionReason', deletionReason);
+
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);
-    console.log("user", user);
-  
+    console.log('user', user);
+
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
-    
+
     // 사용자 삭제 처리
     await this.authUserService.deleteUser(userId);
-    
+
     // 이미 삭제된 사용자 확인
     const existingDeletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
     if (existingDeletedUser?.deletedAt !== null) {
       throw new ConflictException('이미 탈퇴처리가 된 회원입니다.');
     }
-  
+
     // 새 삭제 사용자 생성
     const newDeletedUser = await this.deletedUsersDAO.createDeletedUser(userId);
     if (!newDeletedUser) {
       throw new NotFoundException('해당 회원 탈퇴 처리 중 오류가 발생하였습니다.');
     }
-  
+
     newDeletedUser.userId = userId;
     newDeletedUser.deletionReason = deletionReason;
-    newDeletedUser.deletedAt = new Date();  // 현재 날짜로 설정
+    newDeletedUser.deletedAt = new Date(); // 현재 날짜로 설정
     await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
   }
 
   // 회원 탈퇴 취소
   async cancelWithdrawal(userId: number): Promise<void> {
-      const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
-      if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
-      deletedUser.deletedAt = null;
-      await this.deletedUsersDAO.saveDeletedUser(deletedUser);
+    const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
+    if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
+    deletedUser.deletedAt = null;
+    await this.deletedUsersDAO.saveDeletedUser(deletedUser);
 
-      const user = await this.usersDAO.findUserByUserId(userId);
-      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-      user.deletedAt = null;
-      await this.usersDAO.saveUser(user);
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    user.deletedAt = null;
+    await this.usersDAO.saveUser(user);
   }
 
   // 회원 계정 정지 처리
@@ -110,8 +110,8 @@ export class AdminService {
       newSuspendedUser.suspensionEndDate = suspensionEndDate;
       await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
     } catch (error) {
-      console.error("실행중 에러", error)
-    } 
+      console.error('실행중 에러', error);
+    }
   }
 
   // 회원 계정 정지 취소
@@ -242,7 +242,7 @@ export class AdminService {
     try {
       const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(page, limit);
 
-      console.log("users", users);
+      console.log('users', users);
 
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)

@@ -23,7 +23,7 @@ export class SuspendedUsersDAO {
 
   // 정지된 회원 전체 조회
   async findSuspendedUsers() {
-    return this.suspendedUsersRepository.find({ where: { deletedAt: null }});
+    return this.suspendedUsersRepository.find({ where: { deletedAt: null } });
   }
 
   // 특정 정지된 회원 조회

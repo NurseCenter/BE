@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostsEntity } from './entities/base-posts.entity';
+import { GetPostsQueryDto } from './dto/get-posts-query.dto';
+import { ESortType, ESortOrder } from 'src/common/enums';
+import { EBoardType } from './enum/board-type.enum';
 
 @Injectable()
 export class PostsDAO {
@@ -10,9 +13,108 @@ export class PostsDAO {
     private readonly postsRepository: Repository<PostsEntity>,
   ) {}
 
-  // PostId로 게시물 조회
+  // 게시물 생성
+  async createPost(title: string, content: string, userId: number, boardType: EBoardType): Promise<PostsEntity> {
+    const post = this.postsRepository.create({
+      title,
+      content,
+      userId,
+      boardType,
+    });
+    return post;
+  }
+
+  // 전체 게시물 조회
+  async findPosts(boardType: string, getPostsQueryDto: GetPostsQueryDto) {
+    let {
+      page,
+      limit,
+      search,
+      sort: { sortOrder, sortType },
+    } = getPostsQueryDto;
+
+    page = Math.max(1, page || 1);
+    limit = Math.min(Math.max(1, limit || 10), 50); // limit을 50 이하로 제한
+
+    const query = this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .select([
+        'post.postId', // 게시물 ID
+        'post.boardType', // 게시물 카테고리
+        'post.title', // 게시물 제목
+        'user.userId', // 작성자 ID
+        'user.nickname', // 작성자 닉네임
+        'post.createdAt', // 작성일
+        'post.viewCounts', // 조회수
+        'post.likeCounts', // 좋아요수
+      ])
+      .where('post.deletedAt IS NULL');
+
+    if (boardType !== 'all') {
+      query.where('post.boardType = :boardType', { boardType });
+    }
+
+    if (search) {
+      query.andWhere('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
+    }
+
+    sortType = Object.values(ESortType).includes(sortType) ? sortType : ESortType.DATE;
+    sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
+
+    // 정렬 조건에 따른 쿼리 설정
+    switch (sortType) {
+      // Date → 작성일 기준
+      case ESortType.DATE:
+        query.orderBy('post.createdAt', sortOrder).addOrderBy('post.postId', sortOrder);
+        break;
+      // like → 좋아요수 기준
+      case ESortType.LIKES:
+        query
+          .orderBy('post.likeCounts', sortOrder)
+          .addOrderBy('post.createdAt', ESortOrder.DESC)
+          .addOrderBy('post.postId', ESortOrder.DESC);
+        break;
+      default:
+        query.orderBy('post.createdAt', ESortOrder.DESC).addOrderBy('post.postId', ESortOrder.DESC);
+    }
+
+    const [posts, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { posts: posts || [], total };
+  }
+
+  // 특정 게시글 조회 메소드
   async findPostById(postId: number) {
-    return await this.postsRepository.findOneBy({ postId })
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .where('post.postId = :postId', { postId })
+      .andWhere('post.deletedAt IS NULL')
+      .select([
+        'post.postId', // 게시물 ID
+        'post.title', // 제목
+        'post.content', // 내용
+        'post.likeCounts', // 좋아요수
+        'post.viewCounts', // 조회수
+        'post.createdAt', // 작성일
+        'post.updatedAt', // 수정일
+        'user.userId', // 작성자 ID
+        'user.nickname', // 작성자 닉네임
+        'post.images', // 이미지
+      ])
+      .getOne();
+  }
+
+  // 특정 게시물의 카테고리 일치 여부 확인
+  async findPostByIdAndBoardType(postId, boardType) {
+    const post = this.postsRepository.findOne({
+      where: { postId, boardType },
+    });
+    return !!post;
   }
 
   // 게시물 업데이트
@@ -29,7 +131,7 @@ export class PostsDAO {
         'post.boardType', // 카테고리
         'post.title', // 제목
         'post.viewCounts', // 조회수
-        'post.like', // 공감수
+        'post.likeCounts', // 좋아요수
         'post.createdAt', // 작성일
       ])
       .where('post.userId = :userId', { userId })
@@ -65,7 +167,8 @@ export class PostsDAO {
         'post.postId', // 게시물 ID (렌더링 X)
         'post.boardType', // 카테고리
         'post.title', // 제목
-        'user.nickname', // 작성자(닉네임)
+        'user.userId', // 작성자 ID (렌더링 X)
+        'user.nickname', // 작성자 닉네임
         'post.createdAt', // 작성일자
       ])
       .where('post.deletedAt IS NULL') // 삭제된 게시물 제외
@@ -96,18 +199,13 @@ export class PostsDAO {
     return result;
   }
 
+  // 특정 게시물 저장
+  async savePost(post: PostsEntity) {
+    return this.postsRepository.save(post);
+  }
+
   // 특정 게시물 삭제
-  async deletePost(postId: number): Promise<PostsEntity | null> {
-    const post = await this.postsRepository.findOne({
-      where: { postId, deletedAt: null },
-    });
-
-    if (post) {
-      post.deletedAt = new Date();
-      await this.postsRepository.save(post);
-      return post;
-    }
-
-    return null; // 게시물이 없거나 이미 삭제된 경우
+  async deletePost(postId: number) {
+    return this.postsRepository.softDelete(postId);
   }
 }

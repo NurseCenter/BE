@@ -80,8 +80,8 @@ export class AuthController {
   ): Promise<void> {
     try {
       const { userId } = sessionUser;
-      await this.authService.withDraw(userId, req);
-      res.status(200).json({ message: '회원탈퇴가 성공적으로 완료되었습니다.' })
+      await this.authService.withDraw(userId, req, res);
+      res.status(200).json({ message: '회원탈퇴가 성공적으로 완료되었습니다.' });
     } catch (error) {
       console.error('회원탈퇴 처리 중 오류: ', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: '회원탈퇴 처리 중 오류 발생' });
@@ -169,8 +169,8 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignOut(@Req() req: Request, @Res() res: Response): Promise<void> {
     try {
-      await this.authService.signOut(req);
-      res.status(200).json({ message: '로그아웃이 성공적으로 완료되었습니다.' });
+      await this.authService.signOut(req, res);
+      res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
     } catch (error) {
       if (!res.headersSent) {
         res.status(HttpStatus.BAD_REQUEST).json({ error: '로그아웃 중 오류가 발생했습니다.' });

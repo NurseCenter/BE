@@ -95,6 +95,7 @@ export class PostsDAO {
     return this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.images', 'image') 
       .where('post.postId = :postId', { postId })
       .andWhere('post.deletedAt IS NULL')
       .select([
@@ -107,7 +108,6 @@ export class PostsDAO {
         'post.updatedAt', // 수정일
         'user.userId', // 작성자 ID
         'user.nickname', // 작성자 닉네임
-        'post.images', // 이미지
       ])
       .getOne();
   }

@@ -20,11 +20,6 @@ import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { ReportsDAO } from 'src/reports/reports.dao';
 import { LikesDAO } from 'src/likes/likes.dao';
 import { FileUploader } from '../images/file-uploader';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePresignedUrlDto } from 'src/images/dto';
-import { ImagesService } from 'src/images/images.service';
-import { Repository } from 'typeorm';
-import { ImagesEntity } from 'src/images/entities/image.entity';
 
 @Injectable()
 export class PostsService {
@@ -34,11 +29,6 @@ export class PostsService {
     private readonly fileUploader: FileUploader,
     private readonly reportsDAO: ReportsDAO,
     private readonly likesDAO: LikesDAO,
-    private imagesService: ImagesService,
-    @InjectRepository(ImagesEntity)
-    private imagesRepository: Repository<ImagesEntity>,
-    @InjectRepository(PostsEntity)
-    private postsRepository: Repository<PostsEntity>,
   ) {}
 
   // 게시글 조회
@@ -57,77 +47,28 @@ export class PostsService {
     };
   }
 
-    //게시글 생성
-    async createPost(
-      boardType: EBoardType,
-      createPostDto: CreatePostDto,
-      sessionUser: IUserWithoutPassword,
-    ): Promise<PostsEntity & { presignedPostData: Array<{ url: string; fields: Record<string, string>; key: string }> }> {
-      const { title, content, imageTypes } = createPostDto;
-      const { userId } = sessionUser;
-      try {
-        const createdPost = this.postsRepository.create({
-          title,
-          content,
-          userId,
-          boardType,
-        });
-  
-        const savedPost = await this.postsRepository.save(createdPost);
-  
-        let presignedPostData = [];
-        if (imageTypes && imageTypes.length > 0) {
-          presignedPostData = await Promise.all(
-            imageTypes.map((fileType) => {
-              const dto = new CreatePresignedUrlDto();
-              dto.fileType = fileType;
-              this.imagesService.generatePresignedUrl(dto);
-            }),
-          );
-  
-          const imageEntities = presignedPostData.map((data) =>
-            this.imagesRepository.create({
-              url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${data.key}`,
-              post: savedPost,
-            }),
-          );
-  
-          await this.imagesRepository.save(imageEntities);
-          savedPost.images = imageEntities;
-        }
-  
-        return {
-          ...savedPost,
-          presignedPostData,
-        };
-      } catch (err) {
-        throw err;
-      }
-    }
-  
+  // 게시물 생성
+  async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUserWithoutPassword) {
+    const { title, content, imageTypes } = createPostDto;
+    const { userId } = sessionUser;
 
-  // // 게시물 생성
-  // async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUserWithoutPassword) {
-  //   const { title, content, imageTypes } = createPostDto;
-  //   const { userId } = sessionUser;
+    const createdPost = await this.postsDAO.createPost(title, content, userId, boardType);
+    await this.postsDAO.savePost(createdPost);
 
-  //   const createdPost = await this.postsDAO.createPost(title, content, userId, boardType);
-  //   await this.postsDAO.savePost(createdPost);
+    const imageEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
+    createdPost.images = imageEntities;
 
-  //   const imageEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
-  //   createdPost.images = imageEntities;
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
 
-  //   const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
-
-  //   return {
-  //     postId: createdPost.postId, // 게시물 ID
-  //     userId: createdPost.userId, // 작성자 ID
-  //     title: createdPost.title, // 게시물 제목
-  //     summaryContent, // 내용 (요약본)
-  //     createdAt: createdPost.createdAt, // 작성일
-  //     presignedPostData: imageEntities.map((img) => img.url), // presigned URL
-  //   };
-  // }
+    return {
+      postId: createdPost.postId, // 게시물 ID
+      userId: createdPost.userId, // 작성자 ID
+      title: createdPost.title, // 게시물 제목
+      summaryContent, // 내용 (요약본)
+      createdAt: createdPost.createdAt, // 작성일
+      presignedPostData: imageEntities.map((img) => img.url), // presigned URL
+    };
+  }
 
   // 특정 게시글 조회
   async getOnePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword) {
@@ -153,7 +94,6 @@ export class PostsService {
       updatedAt: post.updatedAt, // 수정일 (업데이트 유무 렌더링)
       isLiked, // 좋아요 여부
       isScraped, // 스크랩 여부
-      images: post.images, // 첨부파일 정보
     };
   }
 

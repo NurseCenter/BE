@@ -1,5 +1,5 @@
 export enum ESortType {
-  DATE = 'date', // 작성일
-  LIKES = 'likes', // 좋아요수
-  ALL = 'all', // 전체
+  DATE = 'DATE', // 작성일
+  LIKES = 'LIKES', // 좋아요수
+  ALL = 'ALL', // 전체
 }

@@ -30,7 +30,8 @@ export class PostsDAO {
       page,
       limit,
       search,
-      sort: { sortOrder, sortType },
+      sortOrder,
+      sortType 
     } = getPostsQueryDto;
 
     page = Math.max(1, page || 1);
@@ -63,15 +64,17 @@ export class PostsDAO {
     sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
 
     // 정렬 조건에 따른 쿼리 설정
+    const order = sortOrder === ESortOrder.ASC ? 'ASC' : 'DESC';
+
     switch (sortType) {
       // Date → 작성일 기준
       case ESortType.DATE:
-        query.orderBy('post.createdAt', sortOrder).addOrderBy('post.postId', sortOrder);
+        query.orderBy('post.createdAt', order).addOrderBy('post.postId', order);
         break;
-      // like → 좋아요수 기준
+      // likes → 좋아요수 기준
       case ESortType.LIKES:
         query
-          .orderBy('post.likeCounts', sortOrder)
+          .orderBy('post.likeCounts', order)
           .addOrderBy('post.createdAt', ESortOrder.DESC)
           .addOrderBy('post.postId', ESortOrder.DESC);
         break;

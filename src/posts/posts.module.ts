@@ -12,7 +12,7 @@ import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { ImagesEntity } from 'src/images/entities/image.entity';
 import { PostsDAO } from './posts.dao';
 import { DataAccessModule } from 'src/common/data-access.module';
-import { FileUploader } from './file-uploader';
+import { FileUploader } from '../images/file-uploader';
 import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 
 @Module({
@@ -23,6 +23,6 @@ import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
   ],
   controllers: [PostsController],
   providers: [PostsService, PostsMetricsService, PostsDAO, PostsMetricsDAO, FileUploader],
-  exports: [PostsModule, PostsMetricsService],
+  exports: [PostsModule, PostsMetricsService, PostsService],
 })
 export class PostsModule {}

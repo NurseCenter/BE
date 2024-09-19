@@ -1,17 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
-import { SortQueryDto } from 'src/common/dto/sort-query.dto';
+import { IsEnum, IsOptional } from 'class-validator';
+import { PaginationQueryDto } from 'src/common/dto';
+import { ESortType, ESortOrder } from 'src/common/enums';
 
 export class GetPostsQueryDto extends PaginationQueryDto {
-  @ApiProperty({ type: SortQueryDto })
-  sort: SortQueryDto;
+  @ApiProperty({ enum: ESortType, required: false })
+  @IsOptional()
+  @IsEnum(ESortType)
+  sortType?: ESortType;
 
-  @ApiProperty({ type: SearchQueryDto })
-  search: SearchQueryDto;
+  @ApiProperty({ enum: ESortOrder, required: false })
+  @IsOptional()
+  @IsEnum(ESortOrder)
+  sortOrder?: ESortOrder;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  search?: string;
 
   constructor() {
     super();
-    this.sort = new SortQueryDto();
-    this.search = new SearchQueryDto();
   }
 }

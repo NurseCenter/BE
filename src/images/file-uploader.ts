@@ -1,6 +1,6 @@
 import { ImagesDAO } from 'src/images/images.dao';
 import { ImagesService } from 'src/images/images.service';
-import { PostsEntity } from './entities/base-posts.entity';
+import { PostsEntity } from '../posts/entities/base-posts.entity';
 
 export class FileUploader {
   constructor(
@@ -14,7 +14,7 @@ export class FileUploader {
     }
 
     const presignedPostData = await Promise.all(
-      fileTypes.map((fileType) => this.imagesService.generatePresignedUrl({ fileType })),
+      fileTypes.map(async (fileType) => this.imagesService.generatePresignedUrl({ fileType })),
     );
 
     const fileEntities = await Promise.all(

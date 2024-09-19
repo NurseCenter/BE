@@ -85,15 +85,16 @@ export class PostsService {
 
     return {
       postId: post.postId, // 게시물 ID
-      userId: post.userId, // 작성자 ID
+      category: post.boardType, // 게시판 카테고리
       title: post.title, // 게시물 제목
       content: post.content, // 게시물 내용
-      like: post.likeCounts, // 좋아요수
+      likeCounts: post.likeCounts, // 좋아요수
       viewCounts: post.viewCounts, // 조회수
       createdAt: post.createdAt, // 작성일
       updatedAt: post.updatedAt, // 수정일 (업데이트 유무 렌더링)
       isLiked, // 좋아요 여부
       isScraped, // 스크랩 여부
+      user: post.user // 작성자 정보
     };
   }
 
@@ -111,33 +112,36 @@ export class PostsService {
     if (!post || !existsInBoardType)
       throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
 
-    if (post.userId !== userId) {
+    if (post.user.userId !== userId) {
       throw new ForbiddenException('이 게시물을 수정할 권한이 없습니다.');
     }
 
-    const updatePostFields = Object.entries(updatePostDto).reduce((acc, [key, value]) => {
-      if (value !== null && value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
+    const { title, content, imageTypes } = updatePostDto;
 
-    Object.assign(post, updatePostFields);
+    if (title !== null && title !== undefined) {
+      post.title = title;
+    }
+    
+    if (content !== null && content !== undefined) {
+      post.content = content;
+    }
+
+    const imageEntities = await this.fileUploader.handleFiles(imageTypes, post);
+    post.images = imageEntities;
 
     const updatedPost = await this.postsDAO.savePost(post);
-    const imageEntities = await this.fileUploader.handleFiles(updatePostDto.imageTypes, updatedPost);
-    updatedPost.images = imageEntities;
+    console.log("updatedPost", updatedPost)
 
     const summaryContent =
       updatedPost.content.length > 100 ? updatedPost.content.substring(0, 100) + '...' : updatedPost.content;
 
     return {
       postId: updatedPost.postId, // 게시물 ID
-      userId: updatedPost.userId, // 작성자 ID
       title: updatedPost.title, // 게시물 제목
       summaryContent, // 내용 (요약본)
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일
+      user: updatedPost.user, // 작성자
       presignedPostData: imageEntities.map((img) => img.url),
     };
   }
@@ -152,13 +156,13 @@ export class PostsService {
       if (!post || !existsInBoardType)
         throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
 
-      if (post.userId !== userId) {
+      if (post.user.userId !== userId) {
         throw new ForbiddenException('이 게시물을 삭제할 권한이 없습니다.');
       }
 
-      if (post.deletedAt !== null) {
-        throw new ConflictException('이미 삭제된 게시물입니다.');
-      }
+      console.log("post", post)
+
+      console.log("post.deletedAt", post.deletedAt)
 
       if (post.deletedAt !== null) {
         throw new ConflictException('이미 삭제된 게시물입니다.');
@@ -186,7 +190,7 @@ export class PostsService {
     if (!post || !existsInBoardType)
       throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
 
-    if (post.userId === userId) {
+    if (post.user.userId === userId) {
       throw new ForbiddenException(`본인의 게시물은 본인이 신고할 수 없습니다.`);
     }
 
@@ -203,7 +207,7 @@ export class PostsService {
     const reportedPostDto = {
       postId, // 신고된 게시물 ID
       userId, // 신고한 회원 ID
-      reportedUserId: post.userId, // 신고된 게시글의 작성자 ID
+      reportedUserId: post.user.userId, // 신고된 게시글의 작성자 ID
       reportedReason: reportPostDto.reportedReason, // 신고 이유
       otherReportedReason: reportPostDto.otherReportedReason, // 기타 신고 이유
       status: EReportStatus.PENDING, // 신고 처리 상태

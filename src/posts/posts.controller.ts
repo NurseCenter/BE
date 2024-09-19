@@ -40,11 +40,13 @@ export class PostsController {
             postId: 1,
             boardType: 'employment',
             title: '취업에 성공하는 비결',
-            userId: 32,
-            nickname: '명란젓코난',
             createdAt: '2024-01-01T00:00:00.000Z',
             viewCounts: 100,
             likeCounts: 10,
+            user: {
+              "userId": 37,
+              "nickname": "관리자2"
+            }
           },
         ],
         totalItems: 1,
@@ -89,16 +91,19 @@ export class PostsController {
     schema: {
       example: {
         postId: 1,
+        category: 'job',
         title: '게시글 제목',
-        content: '게시글 내용이다.',
-        likeCounts: 5,
+        content: '우리 병원에서 새로운 간호사를 모집합니다. 자격 요건은 간호사 면허 소지 및 병원 근무 경험이 있는 분입니다. 자세한 사항은 저희 웹사이트에서 확인해 주세요.',
+        like: 5,
         viewCounts: 100,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-02T00:00:00.000Z',
-        userId: 23,
-        nickname: '쌈장법사',
         isLiked: true,
         isScraped: false,
+        user: {
+          "userId": 35,
+          "nickname": "닉넴뭐하지"
+        },
         images: [
           {
             imageId: 1,
@@ -320,10 +325,13 @@ export class PostsController {
     schema: {
       example: {
         postId: 2,
-        userId: 1,
         title: '새 게시글 제목',
         summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
         createdAt: '2024-01-02T00:00:00.000Z',
+        user: {
+          "userId": 35,
+          "nickname": "닉넴뭐하지"
+        },
         presignedPostData: [
           {
             url: 'https://example.com/upload',

@@ -95,17 +95,18 @@ export class PostsDAO {
     return this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .leftJoinAndSelect('post.images', 'image') 
       .where('post.postId = :postId', { postId })
       .andWhere('post.deletedAt IS NULL')
       .select([
         'post.postId', // 게시물 ID
+        'post.boardType', // 카테고리
         'post.title', // 제목
         'post.content', // 내용
         'post.likeCounts', // 좋아요수
         'post.viewCounts', // 조회수
         'post.createdAt', // 작성일
         'post.updatedAt', // 수정일
+        'post.deletedAt', // 삭제일
         'user.userId', // 작성자 ID
         'user.nickname', // 작성자 닉네임
       ])
@@ -113,8 +114,8 @@ export class PostsDAO {
   }
 
   // 특정 게시물의 카테고리 일치 여부 확인
-  async findPostByIdAndBoardType(postId, boardType) {
-    const post = this.postsRepository.findOne({
+  async findPostByIdAndBoardType(postId: number, boardType: EBoardType) {
+    const post = await this.postsRepository.findOne({
       where: { postId, boardType },
     });
     return !!post;

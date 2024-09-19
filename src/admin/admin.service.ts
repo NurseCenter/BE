@@ -46,7 +46,6 @@ export class AdminService {
 
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);
-    console.log('user', user);
 
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -241,8 +240,6 @@ export class AdminService {
   async showUserApprovals(page: number, limit: number = 10): Promise<IPaginatedResponse<IApprovalUserList>> {
     try {
       const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(page, limit);
-
-      console.log('users', users);
 
       const items = users.map((user) => ({
         userId: user.userId, // 회원 ID (렌더링 X)

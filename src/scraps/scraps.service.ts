@@ -27,7 +27,7 @@ export class ScrapService {
     const createdScrap = await this.scrapsDAO.createScrap(userId, postId);
     await this.scrapsDAO.saveScrap(createdScrap);
 
-    await this.postsMetricsService.incrementScrapCount(postId);
+    await this.postsMetricsService.incrementScrapCountInMySQL(postId);
 
     return createdScrap;
   }
@@ -76,7 +76,7 @@ export class ScrapService {
       throw new NotFoundException(`스크랩 취소 중 오류가 발생하였습니다.`);
     }
 
-    await this.postsMetricsService.decrementScrapCount(postId);
+    await this.postsMetricsService.decrementScrapCountInMySQL(postId);
 
     return { message: '스크랩이 취소되었습니다.' };
   }

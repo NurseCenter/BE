@@ -2,6 +2,9 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PostsMetricsDAO } from './posts-metrics-dao';
 import { PostsDAO } from '../posts.dao';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PostsEntity } from '../entities/base-posts.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PostsMetricsService {
@@ -10,7 +13,28 @@ export class PostsMetricsService {
   constructor(
     private readonly postsMetricsDAO: PostsMetricsDAO,
     private readonly postsDAO: PostsDAO,
+    @InjectRepository(PostsEntity)
+    private readonly postsRepository: Repository<PostsEntity>,
   ) {}
+  ///////////////
+  /// 좋아요수 ///
+  ///////////////
+
+  // 좋아요 수 증가 (MySQL)
+  async incrementLikeCountInMySQL(postId: number): Promise<string> {
+    const post = await this.postsDAO.findPostById(postId);
+    post.likeCounts += 1;
+    this.postsRepository.save(post)
+    return `${postId}번 게시물의 좋아요수: ${post.likeCounts}`
+  }
+
+  // 좋아요 수 감소 (MySQL)
+  async decrementLikeCountInMySQL(postId: number): Promise<string> {
+    const post = await this.postsDAO.findPostById(postId);
+    post.likeCounts -= 1;
+    this.postsDAO.savePost(post);
+    return `${postId}번 게시물의 좋아요수: ${post.likeCounts}`
+  }
 
   // 좋아요 수 증가
   async incrementLikeCount(postId: number): Promise<void> {
@@ -22,6 +46,26 @@ export class PostsMetricsService {
   async decrementLikeCount(postId: number): Promise<void> {
     await this.postsMetricsDAO.decreaseLikeCountInRedis(postId);
     await this.syncLikeCountsInMySQL(postId);
+  }
+
+  ///////////////
+  /// 스크랩수 ///
+  ///////////////
+
+  // 스크랩 수 증가 (MySQL)
+  async incrementScrapCountInMySQL(postId: number): Promise<string> {
+    const post = await this.postsDAO.findPostById(postId);
+    post.scrapCounts += 1;
+    this.postsDAO.savePost(post);
+    return `${postId}번 게시물의 스크랩수: ${post.scrapCounts}`
+  }
+
+  // 스크랩 수 감소 (MySQL)
+  async decrementScrapCountInMySQL(postId: number): Promise<string> {
+    const post = await this.postsDAO.findPostById(postId);
+    post.scrapCounts -= 1;
+    this.postsDAO.savePost(post);
+    return `${postId}번 게시물의 좋아요수: ${post.scrapCounts}`
   }
 
   // 스크랩 수 증가
@@ -36,20 +80,31 @@ export class PostsMetricsService {
     await this.syncScrapCountToMySQL(postId);
   }
 
+  ///////////////
+  //// 조회수 ////
+  ///////////////
+
   // 게시물 조회할 때 조회수 증가시키기
-  async incrementViewCount(postId: number, userId: number): Promise<void> {
+  async incrementViewCount(postId: number): Promise<void> {
     await this.postsMetricsDAO.increaseViewCount(postId);
     await this.syncViewCountToMySQL(postId);
   }
 
+  ///////////////
+  //// 동기화 ////
+  ///////////////
+
   // 좋아요수 동기화
   private async syncLikeCountsInMySQL(postId: number): Promise<void> {
+    console.log("Mysql에서 동기화")
     const post = await this.postsDAO.findPostById(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
+    console.log("post", post)
 
     const likeCountsInRedis = await this.postsMetricsDAO.getLikeCountsFromRedis(postId);
+    console.log("likeCountsInRedis", likeCountsInRedis)
     if (likeCountsInRedis === null) {
       throw new NotFoundException('좋아요 수 동기화 중 에러가 발생하였습니다.');
     }

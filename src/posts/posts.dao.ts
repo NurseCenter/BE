@@ -26,13 +26,7 @@ export class PostsDAO {
 
   // 전체 게시물 조회
   async findPosts(boardType: string, getPostsQueryDto: GetPostsQueryDto) {
-    let {
-      page,
-      limit,
-      search,
-      sortOrder,
-      sortType 
-    } = getPostsQueryDto;
+    let { page, limit, search, sortOrder, sortType } = getPostsQueryDto;
 
     page = Math.max(1, page || 1);
     limit = Math.min(Math.max(1, limit || 10), 50); // limit을 50 이하로 제한

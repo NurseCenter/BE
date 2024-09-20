@@ -7,9 +7,9 @@ import { ReportsDAO } from './reports.dao';
 import { ReportsService } from './reports.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ReportCommentsEntity, ReportPostsEntity]), DataAccessModule],
-    controllers: [ReportsController],
-    providers: [ReportsService, ReportsDAO],
-    exports: [ReportsService],
-  })
-  export class ReportsModule {}
+  imports: [TypeOrmModule.forFeature([ReportCommentsEntity, ReportPostsEntity]), DataAccessModule],
+  controllers: [ReportsController],
+  providers: [ReportsService, ReportsDAO],
+  exports: [ReportsService],
+})
+export class ReportsModule {}

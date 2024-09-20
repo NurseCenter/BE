@@ -14,6 +14,7 @@ export class PostsMetricsDAO {
 
   // Redis에서 좋아요수 증가
   async increaseLikeCountInRedis(postId: number): Promise<void> {
+    console.log("REdis에서 좋아요수 증가 함수 시작")
     await this.redisClient.incr(`post:${postId}:likes`);
   }
 
@@ -57,7 +58,9 @@ export class PostsMetricsDAO {
 
   // MySQL의 좋아요수 설정
   async setLikeCounts(postId: number, likeCounts: number): Promise<void> {
+    console.time('setLikeCounts');
     await this.postsRepository.update({ postId }, { likeCounts });
+    console.timeEnd('setLikeCounts End');
   }
 
   // MySQL의 스크랩수 설정

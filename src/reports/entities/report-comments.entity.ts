@@ -55,10 +55,10 @@ export class ReportCommentsEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  // 신고 삭제일
+  // 댓글 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   // 신고한 회원
   @ManyToOne(() => UsersEntity, (user) => user.submittedCommentReports)

@@ -30,7 +30,7 @@ export class ReportsController {
           items: {
             type: 'object',
             properties: {
-              reportId: { type: 'integer' },
+              reportPostId: { type: 'integer' },
               postId: { type: 'integer' },
               postTitle: { type: 'string' },
               postAuthor: { type: 'string' },
@@ -58,14 +58,15 @@ export class ReportsController {
       example: {
         items: [
           {
-            reportId: 1,
-            postId: 1001,
-            postTitle: 'Sample Post Title',
-            postAuthor: 'Author Name',
-            reportDate: '2024-09-10T10:00:00.000Z',
-            reporter: 'Reporter Name',
-            reportReason: EReportReason.PORNOGRAPHY,
-            status: EReportStatus.PENDING,
+            reportPostId: 39,
+            userId: 39,
+            reportedUserId: 35,
+            postId: 18,
+            reportedReason: 'spam',
+            otherReportedReason: null,
+            status: 'pending',
+            createdAt: '2024-09-20T03:39:24.128Z',
+            deletedAt: null,
           },
         ],
         totalItems: 1,

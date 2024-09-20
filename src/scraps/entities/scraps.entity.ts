@@ -32,8 +32,8 @@ export class ScrapsEntity {
 
   // 스크랩 취소 날짜
   // 기본 상태는 null이며, 스크랩이 취소되면 날짜가 저장됨
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   // 이 스크랩이 연결된 게시물
   @ManyToOne(() => PostsEntity, (post) => post.scraps)

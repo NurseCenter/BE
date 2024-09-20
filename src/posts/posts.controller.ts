@@ -44,9 +44,9 @@ export class PostsController {
             viewCounts: 100,
             likeCounts: 10,
             user: {
-              "userId": 37,
-              "nickname": "관리자2"
-            }
+              userId: 37,
+              nickname: '관리자2',
+            },
           },
         ],
         totalItems: 1,
@@ -93,7 +93,8 @@ export class PostsController {
         postId: 1,
         category: 'job',
         title: '게시글 제목',
-        content: '우리 병원에서 새로운 간호사를 모집합니다. 자격 요건은 간호사 면허 소지 및 병원 근무 경험이 있는 분입니다. 자세한 사항은 저희 웹사이트에서 확인해 주세요.',
+        content:
+          '우리 병원에서 새로운 간호사를 모집합니다. 자격 요건은 간호사 면허 소지 및 병원 근무 경험이 있는 분입니다. 자세한 사항은 저희 웹사이트에서 확인해 주세요.',
         like: 5,
         viewCounts: 100,
         createdAt: '2024-01-01T00:00:00.000Z',
@@ -101,8 +102,8 @@ export class PostsController {
         isLiked: true,
         isScraped: false,
         user: {
-          "userId": 35,
-          "nickname": "닉넴뭐하지"
+          userId: 35,
+          nickname: '닉넴뭐하지',
         },
         images: [
           {
@@ -329,8 +330,8 @@ export class PostsController {
         summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
         createdAt: '2024-01-02T00:00:00.000Z',
         user: {
-          "userId": 35,
-          "nickname": "닉넴뭐하지"
+          userId: 35,
+          nickname: '닉넴뭐하지',
         },
         presignedPostData: [
           {
@@ -484,9 +485,32 @@ export class PostsController {
     description: '신고 데이터',
     type: ReportPostDto,
     schema: {
-      example: {
-        reportedReason: 'SPAM',
-        otherReportedReason: null,
+      type: 'object',
+      properties: {
+        reportedReason: {
+          type: 'string',
+          enum: ['PORNOGRAPHY', 'SLANDER', 'SPAM', 'OTHER'],
+        },
+        otherReportedReason: {
+          type: 'string',
+          nullable: true,
+        },
+      },
+      examples: {
+        example1: {
+          summary: '항목 중 선택할 경우',
+          value: {
+            reportedReason: 'SPAM',
+            otherReportedReason: null,
+          },
+        },
+        example2: {
+          summary: "'OTHER' 항목 선택할 경우",
+          value: {
+            reportedReason: 'OTHER',
+            otherReportedReason: '기타 사유를 100자 이내로 입력하면 됨',
+          },
+        },
       },
     },
   })

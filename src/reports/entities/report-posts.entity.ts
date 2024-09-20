@@ -13,7 +13,7 @@ import { EReportReason, EReportStatus } from '../enum';
 
 @Entity('report_posts')
 export class ReportPostsEntity {
-  // 신고된 댓글의 ID (신고 테이블에서의 ID)
+  // 신고된 게시물 ID (신고 테이블에서의 ID)
   @PrimaryGeneratedColumn()
   reportPostId: number;
 
@@ -55,10 +55,10 @@ export class ReportPostsEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  // 신고 삭제일
+  // 게시물 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   // 신고한 회원
   @ManyToOne(() => UsersEntity, (user) => user.submittedPostReports)

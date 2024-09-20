@@ -80,8 +80,8 @@ export class PostsEntity {
 
   // 게시물 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @DeleteDateColumn()
-  deletedAt?: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date | null;
 
   // 글 작성자와의 관계 설정
   // 한 회원이 여러 개의 게시물을 작성할 수 있음.

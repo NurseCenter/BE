@@ -6,7 +6,6 @@ import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePas
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
 import { Request } from 'express';
-import { CommentsDAO } from 'src/comments/comments.dao';
 import { ScrapService } from 'src/scraps/scraps.service';
 import { PaginationQueryDto } from 'src/common/dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -17,7 +16,6 @@ export class MeController {
   constructor(
     private readonly usersService: UsersService,
     private readonly scrapsService: ScrapService,
-    private readonly commentsDAO: CommentsDAO,
   ) {}
 
   // 본인 정보 조회
@@ -287,11 +285,5 @@ export class MeController {
   ): Promise<IPaginatedResponse<any>> {
     const result = await this.scrapsService.getScrapedPosts(sessionUser, paginationQueryDto);
     return result;
-  }
-
-  @Get('allcomments')
-  @HttpCode(200)
-  async test() {
-    return this.commentsDAO.findAllComments();
   }
 }

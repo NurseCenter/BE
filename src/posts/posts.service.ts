@@ -94,7 +94,7 @@ export class PostsService {
       updatedAt: post.updatedAt, // 수정일 (업데이트 유무 렌더링)
       isLiked, // 좋아요 여부
       isScraped, // 스크랩 여부
-      user: post.user // 작성자 정보
+      user: post.user, // 작성자 정보
     };
   }
 
@@ -121,7 +121,7 @@ export class PostsService {
     if (title !== null && title !== undefined) {
       post.title = title;
     }
-    
+
     if (content !== null && content !== undefined) {
       post.content = content;
     }
@@ -130,7 +130,6 @@ export class PostsService {
     post.images = imageEntities;
 
     const updatedPost = await this.postsDAO.savePost(post);
-    console.log("updatedPost", updatedPost)
 
     const summaryContent =
       updatedPost.content.length > 100 ? updatedPost.content.substring(0, 100) + '...' : updatedPost.content;
@@ -159,7 +158,7 @@ export class PostsService {
       if (post.user.userId !== userId) {
         throw new ForbiddenException('이 게시물을 삭제할 권한이 없습니다.');
       }
-      
+
       if (post.deletedAt !== null) {
         throw new ConflictException('이미 삭제된 게시물입니다.');
       }
@@ -190,8 +189,14 @@ export class PostsService {
       throw new ForbiddenException(`본인의 게시물은 본인이 신고할 수 없습니다.`);
     }
 
-    if (reportPostDto.reportedReason === EReportReason.OTHER && !reportPostDto.otherReportedReason) {
-      throw new BadRequestException(`신고 사유를 기입해주세요.`);
+    if (reportPostDto.reportedReason === EReportReason.OTHER) {
+      if (!reportPostDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'일 경우, 기타 신고 사유를 기입해주세요.`);
+      }
+    } else {
+      if (reportPostDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'가 아닐 경우, 기타 신고 사유는 입력할 수 없습니다.`);
+      }
     }
 
     const existingReport = await this.reportsDAO.findReportByPostIdAndUserId(userId, postId);

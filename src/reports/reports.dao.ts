@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ReportPostsEntity } from './entities/report-posts.entity';
 import { ReportCommentsEntity } from './entities/report-comments.entity';
 import { EReportStatus } from './enum';
@@ -74,8 +74,8 @@ export class ReportsDAO {
   }
 
   // 신고된 특정 게시물 삭제
-  async removeReportedPost(postId: number): Promise<void> {
-    await this.reportPostsRepository.delete({ postId });
+  async removeReportedPost(postId: number): Promise<DeleteResult> {
+    return await this.reportPostsRepository.softDelete({ postId });
   }
 
   // 신고된 댓글 전체 조회

@@ -79,8 +79,8 @@ export class UsersEntity {
 
   // 탈퇴일
   // 탈퇴하지 않은 경우 null이며, 탈퇴 시 날짜가 저장됨
-  @DeleteDateColumn()
-  deletedAt?: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date | null;
 
   // 이 회원이 작성한 게시물들
   @OneToMany(() => PostsEntity, (post) => post.user)

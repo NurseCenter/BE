@@ -1,4 +1,13 @@
-import { Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, Column, JoinColumn, Unique } from 'typeorm';
+import {
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Column,
+  JoinColumn,
+  Unique,
+  DeleteDateColumn,
+} from 'typeorm';
 import { UsersEntity } from 'src/users/entities/users.entity';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
@@ -28,8 +37,8 @@ export class LikesEntity {
 
   // 좋아요가 취소된 날짜
   // 기본 상태 null, 정지가 해제되었으면 날짜
-  @Column({ type: 'timestamp', nullable: true, default: null })
-  deletedAt: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   // 이 좋아요가 달린 게시물
   @ManyToOne(() => PostsEntity, (post) => post.likes)

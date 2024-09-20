@@ -6,6 +6,7 @@ import { ReportCommentsEntity } from './entities/report-comments.entity';
 import { ReportsDAO } from './reports.dao';
 import { EReportStatus } from './enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { PostsDAO } from 'src/posts/posts.dao';
 
 @Injectable()
 export class ReportsService {
@@ -15,6 +16,7 @@ export class ReportsService {
     @InjectRepository(ReportCommentsEntity)
     private readonly reportCommentsRepository: Repository<ReportCommentsEntity>,
     private readonly reportsDAO: ReportsDAO,
+    private readonly postsDAO: PostsDAO,
   ) {}
 
   // 신고된 게시물 전체 조회
@@ -47,7 +49,14 @@ export class ReportsService {
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
-    await this.reportsDAO.removeReportedPost(postId);
+    const result1 = await this.reportsDAO.removeReportedPost(postId);
+    if (result1.affected === 0) {
+      throw new NotFoundException('Reported_Posts 게시판에서 삭제 중 오류가 발생하였습니다.');
+    }
+    const result2 = await this.postsDAO.deletePost(postId);
+    if (result2.affected === 0) {
+      throw new NotFoundException('Posts 게시판에서 삭제 중 오류가 발생하였습니다.');
+    }
   }
 
   // 신고된 댓글 전체 조회

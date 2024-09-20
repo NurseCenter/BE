@@ -7,9 +7,11 @@ import {
   JoinColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { UsersEntity } from '../../users/entities/users.entity';
+import { ReportRepliesEntity } from 'src/reports/entities/report-replies.entity';
 
 @Entity('replies')
 export class RepliesEntity {
@@ -25,7 +27,7 @@ export class RepliesEntity {
   @Column()
   userId: number;
 
-  // 댓글 ID
+  // 부모 댓글 ID
   @Column()
   commentId: number;
 
@@ -48,6 +50,10 @@ export class RepliesEntity {
   @ManyToOne(() => CommentsEntity, (comment) => comment.replies)
   @JoinColumn({ name: 'commentId', referencedColumnName: 'commentId' })
   comments: CommentsEntity;
+
+  // 이 답글에 대한 신고 기록들
+  @OneToMany(() => ReportRepliesEntity, (report) => report.replies)
+  reportReplies: ReportRepliesEntity[];
 
   // 회원과의 관계 설정
   @ManyToOne(() => UsersEntity, (user) => user.replies)

@@ -159,11 +159,7 @@ export class PostsService {
       if (post.user.userId !== userId) {
         throw new ForbiddenException('이 게시물을 삭제할 권한이 없습니다.');
       }
-
-      console.log("post", post)
-
-      console.log("post.deletedAt", post.deletedAt)
-
+      
       if (post.deletedAt !== null) {
         throw new ConflictException('이미 삭제된 게시물입니다.');
       }

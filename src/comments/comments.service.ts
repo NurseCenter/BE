@@ -5,27 +5,28 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CommentsEntity } from './entities/comments.entity';
-import { Repository } from 'typeorm';
 import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { PostsEntity } from '../posts/entities/base-posts.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
-import { ReportPostDto } from '../posts/dto/report-post.dto';
-import { ReportCommentsEntity } from '../reports/entities/report-comments.entity';
-import { EReportReason } from 'src/reports/enum';
+import { ReportDto } from '../posts/dto/report.dto';
+import { EReportReason, EReportStatus } from 'src/reports/enum';
+import { PostsDAO } from 'src/posts/posts.dao';
+import { CommentsDAO } from './comments.dao';
+import { ReportedCommentsDAO } from 'src/reports/dao';
+import { IPaginatedResponse } from 'src/common/interfaces';
+import { CommentsEntity } from './entities/comments.entity';
+import { IReportedCommentResponse } from 'src/reports/interfaces/reported-comment-response';
+import { ReportedCommentDto } from 'src/reports/dto/reported-comment.dto';
 
 @Injectable()
 export class CommentsService {
-  @InjectRepository(PostsEntity)
-  private postRepository: Repository<PostsEntity>;
-  @InjectRepository(CommentsEntity)
-  private commentRepository: Repository<CommentsEntity>;
-  @InjectRepository(ReportCommentsEntity)
-  private reportCommentRepository: Repository<ReportCommentsEntity>;
+  constructor(
+    private readonly reportedCommentsDAO: ReportedCommentsDAO,
+    private readonly postsDAO: PostsDAO,
+    private readonly commentsDAO: CommentsDAO,
+  ) {}
 
-  //작성
+  // 댓글 작성
   async createComment(
     boardType: EBoardType,
     postId: number,
@@ -33,116 +34,115 @@ export class CommentsService {
     createCommentDto: CreateCommentDto,
   ) {
     const { userId } = sessionUser;
-    const post = await this.postRepository.findOne({
-      where: {
-        postId,
-        boardType,
-      },
-    });
-    if (!post) throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
-    const result = this.commentRepository.create({
-      ...createCommentDto,
-      userId,
-      postId,
-      boardType,
-    });
+    const post = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
+    if (!post) {
+      throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
+    }
 
-    const createdComment = await this.commentRepository.save(result);
+    const comment = await this.commentsDAO.createComment(createCommentDto, userId, postId, boardType);
+    const createdComment = await this.commentsDAO.saveComment(comment);
     return createdComment;
   }
-  //조회
-  async getComments(boardType: EBoardType, postId: number, page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
 
-    const [comments, total] = await this.commentRepository.findAndCount({
-      where: {
-        postId,
-        boardType,
-      },
-      skip: Number(skip),
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+  // 특정 게시물의 모든 댓글 조회
+  async getCommentsInOnePost(
+    boardType: EBoardType,
+    postId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<IPaginatedResponse<CommentsEntity>> {
+    const result = await this.commentsDAO.findCommentsInOnePost(boardType, postId, page, limit);
 
     return {
-      comments,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      items: result.comments,
+      totalItems: result.total,
+      totalPages: Math.ceil(result.total / limit),
+      currentPage: page,
     };
   }
-  //수정
+
+  // 댓글 수정
   async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
-    const comment = await this.commentRepository.findOne({
-      where: {
-        commentId,
-      },
-    });
+    const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
 
     if (userId !== comment.userId) {
       throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
     }
-    const updateCommentFields = Object.entries(updateCommentDto).reduce((acc, [key, value]) => {
-      if (value !== null && value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-    Object.assign(comment, updateCommentFields);
-    const updateComment = await this.commentRepository.save(comment);
 
-    return updateComment;
+    const updatedComment = await this.commentsDAO.updateComment(commentId, updateCommentDto);
+    return updatedComment;
   }
-  //삭제
+
+  // 댓글 삭제
   async deleteComment(commentId: number, sessionUser: IUserWithoutPassword) {
     const { userId } = sessionUser;
-    const comment = await this.commentRepository.findOne({
-      where: {
-        commentId,
-      },
-    });
+    const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
 
     if (userId !== comment.userId) {
-      throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
+      throw new ForbiddenException(`댓글을 삭제할 권한이 없습니다.`);
     }
-    const deletedComment = await this.commentRepository.softDelete(commentId);
 
-    return deletedComment;
+    const result = await this.commentsDAO.deleteComment(commentId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`댓글 삭제 중 에러가 발생하였습니다.`);
+    }
+
+    return { message: '댓글이 삭제되었습니다.' };
   }
-  //특정 댓글 신고
-  async reportComment(commentId: number, sessionUser: IUserWithoutPassword, reportPostDto: ReportPostDto) {
+
+  // 특정 댓글 신고
+  async reportComment(
+    commentId: number,
+    sessionUser: IUserWithoutPassword,
+    reportDto: ReportDto,
+  ): Promise<IReportedCommentResponse> {
     const { userId } = sessionUser;
-    const comment = await this.commentRepository.findOneBy({ commentId });
+    const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
+
     if (comment.userId === userId) {
-      throw new ForbiddenException(`자신이 작성한 댓글을 신고할 수 없습니다.`);
+      throw new ForbiddenException(`본인이 작성한 댓글은 본인이 신고할 수 없습니다.`);
     }
-    if (reportPostDto.reportedReason === EReportReason.OTHER && !reportPostDto.otherReportedReason) {
-      throw new BadRequestException(`신고 사유를 기입해주세요.`);
+
+    if (reportDto.reportedReason === EReportReason.OTHER) {
+      if (!reportDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'일 경우, 기타 신고 사유를 기입해주세요.`);
+      }
+    } else {
+      if (reportDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'가 아닐 경우, 기타 신고 사유는 입력할 수 없습니다.`);
+      }
     }
-    const existingReport = await this.reportCommentRepository.findOne({
-      where: {
-        commentId,
-        userId,
-      },
-    });
+
+    const existingReport = await this.reportedCommentsDAO.findReportedCommentByPostIdAndUserId(userId, commentId);
+
     if (existingReport) {
-      throw new ConflictException(`이미 신고한 댓글입니다.`);
+      throw new ConflictException(`이미 신고한 게시물입니다.`);
     }
-    const reportedPostDto = this.reportCommentRepository.create({
+
+    const reportedCommentDto: ReportedCommentDto = {
       commentId,
       userId,
-      ...reportPostDto,
       reportedUserId: comment.userId,
-    });
-    const result = await this.reportCommentRepository.save(reportedPostDto);
+      reportedReason: reportDto.reportedReason,
+      otherReportedReason: reportDto.otherReportedReason,
+      status: EReportStatus.PENDING,
+    };
 
-    return result;
+    const result = await this.reportedCommentsDAO.createCommentReport(reportedCommentDto);
+    await this.reportedCommentsDAO.saveReportComment(result);
+
+    return {
+      reportId: result.reportCommentId, // 신고 ID
+      commentId: result.commentId, // 신고된 댓글 ID
+      userId: result.userId, // 신고한 사용자 ID
+      reportedUserId: result.reportedUserId, // 신고된 사용자 ID
+      reportedReason: result.reportedReason, // 신고 이유
+      otherReportedReason: result.otherReportedReason, // 기타 신고 이유
+      createdAt: result.createdAt, // 신고 일자
+    };
   }
 }

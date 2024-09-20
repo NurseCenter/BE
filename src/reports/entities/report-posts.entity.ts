@@ -31,7 +31,7 @@ export class ReportPostsEntity {
 
   // 신고된 이유
   @Column({ type: 'enum', enum: EReportReason, nullable: true })
-  reportedReason: string;
+  reportedReason: EReportReason | null;
 
   // 기타 신고된 이유
   // 기본 null, 프론트엔드에서 입력 받음.
@@ -41,7 +41,7 @@ export class ReportPostsEntity {
     nullable: true,
     default: null,
   })
-  otherReportedReason?: string;
+  otherReportedReason?: string | null;
 
   // 신고처리 상태
   @Column({

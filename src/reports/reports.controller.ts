@@ -76,8 +76,11 @@ export class ReportsController {
     },
   })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async getAllReportedPosts(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<ReportPostsEntity>> {
-    return await this.reportsService.getAllReportedPosts(query.page, query.limit);
+  async getAllReportedPosts(
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<IPaginatedResponse<ReportPostsEntity>> {
+    const { page = 1, limit = 10 } = paginationQueryDto;
+    return await this.reportsService.getAllReportedPosts(page, limit);
   }
 
   // 신고된 특정 게시물 조회
@@ -265,8 +268,11 @@ export class ReportsController {
     },
   })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async getAllReportedComments(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<ReportCommentsEntity>> {
-    return await this.reportsService.getAllReportedComments(query.page, query.limit);
+  async getAllReportedComments(
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<IPaginatedResponse<ReportCommentsEntity>> {
+    const { page = 1, limit = 10 } = paginationQueryDto;
+    return await this.reportsService.getAllReportedComments(page, limit);
   }
 
   // 신고된 특정 댓글 조회

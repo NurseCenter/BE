@@ -1,12 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
-import { ReportPostDto } from '../posts/dto/report-post.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
+import { ReportDto } from 'src/posts/dto/report.dto';
 
 @ApiTags('Comments')
 @Controller()
@@ -66,7 +66,7 @@ export class CommentsController {
     return result;
   }
 
-  // 특정 게시물 댓글 전체 조회
+  // 특정 게시물의 댓글 전체 조회
   @UseGuards(RegularMemberGuard)
   @Get('posts/:boardType/:postId/comments')
   @HttpCode(200)
@@ -153,13 +153,13 @@ export class CommentsController {
     @Query('page') page: number,
     @Query('limit') limit: number,
   ) {
-    const result = await this.commentsService.getComments(boardType, postId, page, limit);
+    const result = await this.commentsService.getCommentsInOnePost(boardType, postId, page, limit);
     return result;
   }
 
-  //댓글 수정
+  // 댓글 수정
   @UseGuards(RegularMemberGuard)
-  @Patch('comments/:commentId')
+  @Put('comments/:commentId')
   @HttpCode(200)
   @ApiOperation({ summary: '댓글 수정' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
@@ -284,7 +284,7 @@ export class CommentsController {
   @HttpCode(200)
   @ApiOperation({ summary: '특정 댓글 신고' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
-  @ApiBody({ type: ReportPostDto })
+  @ApiBody({ type: ReportDto })
   @ApiResponse({
     status: 200,
     description: '댓글 신고 성공',
@@ -353,9 +353,9 @@ export class CommentsController {
   async reportComment(
     @Param('commentId') commentId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
-    @Body() reportPostDto: ReportPostDto,
+    @Body() reportDto: ReportDto,
   ) {
-    const result = await this.commentsService.reportComment(commentId, sessionUser, reportPostDto);
+    const result = await this.commentsService.reportComment(commentId, sessionUser, reportDto);
     return result;
   }
 }

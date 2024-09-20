@@ -14,7 +14,7 @@ export class PostsMetricsDAO {
 
   // Redis에서 좋아요수 증가
   async increaseLikeCountInRedis(postId: number): Promise<void> {
-    console.log("REdis에서 좋아요수 증가 함수 시작")
+    console.log('REdis에서 좋아요수 증가 함수 시작');
     await this.redisClient.incr(`post:${postId}:likes`);
   }
 

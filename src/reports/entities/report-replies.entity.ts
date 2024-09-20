@@ -40,7 +40,7 @@ export class ReportRepliesEntity {
     length: 100,
     nullable: true,
   })
-  otherReportedReason?: string;
+  otherReportedReason?: string | null;
 
   // 신고처리 상태
   @Column({

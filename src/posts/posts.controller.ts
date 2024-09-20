@@ -6,11 +6,11 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { BasePostDto } from './dto/base-post.dto';
-import { ReportPostDto } from './dto/report-post.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { ReportDto } from './dto/report.dto';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -483,7 +483,7 @@ export class PostsController {
   })
   @ApiBody({
     description: '신고 데이터',
-    type: ReportPostDto,
+    type: ReportDto,
     schema: {
       type: 'object',
       properties: {
@@ -582,9 +582,9 @@ export class PostsController {
   async reportPost(
     @Param() basePostDto: BasePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
-    @Body() reportPostDto: ReportPostDto,
+    @Body() reportDto: ReportDto,
   ) {
-    const result = await this.postsService.reportPost(basePostDto, sessionUser, reportPostDto);
+    const result = await this.postsService.reportPost(basePostDto, sessionUser, reportDto);
     return result;
   }
 }

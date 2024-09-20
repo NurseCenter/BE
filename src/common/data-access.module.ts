@@ -15,8 +15,8 @@ import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { LikesDAO } from 'src/likes/likes.dao';
 import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { ReportCommentsEntity, ReportPostsEntity } from 'src/reports/entities';
-import { ReportsDAO } from 'src/reports/reports.dao';
 import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
+import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
 
 @Module({
   imports: [
@@ -43,7 +43,8 @@ import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
     SuspendedUsersDAO,
     ScrapsDAO,
     LikesDAO,
-    ReportsDAO,
+    ReportedPostsDAO,
+    ReportedCommentsDAO,
   ],
   exports: [
     UsersDAO,
@@ -55,7 +56,8 @@ import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
     SuspendedUsersDAO,
     ScrapsDAO,
     LikesDAO,
-    ReportsDAO,
+    ReportedPostsDAO,
+    ReportedCommentsDAO,
   ],
 })
 export class DataAccessModule {}

@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { Repository } from 'typeorm';
 import { CommentsEntity } from './entities/comments.entity';
+import { EBoardType } from 'src/posts/enum/board-type.enum';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Injectable()
 export class CommentsDAO {
@@ -13,20 +15,76 @@ export class CommentsDAO {
     private readonly repliesRepository: Repository<RepliesEntity>,
   ) {}
 
+  // 댓글 ID로 댓글 조회
+  async findCommentById(commentId: number) {
+    return this.commentsRepository.findOne({ where: { commentId } });
+  }
+
+  // 댓글 생성
+  async createComment(createCommentDto: CreateCommentDto, userId: number, postId: number, boardType: EBoardType) {
+    const comment = this.commentsRepository.create({
+      ...createCommentDto,
+      userId,
+      postId,
+      boardType,
+    });
+    return comment;
+  }
+
+  // 댓글 수정
+  async updateComment(commentId: number, createCommentDto: CreateCommentDto): Promise<void> {
+    await this.commentsRepository.update(commentId, {
+      ...createCommentDto,
+    });
+  }
+
+  // 특정 게시물의 모든 댓글 조회
+  async findCommentsInOnePost(
+    boardType: EBoardType,
+    postId: number,
+    page: number,
+    limit: number,
+  ): Promise<{ comments: CommentsEntity[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    const [comments, total] = await this.commentsRepository.findAndCount({
+      where: {
+        postId,
+        boardType,
+        deletedAt: null,
+      },
+      skip: Number(skip),
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return { comments, total };
+  }
+
+  // 댓글 삭제
+  async deleteComment(commentId: number) {
+    return this.commentsRepository.softDelete(commentId);
+  }
+
+  // 댓글 저장
+  async saveComment(comment: CommentsEntity) {
+    return this.commentsRepository.save(comment);
+  }
+
   // 본인이 쓴 댓글 및 답글 조회
   async findMyComments(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
     const skip = (page - 1) * limit;
 
+    // 최신순일 경우 댓글의 작성일(createdAt)로 내림차순 정렬,
+    // 인기순일 경우 게시물의 좋아요수(likeCounts)로 내림차순 정렬
     const commentsQuery = this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.post', 'post')
       .where('comment.userId = :userId', { userId })
       .andWhere('comment.deletedAt IS NULL')
       .orderBy(
-        // 최신순일 경우 댓글의 작성일(createdAt)로 정렬, 인기순일 경우 게시물의 스크랩 수(scrapCounts)로 정렬
-        // 정렬 방향: 최신순일 경우 최신 댓글이 위로 오도록 내림차순, 인기순일 경우 스크랩 수가 많은 게시물이 위로 오도록 내림차순
-        sort === 'latest' ? 'comment.createdAt' : 'post.scrapCounts',
-        sort === 'latest' ? 'DESC' : 'DESC',
+        sort === 'latest' ? 'comment.createdAt' : 'post.likeCounts',
+        'DESC'
       )
       .skip(skip)
       .take(limit);
@@ -54,7 +112,7 @@ export class CommentsDAO {
     };
   }
 
-  // 모든 댓글 조회
+  // 관리자 모든 댓글 조회
   async findAllComments(): Promise<any[]> {
     return this.commentsRepository
       .createQueryBuilder('comment')
@@ -72,8 +130,8 @@ export class CommentsDAO {
       .getRawMany();
   }
 
-  // 특정 댓글 조회
-  async findCommentById(id: number): Promise<any> {
+  // 관리자 특정 댓글 조회
+  async findCommentByIdByAdmin(id: number): Promise<any> {
     return this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
@@ -90,7 +148,7 @@ export class CommentsDAO {
       .getRawOne();
   }
 
-  // 댓글 또는 답글 삭제
+  // 관리자 댓글 또는 답글 삭제
   async deleteCommentOrReply(id: number): Promise<void> {
     // 댓글인지 확인
     const comment = await this.commentsRepository.findOne({
@@ -99,7 +157,7 @@ export class CommentsDAO {
 
     if (comment) {
       // 댓글 삭제
-      await this.commentsRepository.update(id, { deletedAt: new Date() });
+      await this.commentsRepository.softDelete(id);
       return;
     }
 
@@ -110,7 +168,7 @@ export class CommentsDAO {
 
     if (reply) {
       // 답글 삭제
-      await this.repliesRepository.update(id, { deletedAt: new Date() });
+      await this.repliesRepository.softDelete(id); 
       return;
     }
 

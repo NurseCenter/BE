@@ -11,15 +11,17 @@ import { EBoardType } from './enum/board-type.enum';
 import { PostsEntity } from './entities/base-posts.entity';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { BasePostDto } from './dto/base-post.dto';
-import { ReportPostDto } from './dto/report-post.dto';
 import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PostsDAO } from './posts.dao';
 import { ScrapsDAO } from 'src/scraps/scraps.dao';
-import { ReportsDAO } from 'src/reports/reports.dao';
 import { LikesDAO } from 'src/likes/likes.dao';
 import { FileUploader } from '../images/file-uploader';
+import { ReportedPostsDAO } from 'src/reports/dao';
+import { ReportDto } from './dto/report.dto';
+import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
+import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
 
 @Injectable()
 export class PostsService {
@@ -27,7 +29,7 @@ export class PostsService {
     private readonly postsDAO: PostsDAO,
     private readonly scrapsDAO: ScrapsDAO,
     private readonly fileUploader: FileUploader,
-    private readonly reportsDAO: ReportsDAO,
+    private readonly reportedPostsDAO: ReportedPostsDAO,
     private readonly likesDAO: LikesDAO,
   ) {}
 
@@ -175,7 +177,11 @@ export class PostsService {
   }
 
   // 특정 게시글 신고
-  async reportPost(basePostDto: BasePostDto, sessionUser: IUserWithoutPassword, reportPostDto: ReportPostDto) {
+  async reportPost(
+    basePostDto: BasePostDto,
+    sessionUser: IUserWithoutPassword,
+    reportDto: ReportDto,
+  ): Promise<IReportedPostResponse> {
     const { userId } = sessionUser;
     const { boardType, postId } = basePostDto;
 
@@ -189,33 +195,33 @@ export class PostsService {
       throw new ForbiddenException(`본인의 게시물은 본인이 신고할 수 없습니다.`);
     }
 
-    if (reportPostDto.reportedReason === EReportReason.OTHER) {
-      if (!reportPostDto.otherReportedReason) {
+    if (reportDto.reportedReason === EReportReason.OTHER) {
+      if (!reportDto.otherReportedReason) {
         throw new BadRequestException(`신고 사유가 '기타'일 경우, 기타 신고 사유를 기입해주세요.`);
       }
     } else {
-      if (reportPostDto.otherReportedReason) {
+      if (reportDto.otherReportedReason) {
         throw new BadRequestException(`신고 사유가 '기타'가 아닐 경우, 기타 신고 사유는 입력할 수 없습니다.`);
       }
     }
 
-    const existingReport = await this.reportsDAO.findReportByPostIdAndUserId(userId, postId);
+    const existingReport = await this.reportedPostsDAO.findReportedPostByPostIdAndUserId(userId, postId);
 
     if (existingReport) {
       throw new ConflictException(`이미 신고한 게시물입니다.`);
     }
 
-    const reportedPostDto = {
+    const reportedPostDto: ReportedPostDto = {
       postId, // 신고된 게시물 ID
       userId, // 신고한 회원 ID
       reportedUserId: post.user.userId, // 신고된 게시글의 작성자 ID
-      reportedReason: reportPostDto.reportedReason, // 신고 이유
-      otherReportedReason: reportPostDto.otherReportedReason, // 기타 신고 이유
+      reportedReason: reportDto.reportedReason, // 신고 이유
+      otherReportedReason: reportDto.otherReportedReason, // 기타 신고 이유
       status: EReportStatus.PENDING, // 신고 처리 상태
     };
 
-    const result = await this.reportsDAO.createPostReport(reportedPostDto);
-    await this.reportsDAO.saveReportPost(result);
+    const result = await this.reportedPostsDAO.createPostReport(reportedPostDto);
+    await this.reportedPostsDAO.saveReportPost(result);
 
     // 신고 결과 반환
     return {

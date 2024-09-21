@@ -206,4 +206,51 @@ export class PostsDAO {
   async deletePost(postId: number) {
     return this.postsRepository.softDelete(postId);
   }
+
+  // 게시판 카테고리별 게시물 수 조회
+  async countPostsByCategory(boardType?: EBoardType) : Promise<{ boardType: string; count: number }[]> {
+    const totalCount = await this.countAllposts();
+
+    // boardType이 all인 경우 총 게시물 수만 반환
+    if (boardType === 'all') {
+      return [{ boardType: 'all', count: totalCount }];
+    }
+
+    const query = this.postsRepository.createQueryBuilder('post')
+      .select('post.boardType', 'boardType')
+      .addSelect('COUNT(post.postId)', 'count')
+      .where('post.deletedAt IS NULL')
+      .groupBy('post.boardType');
+
+    if (boardType) {
+      query.andWhere('post.boardType = :boardType', { boardType })
+    }
+
+    const results= await query.getRawMany();
+
+    // 카테고리에 게시물이 없는 경우 count가 0으로 나오게 해야함.
+    if (boardType) {
+      return results.length > 0
+        ? results
+        : [{ boardType, count: 0 }]
+    }
+
+    // 쿼리파라미터가 없을 때 all인 경우도 추가
+    if (!boardType) {
+      results.push({ boardType: 'all', count: totalCount });
+    }
+
+    const boardTypes = Object.values(EBoardType);
+    const response = boardTypes.map(type => {
+      const found = results.find(result => result.boardType === type);
+      return { boardType: type, count: found ? found.count : 0 };
+    });
+
+    return response;
+  }
+
+  // 전체 게시물 수 구하기
+  private async countAllposts() {
+    return this.postsRepository.count({ where: { deletedAt : null } })
+  }
 }

@@ -59,6 +59,8 @@ export class ReportedRepliesDAO {
         'reportReply.reportReplyId AS reportId', // 신고된 답글 ID (신고 테이블에서의 ID)
         'reply.replyId AS replyId', // 답글 ID (답글 테이블에서의 ID)
         'post.title AS postTitle', // 게시물 제목
+        'post.postId AS postId', // 게시물 ID
+        'comment.commentId AS commentID', // 부모 댓글 ID
         'reply.content AS replyContent', // 답글 내용
         'user.nickname AS replyAuthor', // 답글 작성자
         'reportReply.reportingUser AS reporter', // 신고자

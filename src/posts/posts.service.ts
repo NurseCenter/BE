@@ -236,4 +236,9 @@ export class PostsService {
       createdAt: result.createdAt, // 신고 일자
     };
   }
+
+  // 게시판 카테고리별 게시물 수 조회
+  async getPostsCountByCategory(boardType?: EBoardType) {
+    return this.postsDAO.countPostsByCategory(boardType);
+  }
 }

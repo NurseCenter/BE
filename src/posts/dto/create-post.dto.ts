@@ -17,4 +17,8 @@ export class CreatePostDto {
   @IsString({ each: true })
   @ApiProperty({ type: [String], description: '파일 타입 배열' })
   imageTypes?: string[];
+
+  @IsOptional()
+  @ApiProperty({ type: [String], description: '게시물과 관련된 병원 이름 배열' })
+  hospitalNames?: string[];
 }

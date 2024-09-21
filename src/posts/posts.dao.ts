@@ -14,10 +14,11 @@ export class PostsDAO {
   ) {}
 
   // 게시물 생성
-  async createPost(title: string, content: string, userId: number, boardType: EBoardType): Promise<PostsEntity> {
+  async createPost(title: string, content: string, userId: number, hospitalNames: string[], boardType: EBoardType): Promise<PostsEntity> {
     const post = this.postsRepository.create({
       title,
       content,
+      hospitalNames,
       userId,
       boardType,
     });
@@ -96,6 +97,7 @@ export class PostsDAO {
         'post.boardType', // 카테고리
         'post.title', // 제목
         'post.content', // 내용
+        'post.hospitalNames', // 병원 이름 (배열)
         'post.likeCounts', // 좋아요수
         'post.viewCounts', // 조회수
         'post.scrapCounts', // 스크랩수

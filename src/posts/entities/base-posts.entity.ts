@@ -52,6 +52,10 @@ export class PostsEntity {
   @Column({ type: 'varchar', length: 2000 })
   content: string;
 
+  // 병원 이름
+  @Column({ type: 'simple-array', nullable: true, default: null })
+  hospitalNames?: string[];
+
   // 게시물 신고일
   // 기본 상태는 null, 신고 당하면 날짜
   @Column({ type: 'timestamp', nullable: true, default: null })

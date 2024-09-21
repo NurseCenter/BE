@@ -53,10 +53,10 @@ export class PostsService {
 
   // 게시물 생성
   async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUserWithoutPassword) {
-    const { title, content, imageTypes } = createPostDto;
+    const { title, content, imageTypes, hospitalNames } = createPostDto;
     const { userId } = sessionUser;
 
-    const createdPost = await this.postsDAO.createPost(title, content, userId, boardType);
+    const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
     const imageEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
@@ -69,6 +69,7 @@ export class PostsService {
       userId: createdPost.userId, // 작성자 ID
       title: createdPost.title, // 게시물 제목
       summaryContent, // 내용 (요약본)
+      hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열) 
       createdAt: createdPost.createdAt, // 작성일
       presignedPostData: imageEntities.map((img) => img.url), // presigned URL
     };
@@ -94,6 +95,7 @@ export class PostsService {
       category: post.boardType, // 게시판 카테고리
       title: post.title, // 게시물 제목
       content: post.content, // 게시물 내용
+      hospitalNames: post.hospitalNames, // 병원 이름
       likeCounts: post.likeCounts, // 좋아요수
       viewCounts: post.viewCounts, // 조회수
       createdAt: post.createdAt, // 작성일

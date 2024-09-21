@@ -143,20 +143,23 @@ export class PostsController {
     description: '게시글 조회 성공',
     schema: {
       example: {
-        postId: 1,
-        category: 'job',
-        title: '게시글 제목',
-        content:
-          '우리 병원에서 새로운 간호사를 모집합니다. 자격 요건은 간호사 면허 소지 및 병원 근무 경험이 있는 분입니다. 자세한 사항은 저희 웹사이트에서 확인해 주세요.',
-        like: 5,
-        viewCounts: 100,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-02T00:00:00.000Z',
-        isLiked: true,
-        isScraped: false,
-        user: {
-          userId: 35,
-          nickname: '닉넴뭐하지',
+        "postId": 28,
+        "category": "employment",
+        "title": "병원 이름 들어가는지 테스트",
+        "content": "본문 테스트",
+        "hospitalNames": [
+          "서울대학교병원",
+          "경북대학교병원"
+        ],
+        "likeCounts": 0,
+        "viewCounts": 1,
+        "createdAt": "2024-09-21T11:49:52.389Z",
+        "updatedAt": "2024-09-21T11:56:00.000Z",
+        "isLiked": false,
+        "isScraped": false,
+        "user": {
+          "userId": 35,
+          "nickname": "닉넴뭐하지"
         },
         images: [
           {
@@ -244,24 +247,30 @@ export class PostsController {
           },
           example: ['image/jpeg'],
         },
+        hospitalName: {  
+          type: 'string',
+          example: '서울대학교병원',
+        },
       },
       required: ['title', 'content'],
     },
     examples: {
       텍스트만: {
-        summary: '이미지 없이 텍스트만 포함된 게시글',
+        summary: '첨부파일 없이 텍스트만 포함된 게시글',
         value: {
-          title: '새 게시글 제목이죵',
-          content: '새 게시글 내용입니당',
+          title: '새 게시글 제목',
+          content: '새 게시글 내용입니다. 텍스트만 있습니다.',
+          hospitalName: '서울대학교병원', 
         },
       },
-      '이미지 포함': {
-        summary: '이미지를 포함한 게시글',
+      '첨부파일 포함': {
+        summary: '첨부파일을 포함한 게시글',
         value: {
-          title: '새 게시글 제목이죵',
+          title: '새 게시글 제목',
           content:
-            '새 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
+            '새 게시글 내용입니다. 첨부파일을 함께 등록하면 imageTypes에 파일의 타입이 들어갑니다.',
           imageTypes: ['image/jpeg'],
+          hospitalName: '서울대학교병원', 
         },
       },
     },
@@ -275,6 +284,7 @@ export class PostsController {
         userId: 1,
         title: '새 게시글 제목',
         summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        hospitalName: '서울대학교병원',
         createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
           {

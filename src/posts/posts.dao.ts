@@ -98,6 +98,7 @@ export class PostsDAO {
         'post.content', // 내용
         'post.likeCounts', // 좋아요수
         'post.viewCounts', // 조회수
+        'post.scrapCounts', // 스크랩수
         'post.createdAt', // 작성일
         'post.updatedAt', // 수정일
         'post.deletedAt', // 삭제일

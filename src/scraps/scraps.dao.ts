@@ -44,7 +44,7 @@ export class ScrapsDAO {
         'post.postId', // 게시물 ID
         'post.boardType', // 게시물 카테고리
         'post.title', // 게시물 제목
-        'post.createdAt AS postCreatedAt', // 게시물 작성일
+        'post.createdAt AS createdAt', // 게시물 작성일
       ])
       .orderBy('scrap.createdAt', 'DESC');
 

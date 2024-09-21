@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -16,8 +16,8 @@ export class CommentsDAO {
   ) {}
 
   // 댓글 ID로 댓글 조회
-  async findCommentById(commentId: number) {
-    return this.commentsRepository.findOne({ where: { commentId } });
+  async findCommentById(commentId: number, options?: FindOneOptions<CommentsEntity>): Promise<CommentsEntity | undefined> {
+    return await this.commentsRepository.findOne({ where: { commentId }, ...options });
   }
 
   // 댓글 생성

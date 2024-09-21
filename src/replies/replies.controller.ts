@@ -23,12 +23,13 @@ export class RepliesController {
     description: '답글 작성 성공',
     schema: {
       example: {
-        replyId: 1,
-        commentId: 1,
-        userId: 1,
-        content: 'This is a reply',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        "content": "6번 댓글에 대한 답글입니다. 100자 넘어가는지 테스트. 공공필요에 의한 재산권의 수용·사용 또는 제한 및 그에 대한 보상은 법률로써 하되, 정당한 보상을 지급하여야 한다. 선거...",
+        "userId": 35,
+        "commentId": 6,
+        "updatedAt": "2024-09-21T13:53:05.862Z",
+        "replyId": 2,
+        "createdAt": "2024-09-21T13:53:05.862Z",
+        "deletedAt": null
       },
     },
   })
@@ -71,7 +72,7 @@ export class RepliesController {
     return result;
   }
 
-  // 특정 댓글의 답글 전체 조회
+  // 특정 댓글에 달린 답글 전체 조회
   @UseGuards(RegularMemberGuard)
   @Get('comments/:commentId/replies')
   @HttpCode(200)

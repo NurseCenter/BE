@@ -38,12 +38,15 @@ export class RepliesService {
 
   // 특정 댓글에 대한 답글 조회
   async getReplies(commentId: number): Promise<RepliesEntity[]> {
-    const comment = await this.commentsDAO.findCommentById(commentId);
+    const comment = await this.commentsDAO.findCommentById(commentId, {
+      relations: ['replies'],
+    });
+
     if (!comment) {
       throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
     }
 
-    const replies = comment.replies; 
+    const replies = comment.replies;
     return replies;
   }
 

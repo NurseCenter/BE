@@ -39,6 +39,14 @@ export class ReportedPostsDAO {
     });
   }
 
+  // 이미 신고된 게시글 유무 파악
+  async existsReportedPost(postId: number, userId: number): Promise<boolean> {
+    const count = await this.reportPostsRepository.count({
+      where: { postId, userId },
+    });
+    return count > 0;
+  }
+
   // 신고된 게시물 전체 조회
   async findAllReportedPosts(page: number, limit: number): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;

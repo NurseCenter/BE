@@ -13,7 +13,7 @@ export class ReportsService {
     private readonly reportedCommentsDAO: ReportedCommentsDAO,
     private readonly reportedPostsDAO: ReportedPostsDAO,
     private readonly postsDAO: PostsDAO,
-    private readonly commentsDAO: CommentsDAO
+    private readonly commentsDAO: CommentsDAO,
   ) {}
 
   // 신고된 게시물 전체 조회

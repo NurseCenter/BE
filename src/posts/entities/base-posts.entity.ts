@@ -52,9 +52,10 @@ export class PostsEntity {
   @Column({ type: 'varchar', length: 2000 })
   content: string;
 
-  // 신고 여부
-  @Column({ type: 'boolean', default: false })
-  isReported: boolean;
+  // 게시물 신고일
+  // 기본 상태는 null, 신고 당하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  reportedAt: Date;
 
   // 스크랩 횟수
   @Column({ type: 'int', default: 0 })

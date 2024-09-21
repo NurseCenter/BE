@@ -26,7 +26,7 @@ export class ReportRepliesEntity {
   reportedUserId: number;
 
   // 신고된 답글의 ID
-  @Column('int')
+  @Column()
   replyId: number;
 
   // 신고된 이유
@@ -39,6 +39,7 @@ export class ReportRepliesEntity {
     type: 'varchar',
     length: 100,
     nullable: true,
+    default: null,
   })
   otherReportedReason?: string | null;
 

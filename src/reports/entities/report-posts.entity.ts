@@ -26,7 +26,7 @@ export class ReportPostsEntity {
   reportedUserId: number;
 
   // 신고된 게시물의 ID
-  @Column('int')
+  @Column()
   postId: number;
 
   // 신고된 이유

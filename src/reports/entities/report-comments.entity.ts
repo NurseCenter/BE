@@ -26,7 +26,7 @@ export class ReportCommentsEntity {
   reportedUserId: number;
 
   // 신고된 댓글의 ID
-  @Column('int')
+  @Column()
   commentId: number;
 
   // 신고된 이유

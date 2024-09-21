@@ -18,25 +18,33 @@ export class ReportedCommentsDAO {
     return reportedComment;
   }
 
-  // 신고된 댓글 테이블 고유 ID로 신고된 특정 게시물 조회
+  // 신고된 댓글 테이블 고유 ID로 신고된 특정 댓글 조회
   async findReportedCommentByReportId(reportCommentId: number) {
     return this.reportCommentsRepository.findOne({
       where: { reportCommentId },
     });
   }
 
-  // 게시물 ID로 신고된 특정 게시물 조회
+  // 댓글 ID로 신고된 특정 댓글 조회
   async findReportedCommentByCommentId(commentId: number) {
     return this.reportCommentsRepository.findOne({
       where: { commentId },
     });
   }
 
-  // 게시물 ID와 회원 ID로 신고된 특정 댓글 조회
-  async findReportedCommentByPostIdAndUserId(commentId: number, userId: number) {
+  // 댓글 ID와 회원 ID로 신고된 특정 댓글 조회
+  async findReportedCommentByCommentIdAndUserId(commentId: number, userId: number) {
     return this.reportCommentsRepository.findOne({
       where: { commentId, userId },
     });
+  }
+
+  // 이미 신고된 댓글 유무 파악
+  async existsReportedComment(commentId: number, userId: number): Promise<boolean> {
+    const count = await this.reportCommentsRepository.count({
+      where: { commentId, userId },
+    });
+    return count > 0 ? true : false;
   }
 
   // 신고된 댓글 전체 조회

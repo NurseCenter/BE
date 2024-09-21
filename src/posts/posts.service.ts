@@ -205,7 +205,7 @@ export class PostsService {
       }
     }
 
-    const existingReport = await this.reportedPostsDAO.findReportedPostByPostIdAndUserId(userId, postId);
+    const existingReport = await this.reportedPostsDAO.existsReportedPost(userId, postId);
 
     if (existingReport) {
       throw new ConflictException(`이미 신고한 게시물입니다.`);
@@ -223,7 +223,9 @@ export class PostsService {
     const result = await this.reportedPostsDAO.createPostReport(reportedPostDto);
     await this.reportedPostsDAO.saveReportPost(result);
 
-    // 신고 결과 반환
+    post.reportedAt = new Date();
+    await this.postsDAO.savePost(post);
+
     return {
       reportId: result.reportPostId, // 신고 ID
       postId: result.postId, // 게시글 ID

@@ -17,6 +17,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { CommentsEntity } from './entities/comments.entity';
 import { IReportedCommentResponse } from 'src/reports/interfaces/reported-comment-response';
 import { ReportedCommentDto } from 'src/reports/dto/reported-comment.dto';
+import { PaginationQueryDto } from 'src/common/dto';
 
 @Injectable()
 export class CommentsService {
@@ -41,16 +42,23 @@ export class CommentsService {
 
     const comment = await this.commentsDAO.createComment(createCommentDto, userId, postId, boardType);
     const createdComment = await this.commentsDAO.saveComment(comment);
-    return createdComment;
+
+    const content = createdComment.content;
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+
+    return {
+      ...createdComment,
+      content: summaryContent,
+    };
   }
 
   // 특정 게시물의 모든 댓글 조회
   async getCommentsInOnePost(
     boardType: EBoardType,
     postId: number,
-    page: number = 1,
-    limit: number = 10,
+    paginationQueryDto: PaginationQueryDto,
   ): Promise<IPaginatedResponse<CommentsEntity>> {
+    const { page = 1, limit = 10 } = paginationQueryDto;
     const result = await this.commentsDAO.findCommentsInOnePost(boardType, postId, page, limit);
 
     return {
@@ -71,8 +79,16 @@ export class CommentsService {
       throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
     }
 
-    const updatedComment = await this.commentsDAO.updateComment(commentId, updateCommentDto);
-    return updatedComment;
+    await this.commentsDAO.updateComment(commentId, updateCommentDto);
+    const updatedComment = await this.commentsDAO.findCommentById(commentId);
+
+    const content = updatedComment.content;
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+
+    return {
+      ...updatedComment,
+      content: summaryContent,
+    };
   }
 
   // 댓글 삭제
@@ -117,10 +133,10 @@ export class CommentsService {
       }
     }
 
-    const existingReport = await this.reportedCommentsDAO.findReportedCommentByPostIdAndUserId(userId, commentId);
+    const existingReport = await this.reportedCommentsDAO.existsReportedComment(commentId, userId);
 
     if (existingReport) {
-      throw new ConflictException(`이미 신고한 게시물입니다.`);
+      throw new ConflictException(`이미 신고한 댓글입니다.`);
     }
 
     const reportedCommentDto: ReportedCommentDto = {
@@ -134,6 +150,9 @@ export class CommentsService {
 
     const result = await this.reportedCommentsDAO.createCommentReport(reportedCommentDto);
     await this.reportedCommentsDAO.saveReportComment(result);
+
+    comment.reportedAt = new Date();
+    await this.commentsDAO.saveComment(comment);
 
     return {
       reportId: result.reportCommentId, // 신고 ID

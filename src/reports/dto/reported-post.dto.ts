@@ -15,7 +15,7 @@ export class ReportedPostDto {
   reportedReason: EReportReason;
 
   @IsNotEmpty()
-  otherReportedReason: string;
+  otherReportedReason: string | null;
 
   @IsNotEmpty()
   status: EReportStatus;

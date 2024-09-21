@@ -47,15 +47,33 @@ export class CommentsDAO {
   ): Promise<{ comments: CommentsEntity[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const [comments, total] = await this.commentsRepository.findAndCount({
+    const comments = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .select([
+        'comment.commentId AS commentId',
+        'comment.content AS content',
+        'comment.postId AS postId',
+        'comment.boardType AS boardType',
+        'comment.createdAt AS createdAt',
+        'comment.updatedAt AS updatedAt',
+        'user.userId AS userId',
+        'user.nickname AS nickname',
+      ])
+      .where('comment.postId = :postId', { postId })
+      .andWhere('comment.boardType = :boardType', { boardType })
+      .andWhere('comment.deletedAt IS NULL')
+      .orderBy('comment.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getRawMany();
+
+    const total = await this.commentsRepository.count({
       where: {
         postId,
         boardType,
         deletedAt: null,
       },
-      skip: Number(skip),
-      take: limit,
-      order: { createdAt: 'DESC' },
     });
 
     return { comments, total };
@@ -82,10 +100,7 @@ export class CommentsDAO {
       .leftJoinAndSelect('comment.post', 'post')
       .where('comment.userId = :userId', { userId })
       .andWhere('comment.deletedAt IS NULL')
-      .orderBy(
-        sort === 'latest' ? 'comment.createdAt' : 'post.likeCounts',
-        'DESC'
-      )
+      .orderBy(sort === 'latest' ? 'comment.createdAt' : 'post.likeCounts', 'DESC')
       .skip(skip)
       .take(limit);
 
@@ -168,7 +183,7 @@ export class CommentsDAO {
 
     if (reply) {
       // 답글 삭제
-      await this.repliesRepository.softDelete(id); 
+      await this.repliesRepository.softDelete(id);
       return;
     }
 

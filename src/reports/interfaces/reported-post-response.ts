@@ -6,6 +6,6 @@ export interface IReportedPostResponse {
   userId: number; // 신고한 사용자 ID
   reportedUserId: number; // 신고된 사용자 ID
   reportedReason: EReportReason; // 신고 이유
-  otherReportedReason?: string; // 기타 신고 이유 (선택적)
+  otherReportedReason?: string | null; // 기타 신고 이유
   createdAt: Date; // 신고 일자
 }

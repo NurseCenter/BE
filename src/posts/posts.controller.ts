@@ -19,7 +19,7 @@ export class PostsController {
 
   // 게시글 전체 및 검색 조회
   @Get(':boardType')
-  @ApiOperation({ summary: '게시글 조회' })
+  @ApiOperation({ summary: '전체 게시글 조회 및 검색' })
   @ApiParam({
     name: 'boardType',
     description: '게시판 종류',

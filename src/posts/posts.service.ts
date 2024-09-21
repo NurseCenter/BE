@@ -22,11 +22,13 @@ import { ReportedPostsDAO } from 'src/reports/dao';
 import { ReportDto } from './dto/report.dto';
 import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
 import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
+import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsDAO: PostsDAO,
+    private readonly postsMetricsDAO: PostsMetricsDAO,
     private readonly scrapsDAO: ScrapsDAO,
     private readonly fileUploader: FileUploader,
     private readonly reportedPostsDAO: ReportedPostsDAO,
@@ -81,6 +83,8 @@ export class PostsService {
     if (!post || !existsInBoardType) {
       throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
     }
+
+    await this.postsMetricsDAO.increaseViewCount(postId);
 
     const isLiked = await this.likesDAO.checkIfLiked(userId, postId);
     const isScraped = await this.scrapsDAO.checkIfScraped(userId, postId);

@@ -96,15 +96,12 @@ export class PostsMetricsService {
 
   // 좋아요수 동기화
   private async syncLikeCountsInMySQL(postId: number): Promise<void> {
-    console.log('Mysql에서 동기화');
     const post = await this.postsDAO.findPostById(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
-    console.log('post', post);
 
     const likeCountsInRedis = await this.postsMetricsDAO.getLikeCountsFromRedis(postId);
-    console.log('likeCountsInRedis', likeCountsInRedis);
     if (likeCountsInRedis === null) {
       throw new NotFoundException('좋아요 수 동기화 중 에러가 발생하였습니다.');
     }
@@ -151,10 +148,12 @@ export class PostsMetricsService {
       const keys = await this.postsMetricsDAO.getAllViewCountKeys();
       for (const key of keys) {
         const postId = parseInt(key.split(':')[1], 10);
-        const viewCounts = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
+        const post = await this.postsDAO.findPostById(postId);
+        const viewCountsFromRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
 
-        if (viewCounts !== null) {
-          await this.postsMetricsDAO.setViewCounts(postId, viewCounts);
+        if (viewCountsFromRedis !== null) {
+          const newViewCounts = post.viewCounts + viewCountsFromRedis
+          await this.postsMetricsDAO.setViewCounts(postId, newViewCounts);
         }
 
         await this.postsMetricsDAO.deleteViewCountKey(key);

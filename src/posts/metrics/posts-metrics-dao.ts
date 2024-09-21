@@ -14,7 +14,6 @@ export class PostsMetricsDAO {
 
   // Redis에서 좋아요수 증가
   async increaseLikeCountInRedis(postId: number): Promise<void> {
-    console.log('REdis에서 좋아요수 증가 함수 시작');
     await this.redisClient.incr(`post:${postId}:likes`);
   }
 
@@ -52,25 +51,23 @@ export class PostsMetricsDAO {
 
   // Redis에서 조회수 가져오기
   async getViewCountsFromRedis(postId: number) {
-    const viewCounts = await this.redisClient.get(`post:${postId}:scraps`);
+    const viewCounts = await this.redisClient.get(`post:${postId}:views`);
     return viewCounts ? parseInt(viewCounts, 10) : null;
   }
 
   // MySQL의 좋아요수 설정
-  async setLikeCounts(postId: number, likeCounts: number): Promise<void> {
-    console.time('setLikeCounts');
-    await this.postsRepository.update({ postId }, { likeCounts });
-    console.timeEnd('setLikeCounts End');
+  async setLikeCounts(postId: number, newLikeCounts: number): Promise<void> {
+    await this.postsRepository.update({ postId }, { likeCounts: newLikeCounts });
   }
 
   // MySQL의 스크랩수 설정
-  async setScrapCounts(postId: number, scrapCounts: number): Promise<void> {
-    await this.postsRepository.update({ postId }, { scrapCounts });
+  async setScrapCounts(postId: number, newScrapCounts: number): Promise<void> {
+    await this.postsRepository.update({ postId }, { scrapCounts: newScrapCounts });
   }
 
   // MySQL의 조회수 설정
-  async setViewCounts(postId: number, viewCounts: number): Promise<void> {
-    await this.postsRepository.update({ postId }, { viewCounts });
+  async setViewCounts(postId: number, newViewCounts: number): Promise<void> {
+    await this.postsRepository.update({ postId }, { viewCounts: newViewCounts });
   }
 
   // Redis에서 모든 조회수 키 가져오기

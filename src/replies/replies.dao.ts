@@ -17,7 +17,7 @@ export class RepliesDAO {
   }
 
   // 답글 생성
-  async createComment(createReplyDto: CreateCommentDto, userId: number, commentId: number) {
+  async createReply(createReplyDto: CreateCommentDto, userId: number, commentId: number) {
     const reply = this.repliesRepository.create({
       ...createReplyDto,
       userId,
@@ -27,7 +27,7 @@ export class RepliesDAO {
   }
 
   // 답글 ID로 답글 수정
-  async updateComment(replyId: number, createCommentDto: CreateCommentDto): Promise<void> {
+  async updateReply(replyId: number, createCommentDto: CreateCommentDto): Promise<void> {
     await this.repliesRepository.update(replyId, {
       ...createCommentDto,
     });
@@ -69,24 +69,12 @@ export class RepliesDAO {
       .getRawOne();
   }
 
-  // 댓글 또는 답글 삭제
-  async deleteCommentOrReply(id: number): Promise<void> {
-    // 답글인지 확인
-    const reply = await this.repliesRepository.findOne({
-      where: { replyId: id, deletedAt: null },
-    });
-    if (reply) {
-      await this.repliesRepository.update(id, { deletedAt: new Date() });
-      return;
-    }
-  }
-
   // 답글 삭제
   async deleteReply(replyId: number) {
     return this.repliesRepository.softDelete(replyId);
   }
 
-  // 댓글 저장
+  // 답글 저장
   async saveReply(reply: RepliesEntity) {
     return this.repliesRepository.save(reply);
   }

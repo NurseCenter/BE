@@ -15,6 +15,6 @@ import { CommentsDAO } from './comments.dao';
   imports: [TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity, ReportCommentsEntity]), PostsModule],
   providers: [CommentsService, CommentsDAO, ReportedCommentsDAO, PostsDAO],
   controllers: [CommentsController],
-  exports: [CommentsModule],
+  exports: [CommentsDAO],
 })
 export class CommentsModule {}

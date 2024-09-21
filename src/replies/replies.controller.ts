@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { RepliesService } from './replies.service';
-import { ReplyDto } from './dto/reply.dto';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateReplyDto } from './dto/create-reply.dto';
 
 @ApiTags('Replies')
 @Controller()
@@ -17,7 +17,7 @@ export class RepliesController {
   @HttpCode(201)
   @ApiOperation({ summary: '답글 작성' })
   @ApiParam({ name: 'commentId', type: 'number', description: '댓글 ID' })
-  @ApiBody({ type: ReplyDto })
+  @ApiBody({ type: CreateReplyDto })
   @ApiResponse({
     status: 201,
     description: '답글 작성 성공',
@@ -64,10 +64,10 @@ export class RepliesController {
   })
   async createReply(
     @Param('commentId') commentId: number,
-    @Body() replyDto: ReplyDto,
+    @Body() createReplyDto: CreateReplyDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
-    const result = await this.repliesService.createReply(commentId, sessionUser, replyDto);
+    const result = await this.repliesService.createReply(commentId, sessionUser, createReplyDto);
     return result;
   }
 
@@ -114,7 +114,7 @@ export class RepliesController {
   @HttpCode(200)
   @ApiOperation({ summary: '답글 수정' })
   @ApiParam({ name: 'replyId', type: 'number', description: '답글 ID' })
-  @ApiBody({ type: ReplyDto })
+  @ApiBody({ type: CreateReplyDto })
   @ApiResponse({
     status: 200,
     description: '답글 수정 성공',
@@ -171,10 +171,10 @@ export class RepliesController {
   })
   async updateReplies(
     @Param('replyId') replyId: number,
-    @Body() replyDto: ReplyDto,
+    @Body() createReplyDto: CreateReplyDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
   ) {
-    const result = await this.repliesService.updateReplies(replyId, sessionUser, replyDto);
+    const result = await this.repliesService.updateReply(replyId, sessionUser, createReplyDto);
     return result;
   }
 
@@ -224,7 +224,7 @@ export class RepliesController {
     },
   })
   async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
-    const result = await this.repliesService.deleteReplies(replyId, sessionUser);
+    const result = await this.repliesService.deleteReply(replyId, sessionUser);
     return result;
   }
 }

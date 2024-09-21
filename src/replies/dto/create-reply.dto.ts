@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, Length } from 'class-validator';
 
-export class ReplyDto {
+export class CreateReplyDto {
   @ApiProperty({
     description: '답글의 내용',
     example: '이것은 예시 답글 내용입니다.',

@@ -1,84 +1,144 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CommentsEntity } from '../comments/entities/comments.entity';
-import { RepliesEntity } from './entities/replies.entity';
-import { Repository } from 'typeorm';
-import { ReplyDto } from './dto/reply.dto';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateReplyDto } from './dto/create-reply.dto';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
+import { RepliesDAO } from './replies.dao';
+import { CommentsDAO } from 'src/comments/comments.dao';
+import { RepliesEntity } from './entities/replies.entity';
+import { EReportReason, EReportStatus } from 'src/reports/enum';
+import { ReportDto } from 'src/posts/dto';
+import { ReportedRepliesDAO } from 'src/reports/dao';
 
 @Injectable()
 export class RepliesService {
-  @InjectRepository(CommentsEntity)
-  private commentRepository: Repository<CommentsEntity>;
-  @InjectRepository(RepliesEntity)
-  private replyRepository: Repository<RepliesEntity>;
+  constructor(
+    private readonly repliesDAO: RepliesDAO,
+    private readonly commentsDAO: CommentsDAO,
+    private readonly reportedRepliesDAO: ReportedRepliesDAO
+  ) {}
 
-  //작성
-  async createReply(commentId: number, sessionUser: IUserWithoutPassword, replyDto: ReplyDto) {
+  // 답글 작성
+  async createReply(commentId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto) {
     const { userId } = sessionUser;
-    const post = await this.commentRepository.findOne({
-      where: {
-        commentId,
-      },
-    });
-    if (!post) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
-    const result = this.replyRepository.create({
-      ...replyDto,
-      userId,
-      commentId,
-    });
+    const comment = await this.commentsDAO.findCommentById(commentId);
+    if (!comment) {
+      throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
+    }
 
-    const createdComment = await this.replyRepository.save(result);
-    return createdComment;
-  }
-  //조회
-  async getReplies(commentId: number) {
-    const comments = await this.replyRepository.find({
-      where: {
-        commentId,
-      },
-    });
+    const reply = await this.repliesDAO.createReply(createReplyDto, userId, commentId);
+    const createdReply = await this.repliesDAO.saveReply(reply);
 
-    return comments;
+    const content = createdReply.content;
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    
+    return {
+      ...createdReply,
+      content: summaryContent,
+    };
   }
-  //수정
-  async updateReplies(replyId: number, sessionUser: IUserWithoutPassword, replyDto: ReplyDto) {
+
+  // 특정 댓글에 대한 답글 조회
+  async getReplies(commentId: number): Promise<RepliesEntity[]> {
+    const comment = await this.commentsDAO.findCommentById(commentId);
+    if (!comment) {
+      throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
+    }
+
+    const replies = comment.replies; 
+    return replies;
+  }
+
+  // 답글 수정
+  async updateReply(replyId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto) {
     const { userId } = sessionUser;
-    const reply = await this.replyRepository.findOne({
-      where: {
-        replyId,
-      },
-    });
-    if (!reply) throw new NotFoundException(`${replyId}번 댓글을 찾을 수 없습니다.`);
+    const reply = await this.repliesDAO.findReplyById(replyId);
+    if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
 
     if (userId !== reply.userId) {
-      throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
+      throw new ForbiddenException(`답글을 수정할 권한이 없습니다.`);
     }
-    const updateCommentFields = Object.entries(replyDto).reduce((acc, [key, value]) => {
-      if (value !== null && value !== undefined) {
-        acc[key] = value;
+
+    await this.repliesDAO.updateReply(replyId, createReplyDto);
+    const updatedReply = await this.repliesDAO.findReplyById(replyId);
+
+    const content = updatedReply.content;
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+
+    return {
+      ...updatedReply,
+      content: summaryContent,
+    };
+  }
+
+  // 답글 삭제
+  async deleteReply(replyId: number, sessionUser: IUserWithoutPassword) {
+    const { userId } = sessionUser;
+    const reply = await this.repliesDAO.findReplyById(replyId);
+    if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
+
+    if (userId !== reply.userId) {
+      throw new ForbiddenException(`답글을 삭제할 권한이 없습니다.`);
+    }
+
+    const result = await this.repliesDAO.deleteReply(replyId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`답글 삭제 중 에러가 발생하였습니다.`);
+    }
+
+    return { message: '답글이 삭제되었습니다.' };
+  }
+
+  // 답글 신고
+  async reportReply(
+    replyId: number,
+    sessionUser: IUserWithoutPassword,
+    reportDto: ReportDto,
+  ): Promise<any> { 
+    const { userId } = sessionUser;
+    const reply = await this.repliesDAO.findReplyById(replyId);
+    if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
+
+    if (reply.userId === userId) {
+      throw new ForbiddenException(`본인이 작성한 답글은 본인이 신고할 수 없습니다.`);
+    }
+
+    if (reportDto.reportedReason === EReportReason.OTHER) {
+      if (!reportDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'일 경우, 기타 신고 사유를 기입해주세요.`);
       }
-      return acc;
-    }, {});
-    Object.assign(reply, updateCommentFields);
-    const updateComment = await this.replyRepository.save(reply);
-    return updateComment;
-  }
-  //삭제
-  async deleteReplies(replyId: number, sessionUser: IUserWithoutPassword) {
-    const { userId } = sessionUser;
-    const reply = await this.replyRepository.findOne({
-      where: {
-        replyId,
-      },
-    });
-    if (!reply) throw new NotFoundException(`${replyId}번 댓글을 찾을 수 없습니다.`);
-
-    if (userId !== reply.userId) {
-      throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
+    } else {
+      if (reportDto.otherReportedReason) {
+        throw new BadRequestException(`신고 사유가 '기타'가 아닐 경우, 기타 신고 사유는 입력할 수 없습니다.`);
+      }
     }
-    const deletedComment = await this.replyRepository.softDelete(replyId);
 
-    return deletedComment;
+    const existingReport = await this.reportedRepliesDAO.existsReportedReply(replyId, userId);
+    if (existingReport) {
+      throw new ConflictException(`이미 신고한 답글입니다.`);
+    }
+
+    const reportedReplyDto = {
+      replyId,
+      userId,
+      reportedUserId: reply.userId,
+      reportedReason: reportDto.reportedReason,
+      otherReportedReason: reportDto.otherReportedReason,
+      status: EReportStatus.PENDING,
+    };
+
+    const result = await this.reportedRepliesDAO.createReplyReport(reportedReplyDto);
+    await this.reportedRepliesDAO.saveReportReply(result);
+
+    reply.reportedAt = new Date();
+    await this.repliesDAO.saveReply(reply);
+
+    return {
+      reportId: result.reportReplyId, // 신고 ID
+      replyId: result.replyId, // 신고된 답글 ID
+      userId: result.userId, // 신고한 사용자 ID
+      reportedUserId: result.reportedUserId, // 신고된 사용자 ID
+      reportedReason: result.reportedReason, // 신고 이유
+      otherReportedReason: result.otherReportedReason, // 기타 신고 이유
+      createdAt: result.createdAt, // 신고 일자
+    };
   }
 }

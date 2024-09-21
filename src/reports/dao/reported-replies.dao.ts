@@ -11,6 +11,7 @@ export class ReportedRepliesDAO {
     @InjectRepository(ReportRepliesEntity)
     private readonly reportRepliesRepository: Repository<ReportRepliesEntity>,
   ) {}
+  
   // 답글 신고 엔티티 생성
   async createReplyReport(data: Partial<ReportRepliesEntity>) {
     const reportedReply = this.reportRepliesRepository.create(data);

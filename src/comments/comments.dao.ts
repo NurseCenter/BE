@@ -17,7 +17,13 @@ export class CommentsDAO {
 
   // 댓글 ID로 댓글 조회
   async findCommentById(commentId: number, options?: FindOneOptions<CommentsEntity>): Promise<CommentsEntity | undefined> {
-    return await this.commentsRepository.findOne({ where: { commentId }, ...options });
+    return await this.commentsRepository.findOne({
+      where: {
+        commentId,
+        deletedAt: null,
+      },
+      ...options,
+    });
   }
 
   // 댓글 생성

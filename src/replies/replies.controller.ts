@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, HttpCode, UseGuards, Put } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateReplyDto } from './dto/create-reply.dto';
+import { ReportDto } from 'src/posts/dto';
 
 @ApiTags('Replies')
 @Controller()
@@ -83,14 +84,26 @@ export class RepliesController {
     description: '답글 조회 성공',
     schema: {
       example: [
-        {
-          replyId: 1,
-          commentId: 1,
-          userId: 1,
-          content: 'This is a reply',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-        },
+        [
+          {
+            "replyId": 1,
+            "content": "6번 댓글에 대한 첫 번째 답글입니다.",
+            "userId": 35,
+            "commentId": 6,
+            "createdAt": "2024-09-21T13:51:39.351Z",
+            "updatedAt": "2024-09-21T13:51:39.351Z",
+            "deletedAt": null
+          },
+          {
+            "replyId": 3,
+            "content": "6번 댓글에 대한 두 번째 답글이다. 헌법재판소는 법률에 저촉되지 아니하는 범위안에서 심판에 관한 절차, 내부규율과 사무처리에 관한 규칙을 제정할 수 있다.",
+            "userId": 35,
+            "commentId": 6,
+            "createdAt": "2024-09-21T13:58:27.870Z",
+            "updatedAt": "2024-09-21T13:58:27.870Z",
+            "deletedAt": null
+          }
+        ]
       ],
     },
   })
@@ -111,7 +124,7 @@ export class RepliesController {
 
   // 답글 수정
   @UseGuards(RegularMemberGuard)
-  @Patch('replies/:replyId')
+  @Put('replies/:replyId')
   @HttpCode(200)
   @ApiOperation({ summary: '답글 수정' })
   @ApiParam({ name: 'replyId', type: 'number', description: '답글 ID' })
@@ -226,6 +239,90 @@ export class RepliesController {
   })
   async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
     const result = await this.repliesService.deleteReply(replyId, sessionUser);
+    return result;
+  }
+
+   // 특정 답글 신고
+   @UseGuards(RegularMemberGuard)
+   @Post('replies/:replyId/reports')
+   @HttpCode(200)
+   @ApiOperation({ summary: '답글 신고' })
+   @ApiParam({ name: 'replyId', type: 'number', description: '신고할 답글의 ID' })
+   @ApiBody({
+     description: '답글 신고 정보',
+     type: ReportDto,
+   })
+   @ApiResponse({
+     status: 200,
+     description: '답글 신고 성공',
+     schema: {
+       type: 'object',
+       properties: {
+         reportReplyId: { type: 'number', description: '신고 ID' },
+         replyId: { type: 'number', description: '신고된 답글 ID' },
+         userId: { type: 'number', description: '신고한 사용자 ID' },
+         reportedUserId: { type: 'number', description: '신고된 사용자 ID' },
+         reportedReason: { type: 'string', description: '신고 이유' },
+         otherReportedReason: { type: 'string', nullable: true, description: '기타 신고 이유' },
+         createdAt: { type: 'string', format: 'date-time', description: '신고 일자' },
+       },
+       example: {
+         reportReplyId: 1,
+         replyId: 2,
+         userId: 35,
+         reportedUserId: 30,
+         reportedReason: 'spam',
+         otherReportedReason: null,
+         createdAt: '2024-09-21T13:53:05.862Z',
+       },
+     },
+   })
+   @ApiResponse({
+    status: 401,
+    description: '인증 실패',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: '인증이 필요합니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '본인이 작성한 답글은 본인이 신고할 수 없습니다.',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: '본인이 작성한 답글은 본인이 신고할 수 없습니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: '답글을 찾을 수 없음',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: '답글을 찾을 수 없습니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이미 신고한 답글',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: '이미 신고한 답글입니다.',
+      },
+    },
+  })
+  async reportReply(
+    @Param('replyId') replyId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+    @Body() reportDto: ReportDto,
+  ) {
+    const result = await this.repliesService.reportReply(replyId, sessionUser, reportDto);
     return result;
   }
 }

@@ -31,6 +31,11 @@ export class RepliesEntity {
   @Column()
   commentId: number;
 
+  // 답글 신고일
+  // 기본 상태는 null, 신고 당하면 날짜
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  reportedAt: Date;
+
   // 답글 작성일
   @CreateDateColumn()
   createdAt: Date;

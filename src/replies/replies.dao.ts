@@ -12,8 +12,13 @@ export class RepliesDAO {
   ) {}
 
   // 답글 ID로 답글 조회
-  async findRepliesByReplyId(replyId: number): Promise<RepliesEntity[]> {
-    return this.repliesRepository.find({ where: { replyId } });
+  async findReplyById(replyId: number): Promise<RepliesEntity | undefined> {
+    return this.repliesRepository.findOne({
+      where: {
+        replyId,
+        deletedAt: null,
+      },
+    });
   }
 
   // 답글 생성
@@ -52,7 +57,7 @@ export class RepliesDAO {
   }
 
   // 특정 답글 조회
-  async findReplyById(id: number): Promise<any> {
+  async findReply(id: number): Promise<any> {
     return this.repliesRepository
       .createQueryBuilder('reply')
       .leftJoinAndSelect('reply.user', 'user')

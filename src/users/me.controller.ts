@@ -216,7 +216,7 @@ export class MeController {
   })
   @ApiResponse({
     status: 200,
-    description: '본인의 댓글이 성공적으로 조회되었습니다.',
+    description: '댓글이 성공적으로 조회되었습니다.',
     schema: {
       example: [{ commentId: 1, postId: 1, content: '이건 샘플 댓글이다.', createdAt: '2024-09-01T12:00:00Z' }],
     },

@@ -582,10 +582,10 @@ export class PostsController {
     description: '게시글 신고 성공',
     schema: {
       example: {
-        reportId: 1, // 신고 ID
+        reportPostId: 1, // 신고 ID
         postId: 1, // 게시글 ID
         userId: 1, // 신고한 사용자 ID
-        reportedReason: 'SPAM', // 신고 이유
+        reportedReason: 'spam', // 신고 이유
         otherReportedReason: null, // 기타 신고 이유
         reportedUserId: 2, // 신고된 사용자 ID
         createdAt: '2024-01-01T00:00:00.000Z', // 신고 일자

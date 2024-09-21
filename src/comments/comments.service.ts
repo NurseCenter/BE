@@ -155,7 +155,7 @@ export class CommentsService {
     await this.commentsDAO.saveComment(comment);
 
     return {
-      reportId: result.reportCommentId, // 신고 ID
+      reportCommentId: result.reportCommentId, // 신고 ID
       commentId: result.commentId, // 신고된 댓글 ID
       userId: result.userId, // 신고한 사용자 ID
       reportedUserId: result.reportedUserId, // 신고된 사용자 ID

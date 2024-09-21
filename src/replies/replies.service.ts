@@ -7,6 +7,7 @@ import { RepliesEntity } from './entities/replies.entity';
 import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { ReportDto } from 'src/posts/dto';
 import { ReportedRepliesDAO } from 'src/reports/dao';
+import { IReportedReplyResponse } from 'src/reports/interfaces/reported-reply-response';
 
 @Injectable()
 export class RepliesService {
@@ -95,7 +96,7 @@ export class RepliesService {
     replyId: number,
     sessionUser: IUserWithoutPassword,
     reportDto: ReportDto,
-  ): Promise<any> { 
+  ): Promise<IReportedReplyResponse> { 
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
@@ -135,7 +136,7 @@ export class RepliesService {
     await this.repliesDAO.saveReply(reply);
 
     return {
-      reportId: result.reportReplyId, // 신고 ID
+      reportReplyId: result.reportReplyId, // 신고 ID
       replyId: result.replyId, // 신고된 답글 ID
       userId: result.userId, // 신고한 사용자 ID
       reportedUserId: result.reportedUserId, // 신고된 사용자 ID

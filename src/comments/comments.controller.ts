@@ -274,10 +274,10 @@ export class CommentsController {
     description: '댓글 신고 성공',
     schema: {
       example: {
-        reportId: 1,
+        reportCommentId: 1,
         commentId: 1,
-        userId: 1,
-        reportedReason: 'SPAM',
+        userId: 10,
+        reportedReason: 'spam',
         otherReportedReason: null,
         reportedUserId: 2,
         createdAt: '2024-01-01T00:00:00.000Z',
@@ -306,11 +306,11 @@ export class CommentsController {
   })
   @ApiResponse({
     status: 403,
-    description: '자신의 댓글 신고 불가',
+    description: '본인이 작성한 댓글은 본인이 신고할 수 없습니다.',
     schema: {
       example: {
         statusCode: 403,
-        message: '자신의 댓글을 신고할 수 없습니다.',
+        message: '본인이 작성한 댓글은 본인이 신고할 수 없습니다.',
       },
     },
   })

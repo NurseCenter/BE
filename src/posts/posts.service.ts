@@ -233,7 +233,7 @@ export class PostsService {
     await this.postsDAO.savePost(post);
 
     return {
-      reportId: result.reportPostId, // 신고 ID
+      reportPostId: result.reportPostId, // 신고 ID
       postId: result.postId, // 게시글 ID
       userId: result.userId, // 신고한 사용자 ID
       reportedReason: result.reportedReason, // 신고 이유

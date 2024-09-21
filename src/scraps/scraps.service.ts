@@ -41,6 +41,8 @@ export class ScrapService {
     const { page, limit } = paginationQueryDto;
     const { items, totalItems } = await this.scrapsDAO.findScrapsByUser(sessionUser.userId, page, limit);
 
+    console.log("items", items)
+
     const formattedItems = items.map((item) => ({
       scrapId: item.scrapId, // 스크랩 ID
       userId: item.userId, // 회원 ID

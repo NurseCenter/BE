@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/guards';
 import { ReportsService } from './reports.service';
@@ -122,32 +122,6 @@ export class ReportsController {
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
   async getReportedPost(@Param('postId') postId: number) {
     return await this.reportsService.getReportedPost(postId);
-  }
-
-  // 신고된 특정 게시물 삭제
-  @UseGuards(AdminGuard)
-  @Delete('posts/:postId')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 특정 게시물 삭제' })
-  @ApiParam({ name: 'postId', type: 'string', description: '게시물 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '신고된 게시물 삭제 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-      },
-      example: {
-        message: '게시물이 삭제되었습니다.',
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  async deleteReportedPost(@Param('postId') postId: number) {
-    await this.reportsService.deleteReportedPost(postId);
-    return { message: '게시물이 삭제되었습니다.' };
   }
 
   // 신고된 게시물 “처리완료”로 전환
@@ -366,31 +340,5 @@ export class ReportsController {
   async rejectComment(@Param('commentId') commentId: number) {
     await this.reportsService.updateCommentStatus(commentId, EReportStatus.REJECTED);
     return { message: '댓글 상태가 “신고반려”로 업데이트 되었습니다.' };
-  }
-
-  // 신고된 특정 댓글 삭제
-  @UseGuards(AdminGuard)
-  @Delete('comments/:commentId')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 특정 댓글 삭제' })
-  @ApiParam({ name: 'commentId', type: 'string', description: '댓글 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '신고된 댓글 삭제 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-      },
-      example: {
-        message: '댓글이 삭제되었습니다.',
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
-  async deleteReportedComment(@Param('commentId') commentId: number) {
-    await this.reportsService.deleteReportedComment(commentId);
-    return { message: '댓글이 삭제되었습니다.' };
   }
 }

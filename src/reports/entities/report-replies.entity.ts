@@ -15,7 +15,7 @@ import { RepliesEntity } from 'src/replies/entities/replies.entity';
 export class ReportRepliesEntity {
   // 신고된 답글의 ID (신고 테이블에서의 ID)
   @PrimaryGeneratedColumn()
-  reportRepliyId: number;
+  reportReplyId: number;
 
   //신고한 회원 ID
   @Column()

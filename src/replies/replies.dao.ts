@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
+import { CreateCommentDto } from 'src/comments/dto/create-comment.dto';
 
 @Injectable()
 export class RepliesDAO {
@@ -10,7 +11,29 @@ export class RepliesDAO {
     private readonly repliesRepository: Repository<RepliesEntity>,
   ) {}
 
-  // 모든 답글 조회
+  // 답글 ID로 답글 조회
+  async findRepliesByReplyId(replyId: number): Promise<RepliesEntity[]> {
+    return this.repliesRepository.find({ where: { replyId } });
+  }
+
+  // 답글 생성
+  async createComment(createReplyDto: CreateCommentDto, userId: number, commentId: number) {
+    const reply = this.repliesRepository.create({
+      ...createReplyDto,
+      userId,
+      commentId
+    });
+    return reply;
+  }
+
+  // 답글 ID로 답글 수정
+  async updateComment(replyId: number, createCommentDto: CreateCommentDto): Promise<void> {
+    await this.repliesRepository.update(replyId, {
+      ...createCommentDto,
+    });
+  }
+
+  // 관리자페이지 모든 답글 조회
   async findAllReplies(): Promise<any[]> {
     return this.repliesRepository
       .createQueryBuilder('reply')
@@ -56,5 +79,15 @@ export class RepliesDAO {
       await this.repliesRepository.update(id, { deletedAt: new Date() });
       return;
     }
+  }
+
+  // 답글 삭제
+  async deleteReply(replyId: number) {
+    return this.repliesRepository.softDelete(replyId);
+  }
+
+  // 댓글 저장
+  async saveReply(reply: RepliesEntity) {
+    return this.repliesRepository.save(reply);
   }
 }

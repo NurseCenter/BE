@@ -8,6 +8,10 @@ import { CommentsDAO } from 'src/comments/comments.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { OcrService } from 'src/orc/ocr.service';
 import { Request } from 'express';
+import { ScrapsDAO } from 'src/scraps/scraps.dao';
+import { RepliesDAO } from 'src/replies/replies.dao';
+import { ICombinedResult } from './interfaces/combined-result.interface';
+import { ECommentType } from './enums';
 
 @Injectable()
 export class UsersService {
@@ -15,7 +19,9 @@ export class UsersService {
     private readonly authPasswordService: AuthPasswordService,
     private readonly usersDAO: UsersDAO,
     private readonly postsDAO: PostsDAO,
+    private readonly scrapsDAO: ScrapsDAO,
     private readonly commentsDAO: CommentsDAO,
+    private readonly repliesDAO: RepliesDAO,
     private readonly ocrService: OcrService,
     private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
@@ -83,18 +89,98 @@ export class UsersService {
 
   // 나의 게시글 조회
   async fetchMyPosts(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular') {
-    if (!sessionUser?.userId) {
-      throw new BadRequestException('회원 ID가 존재하지 않습니다.');
+    const { userId } = sessionUser;
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
     return this.postsDAO.findMyPosts(sessionUser.userId, page, limit, sort);
   }
 
-  // 나의 댓글 조회
-  async fetchMyComments(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular') {
-    if (!sessionUser?.userId) {
-      throw new BadRequestException('회원 ID가 존재하지 않습니다.');
+  // 나의 댓글 및 답글 조회
+  async findMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+    const skip = (page - 1) * limit;
+
+    // 댓글과 답글 조회
+    const [comments, commentsCount] = await this.commentsDAO.findCommentsByUserIdWithPagination(userId, skip, limit);
+    const [replies, repliesCount] = await this.repliesDAO.findRepliesByUserIdWithPagination(userId, skip, limit);
+
+    const postIds = [
+      ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.commentId))),
+    ];
+    const posts = await this.postsDAO.findPostsByIds(postIds);
+    const allPostsToFind = await this.postsDAO.findAllPostsWithoutConditions();
+    const combinedResults: ICombinedResult[] = [];
+
+    // 댓글 결과 조합
+    comments.forEach((comment) => {
+      const post = posts.find((post) => post.postId === comment.postId);
+      combinedResults.push({
+        type: ECommentType.COMMENT,
+        commentId: comment.commentId,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        postId: comment.postId,
+        boardType: post?.boardType,
+        title: post?.title,
+      });
+    });
+
+    // 답글 결과 조합
+    for (const reply of replies) {
+      const originalComment = await this.commentsDAO.findCommentByIdWithDeletedComment(reply.commentId);
+
+      if (originalComment) {
+        const post = allPostsToFind.find((post) => post.postId === originalComment?.postId);
+        combinedResults.push({
+          type: ECommentType.REPLY,
+          replyId: reply.replyId,
+          commentId: reply.commentId,
+          content: reply.content,
+          createdAt: reply.createdAt,
+          postId: originalComment?.postId,
+          boardType: post?.boardType || '정보없음',
+          title: post?.title || '정보없음',
+        });
+      } else {
+        console.log(`부모 댓글이 없습니다: ${reply.commentId}`);
+      }
     }
-    return this.commentsDAO.findMyComments(sessionUser.userId, page, limit, sort);
+
+    // 최신순 정렬 (기본)
+    combinedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // 인기순 정렬
+    // 댓글 혹은 답글이 달린 원 게시물의 좋아요수가 많은 순서대로 정렬이 됨.
+    if (sort === 'popular') {
+      combinedResults.sort((a, b) => {
+        const aPost = posts.find((post) => post.postId === (a.type === 'comment' ? a.postId : a.commentId));
+        const bPost = posts.find((post) => post.postId === (b.type === 'comment' ? b.postId : b.commentId));
+        return (bPost?.likeCounts || 0) - (aPost?.likeCounts || 0);
+      });
+    }
+
+    return {
+      items: combinedResults,
+      totalItems: commentsCount + repliesCount,
+      totalPages: Math.ceil((commentsCount + repliesCount) / limit),
+      currentPage: page,
+    };
+  }
+
+  // 나의 스크랩한 게시물 조회
+  async fetchMyScrapedPosts(
+    sessionUser: IUserWithoutPassword,
+    page: number,
+    limit: number,
+    sort: 'latest' | 'popular',
+  ) {
+    const { userId } = sessionUser;
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    }
+    return this.scrapsDAO.findMyScraps(userId, page, limit, sort);
   }
 
   // 회원 인증서류 URL에서 실명 추출

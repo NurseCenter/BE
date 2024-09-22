@@ -6,17 +6,13 @@ import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePas
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
 import { Request } from 'express';
-import { ScrapService } from 'src/scraps/scraps.service';
-import { PaginationQueryDto } from 'src/common/dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { GetMyScrapsQueryDto } from './dto/get-my-scraps-query-dto';
 
 @ApiTags('Me')
 @Controller('me')
 export class MeController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly scrapsService: ScrapService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   // 본인 정보 조회
   @UseGuards(SignInGuard)
@@ -195,8 +191,9 @@ export class MeController {
       },
     },
   })
-  async getMyPosts(@SessionUser() user: IUserWithoutPassword, @Query() query: GetMyPostsQueryDto) {
-    return this.usersService.fetchMyPosts(user, query.page, query.limit, query.sort);
+  async getMyPosts(@SessionUser() user: IUserWithoutPassword, @Query() getMyPostsQueryDto: GetMyPostsQueryDto) {
+    const { page, limit, sort } = getMyPostsQueryDto;
+    return this.usersService.fetchMyPosts(user, page, limit, sort);
   }
 
   // 본인 댓글 전체 조회
@@ -235,8 +232,9 @@ export class MeController {
     @SessionUser() user: IUserWithoutPassword,
     @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto,
   ) {
+    const { userId } = user;
     const { page, limit, sort } = getmyCommentsQueryDto;
-    return this.usersService.fetchMyComments(user, page, limit, sort);
+    return this.usersService.findMyCommentsAndReplies(userId, page, limit, sort);
   }
 
   // 내가 스크랩한 게시물 조회
@@ -281,9 +279,10 @@ export class MeController {
   })
   async getScrapPosts(
     @SessionUser() sessionUser: IUserWithoutPassword,
-    @Query() paginationQueryDto: PaginationQueryDto,
+    @Query() getMyScrapsQueryDto: GetMyScrapsQueryDto,
   ): Promise<IPaginatedResponse<any>> {
-    const result = await this.scrapsService.getScrapedPosts(sessionUser, paginationQueryDto);
+    const { page, limit, sort } = getMyScrapsQueryDto;
+    const result = await this.usersService.fetchMyScrapedPosts(sessionUser, page, limit, sort);
     return result;
   }
 }

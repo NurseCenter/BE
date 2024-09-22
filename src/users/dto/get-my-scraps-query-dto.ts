@@ -1,8 +1,8 @@
-import { IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsEnum } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dto';
 
-export class GetMyCommentsQueryDto extends PaginationQueryDto {
+export class GetMyScrapsQueryDto extends PaginationQueryDto {
   @ApiProperty({
     description: '정렬 기준 (최신순: 게시물 작성일자 내림차순, 인기순: 좋아요 내림차순)',
     enum: ['latest', 'popular'],

@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { RepliesDAO } from './replies.dao';
@@ -14,7 +20,7 @@ export class RepliesService {
   constructor(
     private readonly repliesDAO: RepliesDAO,
     private readonly commentsDAO: CommentsDAO,
-    private readonly reportedRepliesDAO: ReportedRepliesDAO
+    private readonly reportedRepliesDAO: ReportedRepliesDAO,
   ) {}
 
   // 답글 작성
@@ -30,7 +36,7 @@ export class RepliesService {
 
     const content = createdReply.content;
     const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
-    
+
     return {
       ...createdReply,
       content: summaryContent,
@@ -96,7 +102,7 @@ export class RepliesService {
     replyId: number,
     sessionUser: IUserWithoutPassword,
     reportDto: ReportDto,
-  ): Promise<IReportedReplyResponse> { 
+  ): Promise<IReportedReplyResponse> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);

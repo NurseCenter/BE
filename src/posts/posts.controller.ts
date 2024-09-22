@@ -30,7 +30,7 @@ export class PostsController {
           { boardType: 'notice', count: 2 },
           { boardType: 'practice', count: 1 },
           { boardType: 'theory', count: 1 },
-          { boardType: 'all', count: 20 }
+          { boardType: 'all', count: 20 },
         ],
       },
     },
@@ -51,18 +51,16 @@ export class PostsController {
           type: 'array',
           items: {
             type: 'object',
-              properties: {
-                boardType: { 
-                  type: 'string',
-                  enum: Object.values(EBoardType),
-                },
+            properties: {
+              boardType: {
+                type: 'string',
+                enum: Object.values(EBoardType),
+              },
               count: { type: 'integer' },
             },
           },
         },
-        example: [
-          { boardType: 'all', count: 230 },
-        ],
+        example: [{ boardType: 'all', count: 230 }],
       },
     },
   })
@@ -143,23 +141,20 @@ export class PostsController {
     description: '게시글 조회 성공',
     schema: {
       example: {
-        "postId": 28,
-        "category": "employment",
-        "title": "병원 이름 들어가는지 테스트",
-        "content": "본문 테스트",
-        "hospitalNames": [
-          "서울대학교병원",
-          "경북대학교병원"
-        ],
-        "likeCounts": 0,
-        "viewCounts": 1,
-        "createdAt": "2024-09-21T11:49:52.389Z",
-        "updatedAt": "2024-09-21T11:56:00.000Z",
-        "isLiked": false,
-        "isScraped": false,
-        "user": {
-          "userId": 35,
-          "nickname": "닉넴뭐하지"
+        postId: 28,
+        category: 'employment',
+        title: '병원 이름 들어가는지 테스트',
+        content: '본문 테스트',
+        hospitalNames: ['서울대학교병원', '경북대학교병원'],
+        likeCounts: 0,
+        viewCounts: 1,
+        createdAt: '2024-09-21T11:49:52.389Z',
+        updatedAt: '2024-09-21T11:56:00.000Z',
+        isLiked: false,
+        isScraped: false,
+        user: {
+          userId: 35,
+          nickname: '닉넴뭐하지',
         },
         images: [
           {
@@ -247,7 +242,7 @@ export class PostsController {
           },
           example: ['image/jpeg'],
         },
-        hospitalName: {  
+        hospitalName: {
           type: 'string',
           example: '서울대학교병원',
         },
@@ -260,17 +255,16 @@ export class PostsController {
         value: {
           title: '새 게시글 제목',
           content: '새 게시글 내용입니다. 텍스트만 있습니다.',
-          hospitalName: '서울대학교병원', 
+          hospitalName: '서울대학교병원',
         },
       },
       '첨부파일 포함': {
         summary: '첨부파일을 포함한 게시글',
         value: {
           title: '새 게시글 제목',
-          content:
-            '새 게시글 내용입니다. 첨부파일을 함께 등록하면 imageTypes에 파일의 타입이 들어갑니다.',
+          content: '새 게시글 내용입니다. 첨부파일을 함께 등록하면 imageTypes에 파일의 타입이 들어갑니다.',
           imageTypes: ['image/jpeg'],
-          hospitalName: '서울대학교병원', 
+          hospitalName: '서울대학교병원',
         },
       },
     },

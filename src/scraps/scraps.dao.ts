@@ -26,34 +26,40 @@ export class ScrapsDAO {
     return await this.scrapsRepository.save(scrap);
   }
 
-  // 특정 회원이 스크랩한 게시물들 조회
-  async findScrapsByUser(
-    userId: number,
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<{ items: any[]; totalItems: number }> {
+  // 본인이 스크랩한 게시물 조회
+  async findMyScraps(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+    const skip = (page - 1) * limit;
     const queryBuilder = this.scrapsRepository
       .createQueryBuilder('scrap')
       .leftJoinAndSelect('scrap.post', 'post')
       .where('scrap.userId = :userId', { userId })
-      .andWhere('scrap.deletedAt IS NULL')
+      .andWhere('post.deletedAt IS NULL')
       .select([
-        'scrap.scrapId', // 스크랩 ID
-        'scrap.userId', // 회원 ID
-        'scrap.createdAt', // 스크랩한 날짜
-        'post.postId', // 게시물 ID
-        'post.boardType', // 게시물 카테고리
-        'post.title', // 게시물 제목
-        'post.createdAt AS createdAt', // 게시물 작성일
+        'post.postId AS postId', // 게시물 ID
+        'post.boardType AS boardType', // 카테고리
+        'post.title AS tilte', // 제목
+        'post.viewCounts AS viewCounts', // 조회수
+        'post.likeCounts AS likeCounts', // 좋아요수
+        'post.createdAt AS createdAt', // 작성일
       ])
-      .orderBy('scrap.createdAt', 'DESC');
+      .skip(skip)
+      .take(limit);
 
-    const [items, totalItems] = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getRawMany();
+    // 정렬 기준
+    if (sort === 'latest') {
+      queryBuilder.orderBy('post.createdAt', 'DESC');
+    } else if (sort === 'popular') {
+      queryBuilder.orderBy('post.likeCounts', 'DESC');
+    }
 
-    return { items, totalItems };
+    const [items, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items,
+      totalItems: total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    };
   }
 
   // 스크랩 ID로 특정 스크랩 조회

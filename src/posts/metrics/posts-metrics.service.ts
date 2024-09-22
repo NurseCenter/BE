@@ -152,7 +152,7 @@ export class PostsMetricsService {
         const viewCountsFromRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
 
         if (viewCountsFromRedis !== null) {
-          const newViewCounts = post.viewCounts + viewCountsFromRedis
+          const newViewCounts = post.viewCounts + viewCountsFromRedis;
           await this.postsMetricsDAO.setViewCounts(postId, newViewCounts);
         }
 

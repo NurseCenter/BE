@@ -340,7 +340,6 @@ export class AdminService {
     //     createdAt: new Date(comment.createdAt), // 작성일
     //   };
     // }
-
     // const reply = await this.repliesDAO.findReplyById(id);
     // if (reply) {
     //   return {
@@ -352,7 +351,6 @@ export class AdminService {
     //     createdAt: new Date(reply.createdAt), // 작성일
     //   };
     // }
-
     // throw new NotFoundException('댓글 또는 답글을 찾을 수 없습니다.');
   }
 

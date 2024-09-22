@@ -26,7 +26,7 @@ export class RepliesDAO {
     const reply = this.repliesRepository.create({
       ...createReplyDto,
       userId,
-      commentId
+      commentId,
     });
     return reply;
   }
@@ -72,6 +72,23 @@ export class RepliesDAO {
       ])
       .where('reply.replyId = :id AND reply.deletedAt IS NULL', { id })
       .getRawOne();
+  }
+
+  // 특정 회원이 쓴 답글 조회
+  async findRepliesByUserIdWithPagination(
+    userId: number,
+    skip: number,
+    take: number,
+  ): Promise<[RepliesEntity[], number]> {
+    const [replies, count] = await this.repliesRepository
+      .createQueryBuilder('reply')
+      .where('reply.userId = :userId', { userId })
+      .andWhere('reply.deletedAt IS NULL')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    return [replies, count];
   }
 
   // 답글 삭제

@@ -24,13 +24,14 @@ export class RepliesController {
     description: '답글 작성 성공',
     schema: {
       example: {
-        "content": "6번 댓글에 대한 답글입니다. 100자 넘어가는지 테스트. 공공필요에 의한 재산권의 수용·사용 또는 제한 및 그에 대한 보상은 법률로써 하되, 정당한 보상을 지급하여야 한다. 선거...",
-        "userId": 35,
-        "commentId": 6,
-        "updatedAt": "2024-09-21T13:53:05.862Z",
-        "replyId": 2,
-        "createdAt": "2024-09-21T13:53:05.862Z",
-        "deletedAt": null
+        content:
+          '6번 댓글에 대한 답글입니다. 100자 넘어가는지 테스트. 공공필요에 의한 재산권의 수용·사용 또는 제한 및 그에 대한 보상은 법률로써 하되, 정당한 보상을 지급하여야 한다. 선거...',
+        userId: 35,
+        commentId: 6,
+        updatedAt: '2024-09-21T13:53:05.862Z',
+        replyId: 2,
+        createdAt: '2024-09-21T13:53:05.862Z',
+        deletedAt: null,
       },
     },
   })
@@ -86,24 +87,25 @@ export class RepliesController {
       example: [
         [
           {
-            "replyId": 1,
-            "content": "6번 댓글에 대한 첫 번째 답글입니다.",
-            "userId": 35,
-            "commentId": 6,
-            "createdAt": "2024-09-21T13:51:39.351Z",
-            "updatedAt": "2024-09-21T13:51:39.351Z",
-            "deletedAt": null
+            replyId: 1,
+            content: '6번 댓글에 대한 첫 번째 답글입니다.',
+            userId: 35,
+            commentId: 6,
+            createdAt: '2024-09-21T13:51:39.351Z',
+            updatedAt: '2024-09-21T13:51:39.351Z',
+            deletedAt: null,
           },
           {
-            "replyId": 3,
-            "content": "6번 댓글에 대한 두 번째 답글이다. 헌법재판소는 법률에 저촉되지 아니하는 범위안에서 심판에 관한 절차, 내부규율과 사무처리에 관한 규칙을 제정할 수 있다.",
-            "userId": 35,
-            "commentId": 6,
-            "createdAt": "2024-09-21T13:58:27.870Z",
-            "updatedAt": "2024-09-21T13:58:27.870Z",
-            "deletedAt": null
-          }
-        ]
+            replyId: 3,
+            content:
+              '6번 댓글에 대한 두 번째 답글이다. 헌법재판소는 법률에 저촉되지 아니하는 범위안에서 심판에 관한 절차, 내부규율과 사무처리에 관한 규칙을 제정할 수 있다.',
+            userId: 35,
+            commentId: 6,
+            createdAt: '2024-09-21T13:58:27.870Z',
+            updatedAt: '2024-09-21T13:58:27.870Z',
+            deletedAt: null,
+          },
+        ],
       ],
     },
   })
@@ -242,42 +244,42 @@ export class RepliesController {
     return result;
   }
 
-   // 특정 답글 신고
-   @UseGuards(RegularMemberGuard)
-   @Post('replies/:replyId/reports')
-   @HttpCode(200)
-   @ApiOperation({ summary: '답글 신고' })
-   @ApiParam({ name: 'replyId', type: 'number', description: '신고할 답글의 ID' })
-   @ApiBody({
-     description: '답글 신고 정보',
-     type: ReportDto,
-   })
-   @ApiResponse({
-     status: 200,
-     description: '답글 신고 성공',
-     schema: {
-       type: 'object',
-       properties: {
-         reportReplyId: { type: 'number', description: '신고 ID' },
-         replyId: { type: 'number', description: '신고된 답글 ID' },
-         userId: { type: 'number', description: '신고한 사용자 ID' },
-         reportedUserId: { type: 'number', description: '신고된 사용자 ID' },
-         reportedReason: { type: 'string', description: '신고 이유' },
-         otherReportedReason: { type: 'string', nullable: true, description: '기타 신고 이유' },
-         createdAt: { type: 'string', format: 'date-time', description: '신고 일자' },
-       },
-       example: {
-         reportReplyId: 1,
-         replyId: 2,
-         userId: 35,
-         reportedUserId: 30,
-         reportedReason: 'spam',
-         otherReportedReason: null,
-         createdAt: '2024-09-21T13:53:05.862Z',
-       },
-     },
-   })
-   @ApiResponse({
+  // 특정 답글 신고
+  @UseGuards(RegularMemberGuard)
+  @Post('replies/:replyId/reports')
+  @HttpCode(200)
+  @ApiOperation({ summary: '답글 신고' })
+  @ApiParam({ name: 'replyId', type: 'number', description: '신고할 답글의 ID' })
+  @ApiBody({
+    description: '답글 신고 정보',
+    type: ReportDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '답글 신고 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        reportReplyId: { type: 'number', description: '신고 ID' },
+        replyId: { type: 'number', description: '신고된 답글 ID' },
+        userId: { type: 'number', description: '신고한 사용자 ID' },
+        reportedUserId: { type: 'number', description: '신고된 사용자 ID' },
+        reportedReason: { type: 'string', description: '신고 이유' },
+        otherReportedReason: { type: 'string', nullable: true, description: '기타 신고 이유' },
+        createdAt: { type: 'string', format: 'date-time', description: '신고 일자' },
+      },
+      example: {
+        reportReplyId: 1,
+        replyId: 2,
+        userId: 35,
+        reportedUserId: 30,
+        reportedReason: 'spam',
+        otherReportedReason: null,
+        createdAt: '2024-09-21T13:53:05.862Z',
+      },
+    },
+  })
+  @ApiResponse({
     status: 401,
     description: '인증 실패',
     schema: {

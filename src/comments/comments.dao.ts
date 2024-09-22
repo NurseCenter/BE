@@ -16,13 +16,23 @@ export class CommentsDAO {
   ) {}
 
   // 댓글 ID로 댓글 조회
-  async findCommentById(commentId: number, options?: FindOneOptions<CommentsEntity>): Promise<CommentsEntity | undefined> {
+  async findCommentById(
+    commentId: number,
+    options?: FindOneOptions<CommentsEntity>,
+  ): Promise<CommentsEntity | undefined> {
     return await this.commentsRepository.findOne({
       where: {
         commentId,
         deletedAt: null,
       },
       ...options,
+    });
+  }
+
+  // 댓글 ID로 댓글 찾기 (삭제된 댓글 포함)
+  async findCommentByIdWithDeletedComment(commentId: number): Promise<CommentsEntity | undefined> {
+    return await this.commentsRepository.findOne({
+      where: { commentId },
     });
   }
 
@@ -95,42 +105,21 @@ export class CommentsDAO {
     return this.commentsRepository.save(comment);
   }
 
-  // 본인이 쓴 댓글 및 답글 조회
-  async findMyComments(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
-    const skip = (page - 1) * limit;
-
-    // 최신순일 경우 댓글의 작성일(createdAt)로 내림차순 정렬,
-    // 인기순일 경우 게시물의 좋아요수(likeCounts)로 내림차순 정렬
-    const commentsQuery = this.commentsRepository
+  // 특정 회원이 쓴 댓글 조회
+  async findCommentsByUserIdWithPagination(
+    userId: number,
+    skip: number,
+    take: number,
+  ): Promise<[CommentsEntity[], number]> {
+    const [comments, count] = await this.commentsRepository
       .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.post', 'post')
       .where('comment.userId = :userId', { userId })
       .andWhere('comment.deletedAt IS NULL')
-      .orderBy(sort === 'latest' ? 'comment.createdAt' : 'post.likeCounts', 'DESC')
       .skip(skip)
-      .take(limit);
+      .take(take)
+      .getManyAndCount();
 
-    const repliesQuery = this.repliesRepository
-      .createQueryBuilder('reply')
-      .leftJoinAndSelect('reply.comments', 'comment')
-      .leftJoinAndSelect('comment.post', 'post')
-      .where('reply.userId = :userId', { userId })
-      .andWhere('reply.deletedAt IS NULL')
-      .orderBy(sort === 'latest' ? 'reply.createdAt' : 'post.scrapCounts', sort === 'latest' ? 'DESC' : 'DESC')
-      .skip(skip)
-      .take(limit);
-
-    const [comments, replies] = await Promise.all([commentsQuery.getMany(), repliesQuery.getMany()]);
-
-    const commentsAndReplies = [...comments, ...replies];
-    const totalItems = commentsAndReplies.length;
-
-    return {
-      items: commentsAndReplies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    };
+    return [comments, count];
   }
 
   // 관리자 모든 댓글 조회

@@ -173,11 +173,28 @@ export class MeController {
     schema: {
       example: [
         {
-          postId: 1,
-          title: 'Example Post',
-          content: 'This is an example post content.',
-          createdAt: '2024-09-01T12:00:00Z',
-        },
+          "items": [
+            {
+              "postId": 25,
+              "boardType": "job",
+              "title": "서울아산병원 신규 간호사 채용 공고",
+              "viewCounts": 100,
+              "likeCounts": 21,
+              "createdAt": "2024-09-20T05:33:35.689Z"
+            },    
+            {
+              "postId": 20,
+              "boardType": "job",
+              "title": "분당 서울대병원 간호사 채용 공고",
+              "viewCounts": 2213,
+              "likeCounts": 18,
+              "createdAt": "2024-09-19T11:54:41.741Z"
+            }
+          ],
+          "totalItems": 2,
+          "totalPages": 1,
+          "currentPage": 1
+        }
       ],
     },
   })
@@ -196,11 +213,11 @@ export class MeController {
     return this.usersService.fetchMyPosts(user, page, limit, sort);
   }
 
-  // 본인 댓글 전체 조회
+  // 본인 댓글 및 답글 전체 조회
   @UseGuards(RegularMemberGuard)
   @Get('comments')
   @HttpCode(200)
-  @ApiOperation({ summary: '본인 댓글 전체 조회' })
+  @ApiOperation({ summary: '본인 댓글 및 답글 전체 조회' })
   @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', example: 1 })
   @ApiQuery({ name: 'limit', type: Number, description: '페이지당 댓글 수', required: false, example: 10 })
   @ApiQuery({
@@ -213,9 +230,34 @@ export class MeController {
   })
   @ApiResponse({
     status: 200,
-    description: '댓글이 성공적으로 조회되었습니다.',
+    description: '댓글 및 답글이 성공적으로 조회되었습니다.',
     schema: {
-      example: [{ commentId: 1, postId: 1, content: '이건 샘플 댓글이다.', createdAt: '2024-09-01T12:00:00Z' }],
+      example: {
+        items: [
+          {
+            type: 'comment',
+            commentId: 1,
+            content: '이건 샘플 댓글이다.',
+            createdAt: '2024-09-01T12:00:00Z',
+            postId: 1,
+            boardType: 'employment',
+            title: '샘플 게시물 제목',
+          },
+          {
+            type: 'reply',
+            replyId: 2,
+            commentId: 1,
+            content: '이건 샘플 답글이다.',
+            createdAt: '2024-09-01T12:01:00Z',
+            postId: 1,
+            boardType: 'employment',
+            title: '샘플 게시물 제목',
+          },
+        ],
+        totalItems: 2,
+        totalPages: 1,
+        currentPage: 1,
+      },
     },
   })
   @ApiResponse({
@@ -228,7 +270,17 @@ export class MeController {
       },
     },
   })
-  async getMyComments(
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: '잘못된 요청입니다.',
+      },
+    },
+  })
+  async getMyCommentsAndReplies(
     @SessionUser() user: IUserWithoutPassword,
     @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto,
   ) {

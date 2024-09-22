@@ -1,4 +1,4 @@
-import { ECommentType } from "../enums";
+import { ECommentType } from '../enums';
 
 export interface ICombinedResult {
   type: ECommentType; // comment 혹은 reply

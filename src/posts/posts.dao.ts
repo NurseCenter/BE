@@ -154,6 +154,7 @@ export class PostsDAO {
       ])
       .where('post.userId = :userId', { userId })
       .andWhere('post.deletedAt IS NULL')
+      .orderBy('post.createdAt', 'DESC') // 작성일 기준 내림차순 정렬 (기본)
       .skip(skip)
       .take(limit);
 
@@ -190,7 +191,7 @@ export class PostsDAO {
         'post.createdAt', // 작성일자
       ])
       .where('post.deletedAt IS NULL') // 삭제된 게시물 제외
-      .orderBy('post.createdAt', 'DESC') // 작성일 기준 내림차순
+      .orderBy('post.createdAt', 'DESC') // 작성일 기준 내림차순 정렬 (기본)
       .skip(skip)
       .take(limit);
 

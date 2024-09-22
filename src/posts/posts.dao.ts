@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, DeleteResult } from 'typeorm';
 import { PostsEntity } from './entities/base-posts.entity';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { ESortType, ESortOrder } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
+import { IPaginatedResponse } from 'src/common/interfaces';
 
 @Injectable()
 export class PostsDAO {
@@ -19,7 +20,7 @@ export class PostsDAO {
   }
 
   // 전체 게시물 조회
-  async findAllPostsWithoutConditions() {
+  async findAllPostsWithoutConditions(): Promise<PostsEntity[]> {
     return this.postsRepository.find();
   }
 
@@ -42,7 +43,7 @@ export class PostsDAO {
   }
 
   // 전체 게시물 조회
-  async findPosts(boardType: string, getPostsQueryDto: GetPostsQueryDto) {
+  async findPosts(boardType: string, getPostsQueryDto: GetPostsQueryDto): Promise<{ posts: PostsEntity[]; total: number }> {
     let { page, limit, search, sortOrder, sortType } = getPostsQueryDto;
 
     page = Math.max(1, page || 1);
@@ -102,7 +103,7 @@ export class PostsDAO {
   }
 
   // 특정 게시글 조회 메소드
-  async findPostById(postId: number) {
+  async findPostById(postId: number): Promise<PostsEntity> {
     return this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
@@ -127,7 +128,7 @@ export class PostsDAO {
   }
 
   // 특정 게시물의 카테고리 일치 여부 확인
-  async findPostByIdAndBoardType(postId: number, boardType: EBoardType) {
+  async findPostByIdAndBoardType(postId: number, boardType: EBoardType): Promise<boolean> {
     const post = await this.postsRepository.findOne({
       where: { postId, boardType },
     });
@@ -140,7 +141,7 @@ export class PostsDAO {
   }
 
   // 본인이 작성한 게시물 조회
-  async findMyPosts(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+  async findMyPosts(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<PostsEntity>> {
     const skip = (page - 1) * limit;
     const queryBuilder = this.postsRepository
       .createQueryBuilder('post')
@@ -219,22 +220,22 @@ export class PostsDAO {
   }
 
   // 특정 게시물 저장
-  async savePost(post: PostsEntity) {
+  async savePost(post: PostsEntity): Promise<PostsEntity> {
     return this.postsRepository.save(post);
   }
 
   // 특정 게시물 삭제
-  async deletePost(postId: number) {
+  async deletePost(postId: number): Promise<DeleteResult> {
     return this.postsRepository.softDelete(postId);
   }
 
   // 게시판 카테고리별 게시물 수 조회
-  async countPostsByCategory(boardType?: EBoardType): Promise<{ boardType: string; count: number }[]> {
+  async countPostsByCategory(boardType?: EBoardType): Promise<{ boardType: EBoardType; count: number }[]> {
     const totalCount = await this.countAllposts();
 
     // boardType이 all인 경우 총 게시물 수만 반환
     if (boardType === 'all') {
-      return [{ boardType: 'all', count: totalCount }];
+      return [{ boardType: EBoardType.All, count: totalCount }];
     }
 
     const query = this.postsRepository
@@ -263,14 +264,14 @@ export class PostsDAO {
     const boardTypes = Object.values(EBoardType);
     const response = boardTypes.map((type) => {
       const found = results.find((result) => result.boardType === type);
-      return { boardType: type, count: found ? found.count : 0 };
+      return { boardType: type as EBoardType, count: found ? found.count : 0 };
     });
 
     return response;
   }
 
   // 전체 게시물 수 구하기
-  private async countAllposts() {
+  private async countAllposts(): Promise<number> {
     return this.postsRepository.count({ where: { deletedAt: null } });
   }
 }

@@ -7,6 +7,9 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiOkR
 import { RegularMemberGuard } from '../auth/guards';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { GetPostsQueryDto, CreatePostDto, UpdatePostDto, ReportDto, BasePostDto } from './dto';
+import { PostsEntity } from './entities/base-posts.entity';
+import { IPostDetailResponse, IPostResponse } from './interfaces';
+import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -35,7 +38,7 @@ export class PostsController {
       },
     },
   })
-  async getAllPostsCountByCategory() {
+  async getAllPostsCountByCategory(): Promise<{ boardType: EBoardType, count: number }[]> {
     return this.postsService.getPostsCountByCategory();
   }
 
@@ -64,7 +67,7 @@ export class PostsController {
       },
     },
   })
-  async getPostsCountByCategory(@Param('boardType') boardType?: EBoardType) {
+  async getPostsCountByCategory(@Param('boardType') boardType?: EBoardType): Promise<{ boardType: EBoardType, count: number }[]> {
     return this.postsService.getPostsCountByCategory(boardType);
   }
 
@@ -120,7 +123,7 @@ export class PostsController {
     @Param('boardType') boardType: EBoardType,
     @Query()
     getPostsQueryDto: GetPostsQueryDto,
-  ): Promise<IPaginatedResponse<any>> {
+  ): Promise<IPaginatedResponse<PostsEntity>> {
     try {
       const result = await this.postsService.getAllPosts(boardType, getPostsQueryDto);
       return result;
@@ -206,7 +209,7 @@ export class PostsController {
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<IPostDetailResponse> {
     try {
       const result = await this.postsService.getOnePost(boardType, postId, sessionUser);
       return result;
@@ -278,7 +281,7 @@ export class PostsController {
         userId: 1,
         title: '새 게시글 제목',
         summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
-        hospitalName: '서울대학교병원',
+        hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
           {
@@ -318,7 +321,7 @@ export class PostsController {
     @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<IPostResponse> {
     try {
       const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
       return result;
@@ -383,13 +386,11 @@ export class PostsController {
     schema: {
       example: {
         postId: 2,
+        userId: 35,
         title: '새 게시글 제목',
         summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
-        user: {
-          userId: 35,
-          nickname: '닉넴뭐하지',
-        },
         presignedPostData: [
           {
             url: 'https://example.com/upload',
@@ -449,7 +450,7 @@ export class PostsController {
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<IPostResponse> {
     try {
       const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
       return result;
@@ -514,7 +515,7 @@ export class PostsController {
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<{ message: string }> {
     try {
       const result = await this.postsService.deletePost(boardType, postId, sessionUser);
       return result;
@@ -640,7 +641,7 @@ export class PostsController {
     @Param() basePostDto: BasePostDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
     @Body() reportDto: ReportDto,
-  ) {
+  ): Promise<IReportedPostResponse> {
     const result = await this.postsService.reportPost(basePostDto, sessionUser, reportDto);
     return result;
   }

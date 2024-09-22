@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { CreateCommentDto } from 'src/comments/dto/create-comment.dto';
 
@@ -22,7 +22,7 @@ export class RepliesDAO {
   }
 
   // 답글 생성
-  async createReply(createReplyDto: CreateCommentDto, userId: number, commentId: number) {
+  async createReply(createReplyDto: CreateCommentDto, userId: number, commentId: number): Promise<RepliesEntity> {
     const reply = this.repliesRepository.create({
       ...createReplyDto,
       userId,
@@ -92,12 +92,12 @@ export class RepliesDAO {
   }
 
   // 답글 삭제
-  async deleteReply(replyId: number) {
+  async deleteReply(replyId: number): Promise<DeleteResult> {
     return this.repliesRepository.softDelete(replyId);
   }
 
   // 답글 저장
-  async saveReply(reply: RepliesEntity) {
+  async saveReply(reply: RepliesEntity): Promise<RepliesEntity> {
     return this.repliesRepository.save(reply);
   }
 }

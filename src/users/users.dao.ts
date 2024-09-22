@@ -74,8 +74,6 @@ export class UsersDAO {
     const startIndex = (page - 1) * limit;
     const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
 
-    // console.log('Paginated Users:', paginatedUsers);
-
     return [paginatedUsers, total];
   }
 

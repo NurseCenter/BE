@@ -24,7 +24,7 @@ export class RepliesService {
   ) {}
 
   // 답글 작성
-  async createReply(commentId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto) {
+  async createReply(commentId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto): Promise<RepliesEntity> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) {
@@ -58,7 +58,7 @@ export class RepliesService {
   }
 
   // 답글 수정
-  async updateReply(replyId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto) {
+  async updateReply(replyId: number, sessionUser: IUserWithoutPassword, createReplyDto: CreateReplyDto): Promise<RepliesEntity> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
@@ -80,7 +80,7 @@ export class RepliesService {
   }
 
   // 답글 삭제
-  async deleteReply(replyId: number, sessionUser: IUserWithoutPassword) {
+  async deleteReply(replyId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);

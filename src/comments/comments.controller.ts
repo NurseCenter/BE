@@ -8,6 +8,9 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import { RegularMemberGuard } from '../auth/guards';
 import { ReportDto } from 'src/posts/dto/report.dto';
 import { PaginationQueryDto } from 'src/common/dto';
+import { CommentsEntity } from './entities/comments.entity';
+import { IPaginatedResponse } from 'src/common/interfaces';
+import { IReportedCommentResponse } from 'src/reports/interfaces/reported-comment-response';
 
 @ApiTags('Comments')
 @Controller()
@@ -62,7 +65,7 @@ export class CommentsController {
     @Param('postId') postId: number,
     @Body() createCommentDto: CreateCommentDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<CommentsEntity> {
     const result = await this.commentsService.createComment(boardType, postId, sessionUser, createCommentDto);
     return result;
   }
@@ -137,7 +140,7 @@ export class CommentsController {
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @Query() paginationQueryDto: PaginationQueryDto,
-  ) {
+  ): Promise<IPaginatedResponse<CommentsEntity>> {
     const result = await this.commentsService.getCommentsInOnePost(boardType, postId, paginationQueryDto);
     return result;
   }
@@ -208,7 +211,7 @@ export class CommentsController {
     @Param('commentId') commentId: number,
     @Body() updateCommentDto: CreateCommentDto,
     @SessionUser() sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<CommentsEntity> {
     return await this.commentsService.updateComment(commentId, updateCommentDto, sessionUser);
   }
 
@@ -257,7 +260,7 @@ export class CommentsController {
       },
     },
   })
-  async deleteComment(@Param('commentId') commentId: number, @SessionUser() sessionUser: IUserWithoutPassword) {
+  async deleteComment(@Param('commentId') commentId: number, @SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     const result = await this.commentsService.deleteComment(commentId, sessionUser);
     return result;
   }
@@ -338,7 +341,7 @@ export class CommentsController {
     @Param('commentId') commentId: number,
     @SessionUser() sessionUser: IUserWithoutPassword,
     @Body() reportDto: ReportDto,
-  ) {
+  ): Promise<IReportedCommentResponse> {
     const result = await this.commentsService.reportComment(commentId, sessionUser, reportDto);
     return result;
   }

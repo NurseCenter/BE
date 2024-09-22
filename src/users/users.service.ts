@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
-import { IUserInfoResponse } from './interfaces/user-info-response.interface';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { AuthPasswordService, AuthSessionService, AuthSignInService } from 'src/auth/services';
 import { UsersDAO } from './users.dao';
@@ -12,6 +11,9 @@ import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { ICombinedResult } from './interfaces/combined-result.interface';
 import { ECommentType } from './enums';
+import { IPaginatedResponse } from 'src/common/interfaces';
+import { IUserInfoResponse } from './interfaces';
+import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +36,7 @@ export class UsersService {
   }
 
   // 나의 닉네임 수정
-  async updateMyNickname(sessionUser: IUserWithoutPassword, updateNicknameDto: UpdateNicknameDto, req: Request) {
+  async updateMyNickname(sessionUser: IUserWithoutPassword, updateNicknameDto: UpdateNicknameDto, req: Request): Promise<{ message: string, newNickname: string }> {
     const { userId } = sessionUser;
     const { newNickname } = updateNicknameDto;
 
@@ -50,11 +52,11 @@ export class UsersService {
 
     // 세션 정보 업데이트
     await this.authSessionService.updateSessionInfo(req, userId, updatedUser);
-    return { message: '닉네임이 수정되었습니다.' };
+    return { message: '닉네임이 수정되었습니다.', newNickname };
   }
 
   // 나의 비밀번호 수정
-  async updateMyPassword(sessionUser: IUserWithoutPassword, updatePasswordDto: UpdatePasswordDto) {
+  async updateMyPassword(sessionUser: IUserWithoutPassword, updatePasswordDto: UpdatePasswordDto): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const { oldPassword, newPassword } = updatePasswordDto;
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
@@ -88,7 +90,7 @@ export class UsersService {
   }
 
   // 나의 게시글 조회
-  async fetchMyPosts(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular') {
+  async fetchMyPosts(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<PostsEntity>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) {
@@ -98,7 +100,7 @@ export class UsersService {
   }
 
   // 나의 댓글 및 답글 조회
-  async fetchMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+  async fetchMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
     // 댓글과 답글 조회
@@ -174,7 +176,7 @@ export class UsersService {
     page: number,
     limit: number,
     sort: 'latest' | 'popular',
-  ) {
+  ): Promise<IPaginatedResponse<any>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) {
@@ -189,7 +191,7 @@ export class UsersService {
       viewCounts: scrap.post.viewCounts, // 조회수
       likeCounts: scrap.post.likeCounts, // 좋아요수
       createdAt: scrap.post.createdAt, // 작성일
-    }));
+    }))
 
     return {
       items: formattedPosts,
@@ -200,7 +202,7 @@ export class UsersService {
   }
 
   // 회원 인증서류 URL에서 실명 추출
-  async extractUserName(userId: number) {
+  async extractUserName(userId: number): Promise<string> {
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 

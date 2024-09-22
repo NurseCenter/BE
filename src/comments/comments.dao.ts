@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
-import { FindOneOptions, Repository } from 'typeorm';
+import { DeleteResult, FindOneOptions, Repository } from 'typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -37,7 +37,7 @@ export class CommentsDAO {
   }
 
   // 댓글 생성
-  async createComment(createCommentDto: CreateCommentDto, userId: number, postId: number, boardType: EBoardType) {
+  async createComment(createCommentDto: CreateCommentDto, userId: number, postId: number, boardType: EBoardType): Promise<CommentsEntity> {
     const comment = this.commentsRepository.create({
       ...createCommentDto,
       userId,
@@ -96,12 +96,12 @@ export class CommentsDAO {
   }
 
   // 댓글 삭제
-  async deleteComment(commentId: number) {
+  async deleteComment(commentId: number): Promise<DeleteResult> {
     return this.commentsRepository.softDelete(commentId);
   }
 
   // 댓글 저장
-  async saveComment(comment: CommentsEntity) {
+  async saveComment(comment: CommentsEntity): Promise<CommentsEntity> {
     return this.commentsRepository.save(comment);
   }
 

@@ -33,7 +33,7 @@ export class CommentsService {
     postId: number,
     sessionUser: IUserWithoutPassword,
     createCommentDto: CreateCommentDto,
-  ) {
+  ): Promise<CommentsEntity> {
     const { userId } = sessionUser;
     const post = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
     if (!post) {
@@ -70,7 +70,7 @@ export class CommentsService {
   }
 
   // 댓글 수정
-  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword) {
+  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword): Promise<CommentsEntity> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
@@ -92,7 +92,7 @@ export class CommentsService {
   }
 
   // 댓글 삭제
-  async deleteComment(commentId: number, sessionUser: IUserWithoutPassword) {
+  async deleteComment(commentId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);

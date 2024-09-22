@@ -141,7 +141,7 @@ export class PostsMetricsService {
 
   // 조회수 스케줄러 설정 (1분 주기로 동기화)
   @Cron(CronExpression.EVERY_MINUTE)
-  async syncViewCountEveryMinute() {
+  async syncViewCountEveryMinute(): Promise<void> {
     const startTime = performance.now();
     this.logger.log('조회수 동기화 진행중');
     try {

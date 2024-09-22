@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
+import { IPaginatedResponse } from 'src/common/interfaces';
+import { IScrapedPostResponse } from './interfaces/scraped-post-response.interface';
 
 @Injectable()
 export class ScrapsDAO {
@@ -9,7 +11,7 @@ export class ScrapsDAO {
   private scrapsRepository: Repository<ScrapsEntity>;
 
   // 특정 사용자가 해당 게시물을 스크랩했는지 확인
-  async checkIfScraped(userId: number, postId: number) {
+  async checkIfScraped(userId: number, postId: number): Promise<boolean> {
     return await this.scrapsRepository.exists({ where: { userId, postId } });
   }
 
@@ -22,12 +24,12 @@ export class ScrapsDAO {
   }
 
   // 생성된 스크랩 엔티티 저장
-  async saveScrap(scrap: ScrapsEntity) {
+  async saveScrap(scrap: ScrapsEntity): Promise<ScrapsEntity> {
     return await this.scrapsRepository.save(scrap);
   }
 
   // 본인이 스크랩한 게시물 조회
-  async findMyScraps(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+  async findMyScraps(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.scrapsRepository.findAndCount({
@@ -54,48 +56,22 @@ export class ScrapsDAO {
       items.sort((a, b) => b.post.createdAt.getTime() - a.post.createdAt.getTime());
     }
 
+    const scrapedPosts: IScrapedPostResponse[] = items.map(item => ({
+      postId: item.post.postId,
+      boardType: item.post.boardType,
+      title: item.post.title,
+      viewCounts: item.post.viewCounts,
+      likeCounts: item.post.likeCounts,
+      createdAt: item.post.createdAt,
+    })) as IScrapedPostResponse[];
+
     return {
-      items,
+      items: scrapedPosts,
       totalItems: total,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
     };
   }
-  // async findMyScraps(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
-  //   const skip = (page - 1) * limit;
-  //   const queryBuilder = this.scrapsRepository
-  //     .createQueryBuilder('scrap')
-  //     .leftJoinAndSelect('scrap.post', 'post')
-  //     .where('scrap.userId = :userId', { userId })
-  //     .andWhere('post.deletedAt IS NULL')
-  //     .select([
-  //       'post.postId AS postId', // 게시물 ID
-  //       'post.boardType AS boardType', // 카테고리
-  //       'post.title AS title', // 제목
-  //       'post.viewCounts AS viewCounts', // 조회수
-  //       'post.likeCounts AS likeCounts', // 좋아요수
-  //       'post.createdAt AS createdAt', // 작성일
-  //     ])
-  //     .orderBy('post.createdAt', 'DESC') // 작성일 기준 내림차순 정렬 (기본)
-  //     .skip(skip)
-  //     .take(limit);
-
-  //   // 정렬 기준
-  //   if (sort === 'latest') {
-  //     queryBuilder.orderBy('post.createdAt', 'DESC');
-  //   } else if (sort === 'popular') {
-  //     queryBuilder.orderBy('post.likeCounts', 'DESC');
-  //   }
-
-  //   const [items, total] = await queryBuilder.getManyAndCount();
-
-  //   return {
-  //     items,
-  //     totalItems: total,
-  //     totalPages: Math.ceil(total / limit),
-  //     currentPage: page,
-  //   };
-  // }
 
   // 스크랩 ID로 특정 스크랩 조회
   async findScrapById(scrapId: number): Promise<ScrapsEntity | null> {

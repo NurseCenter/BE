@@ -23,6 +23,7 @@ import { ReportDto } from './dto/report.dto';
 import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
 import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
 import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
+import { IPostDetailResponse, IPostResponse } from './interfaces';
 
 @Injectable()
 export class PostsService {
@@ -52,7 +53,7 @@ export class PostsService {
   }
 
   // 게시물 생성
-  async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUserWithoutPassword) {
+  async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUserWithoutPassword): Promise<IPostResponse> {
     const { title, content, imageTypes, hospitalNames } = createPostDto;
     const { userId } = sessionUser;
 
@@ -76,7 +77,7 @@ export class PostsService {
   }
 
   // 특정 게시글 조회
-  async getOnePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword) {
+  async getOnePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword): Promise<IPostDetailResponse> {
     const { userId } = sessionUser;
     const post = await this.postsDAO.findPostById(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
@@ -112,7 +113,7 @@ export class PostsService {
     postId: number,
     updatePostDto: UpdatePostDto,
     sessionUser: IUserWithoutPassword,
-  ) {
+  ): Promise<IPostResponse> {
     const { userId } = sessionUser;
     const post = await this.postsDAO.findPostById(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
@@ -144,17 +145,18 @@ export class PostsService {
 
     return {
       postId: updatedPost.postId, // 게시물 ID
+      userId: updatedPost.user.userId, // 작성자 ID
       title: updatedPost.title, // 게시물 제목
       summaryContent, // 내용 (요약본)
+      hospitalNames: updatedPost.hospitalNames, // 병원 이름
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일
-      user: updatedPost.user, // 작성자
-      presignedPostData: imageEntities.map((img) => img.url),
+      presignedPostData: imageEntities.map((img) => img.url), // presignedURL
     };
   }
 
   // 게시글 삭제
-  async deletePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword) {
+  async deletePost(boardType: EBoardType, postId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
     try {
       const { userId } = sessionUser;
       const post = await this.postsDAO.findPostById(postId);
@@ -244,7 +246,7 @@ export class PostsService {
   }
 
   // 게시판 카테고리별 게시물 수 조회
-  async getPostsCountByCategory(boardType?: EBoardType) {
+  async getPostsCountByCategory(boardType?: EBoardType): Promise<{ boardType: EBoardType, count: number }[]> {
     return this.postsDAO.countPostsByCategory(boardType);
   }
 }

@@ -173,28 +173,28 @@ export class MeController {
     schema: {
       example: [
         {
-          "items": [
+          items: [
             {
-              "postId": 25,
-              "boardType": "job",
-              "title": "서울아산병원 신규 간호사 채용 공고",
-              "viewCounts": 100,
-              "likeCounts": 21,
-              "createdAt": "2024-09-20T05:33:35.689Z"
-            },    
+              postId: 25,
+              boardType: 'job',
+              title: '서울아산병원 신규 간호사 채용 공고',
+              viewCounts: 100,
+              likeCounts: 21,
+              createdAt: '2024-09-20T05:33:35.689Z',
+            },
             {
-              "postId": 20,
-              "boardType": "job",
-              "title": "분당 서울대병원 간호사 채용 공고",
-              "viewCounts": 2213,
-              "likeCounts": 18,
-              "createdAt": "2024-09-19T11:54:41.741Z"
-            }
+              postId: 20,
+              boardType: 'job',
+              title: '분당 서울대병원 간호사 채용 공고',
+              viewCounts: 2213,
+              likeCounts: 18,
+              createdAt: '2024-09-19T11:54:41.741Z',
+            },
           ],
-          "totalItems": 2,
-          "totalPages": 1,
-          "currentPage": 1
-        }
+          totalItems: 2,
+          totalPages: 1,
+          currentPage: 1,
+        },
       ],
     },
   })
@@ -286,7 +286,7 @@ export class MeController {
   ) {
     const { userId } = user;
     const { page, limit, sort } = getmyCommentsQueryDto;
-    return this.usersService.findMyCommentsAndReplies(userId, page, limit, sort);
+    return this.usersService.fetchMyCommentsAndReplies(userId, page, limit, sort);
   }
 
   // 내가 스크랩한 게시물 조회
@@ -301,21 +301,27 @@ export class MeController {
       example: {
         items: [
           {
-            scrapId: 1,
-            userId: 1,
-            postId: 1,
-            createdAt: '2024-01-01T00:00:00.000Z',
-            post: {
-              postId: 1,
-              boardType: 'job',
-              title: 'Sample Post',
-              createdAt: '2024-01-01T00:00:00.000Z',
-            },
+            "scrapId": 8,
+            "postId": 27,
+            "boardType": "employment",
+            "title": "제목이다",
+            "viewCounts": 0,
+            "likeCounts": 9,
+            "createdAt": "2024-09-21T10:48:57.378Z"
           },
+          {
+            "scrapId": 12,
+            "postId": 3,
+            "boardType": "notice",
+            "title": "나는 관리자다 이것들아",
+            "viewCounts": 0,
+            "likeCounts": 10,
+            "createdAt": "2024-09-13T10:59:00.450Z"
+          }
         ],
-        totalItems: 1,
-        totalPages: 1,
-        currentPage: 1,
+        "totalItems": 14,
+        "totalPages": 2,
+        "currentPage": 1
       },
     },
   })
@@ -334,7 +340,6 @@ export class MeController {
     @Query() getMyScrapsQueryDto: GetMyScrapsQueryDto,
   ): Promise<IPaginatedResponse<any>> {
     const { page, limit, sort } = getMyScrapsQueryDto;
-    const result = await this.usersService.fetchMyScrapedPosts(sessionUser, page, limit, sort);
-    return result;
+    return await this.usersService.fetchMyScrapedPosts(sessionUser, page, limit, sort);
   }
 }

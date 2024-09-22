@@ -104,17 +104,17 @@ export class UsersEntity {
 
   // 이 사용자가 신고한 게시물들
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportingUser)
-  submittedPostReports: LoginsEntity[];
+  submittedPostReports: ReportPostsEntity[];
 
   // 이 사용자가 신고받은 게시물들
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.reportedUser)
-  receivedPostReports: LoginsEntity[];
+  receivedPostReports: ReportPostsEntity[];
 
   // 이 사용자가 신고한 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportingUser)
-  submittedCommentReports: LoginsEntity[];
+  submittedCommentReports: ReportCommentsEntity[];
 
   // 이 사용자가 신고받은 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
-  receivedCommentReports: LoginsEntity[];
+  receivedCommentReports: ReportCommentsEntity[];
 }

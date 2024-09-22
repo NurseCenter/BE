@@ -98,7 +98,7 @@ export class UsersService {
   }
 
   // 나의 댓글 및 답글 조회
-  async findMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
+  async fetchMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular') {
     const skip = (page - 1) * limit;
 
     // 댓글과 답글 조회
@@ -180,7 +180,23 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
-    return this.scrapsDAO.findMyScraps(userId, page, limit, sort);
+    const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
+    const formattedPosts = scrapedPosts.items.map((scrap) => ({
+      scrapId: scrap.scrapId, // 스크랩 ID
+      postId: scrap.post.postId, // 게시물 ID
+      boardType: scrap.post.boardType, // 게시판 카테고리
+      title: scrap.post.title, // 제목
+      viewCounts: scrap.post.viewCounts, // 조회수
+      likeCounts: scrap.post.likeCounts, // 좋아요수
+      createdAt: scrap.post.createdAt, // 작성일
+    }));
+
+    return {
+      items: formattedPosts,
+      totalItems: scrapedPosts.totalItems,
+      totalPages: scrapedPosts.totalPages,
+      currentPage: scrapedPosts.currentPage,
+    };
   }
 
   // 회원 인증서류 URL에서 실명 추출

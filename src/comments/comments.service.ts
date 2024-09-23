@@ -70,7 +70,11 @@ export class CommentsService {
   }
 
   // 댓글 수정
-  async updateComment(commentId: number, updateCommentDto: CreateCommentDto, sessionUser: IUserWithoutPassword): Promise<CommentsEntity> {
+  async updateComment(
+    commentId: number,
+    updateCommentDto: CreateCommentDto,
+    sessionUser: IUserWithoutPassword,
+  ): Promise<CommentsEntity> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);

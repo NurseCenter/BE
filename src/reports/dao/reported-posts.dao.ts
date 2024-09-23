@@ -45,39 +45,46 @@ export class ReportedPostsDAO {
       where: { postId, userId },
     });
 
-    return count > 0? true: false;
+    return count > 0 ? true : false;
   }
 
-  // 신고된 게시물 전체 조회
+  // 신고된 모든 게시물 조회
   async findAllReportedPosts(page: number, limit: number): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
-    const [posts, total] = await this.reportPostsRepository
-      .createQueryBuilder('reportPost')
-      .leftJoinAndSelect('reportPost.posts', 'post')
-      .leftJoinAndSelect('post.user', 'user')
-      .select([
-        'reportPost.reportPostId AS reportId', // 신고된 게시물 ID (신고 테이블에서의 ID)
-        'post.postId AS postId', // 게시물 ID (게시물 테이블에서의 ID)
-        'post.boardType AS postCategory', // 게시물 카테고리 
-        'post.title AS postTitle', // 게시물 제목
-        'user.nickname AS postAuthor', // 게시물 작성자
-        'reportPost.createdAt AS reportDate', // 신고일자
-        'reportPost.reportingUser AS reporter', // 신고자
-        'reportPost.reportedReason AS reportReason', // 신고 사유
-        'reportPost.status AS status', // 처리 상태
-      ])
-      .where('post.deletedAt IS NULL')
-      .take(limit)
-      .skip(skip)
-      .getRawMany();
+
+    const [items, total] = await this.reportPostsRepository.findAndCount({
+        skip,
+        take: limit,
+        relations: ['posts', 'posts.user'], 
+        where: {
+            posts: {
+                deletedAt: null,
+            },
+        },
+        order: {
+          createdAt: 'DESC' // 기본: 신고일자 기준 내림차순
+        }
+    });
+
+    const formattedItems = items.map(reportPost => ({
+        reportId: reportPost.reportPostId, // 신고된 게시물 ID (신고 테이블에서의 ID)
+        postId: reportPost.posts.postId, // 게시물 ID (게시물 테이블에서의 ID)
+        postCategory: reportPost.posts.boardType, // 게시물 카테고리
+        postTitle: reportPost.posts.title, // 게시물 제목
+        postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
+        reportDate: reportPost.createdAt, // 신고일자
+        reporter: reportPost.reportingUser, // 신고자
+        reportReason: reportPost.reportedReason, // 신고 사유
+        status: reportPost.status, // 처리 상태
+    }));
 
     return {
-      items: posts,
-      totalItems: total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
+        items: formattedItems,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
     };
-  }
+}
 
   // 신고된 특정 게시물 조회
   async findReportedPost(postId: number): Promise<any> {

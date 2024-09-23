@@ -37,7 +37,12 @@ export class CommentsDAO {
   }
 
   // 댓글 생성
-  async createComment(createCommentDto: CreateCommentDto, userId: number, postId: number, boardType: EBoardType): Promise<CommentsEntity> {
+  async createComment(
+    createCommentDto: CreateCommentDto,
+    userId: number,
+    postId: number,
+    boardType: EBoardType,
+  ): Promise<CommentsEntity> {
     const comment = this.commentsRepository.create({
       ...createCommentDto,
       userId,

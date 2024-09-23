@@ -301,27 +301,27 @@ export class MeController {
       example: {
         items: [
           {
-            "scrapId": 8,
-            "postId": 27,
-            "boardType": "employment",
-            "title": "제목이다",
-            "viewCounts": 0,
-            "likeCounts": 9,
-            "createdAt": "2024-09-21T10:48:57.378Z"
+            scrapId: 8,
+            postId: 27,
+            boardType: 'employment',
+            title: '제목이다',
+            viewCounts: 0,
+            likeCounts: 9,
+            createdAt: '2024-09-21T10:48:57.378Z',
           },
           {
-            "scrapId": 12,
-            "postId": 3,
-            "boardType": "notice",
-            "title": "나는 관리자다 이것들아",
-            "viewCounts": 0,
-            "likeCounts": 10,
-            "createdAt": "2024-09-13T10:59:00.450Z"
-          }
+            scrapId: 12,
+            postId: 3,
+            boardType: 'notice',
+            title: '나는 관리자다 이것들아',
+            viewCounts: 0,
+            likeCounts: 10,
+            createdAt: '2024-09-13T10:59:00.450Z',
+          },
         ],
-        "totalItems": 14,
-        "totalPages": 2,
-        "currentPage": 1
+        totalItems: 14,
+        totalPages: 2,
+        currentPage: 1,
       },
     },
   })

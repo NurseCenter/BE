@@ -1,5 +1,4 @@
 export interface ISignUpResponse {
-    userId: number,
-    nickname: string
-  }
-  
+  userId: number;
+  nickname: string;
+}

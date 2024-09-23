@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
@@ -38,11 +44,10 @@ export class AdminService {
     if (!isAdmin) {
       throw new ForbiddenException('관리자 계정이 아닙니다.');
     } else {
-        // 2. 일반 로그인 처리
-        await this.authService.signIn(signInUserDto, req, res);
+      // 2. 일반 로그인 처리
+      await this.authService.signIn(signInUserDto, req, res);
     }
   }
-
 
   // 회원 계정 탈퇴 처리
   async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {

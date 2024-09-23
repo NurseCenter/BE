@@ -38,9 +38,9 @@ export class AuthUserService {
     await this.usersDAO.saveUser(newUser);
 
     // 새로 가입한 회원의 회원 ID 반환
-    return { 
+    return {
       userId: newUser.userId,
-      nickname: newUser.nickname
+      nickname: newUser.nickname,
     };
   }
 

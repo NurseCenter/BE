@@ -43,7 +43,10 @@ export class PostsDAO {
   }
 
   // 전체 게시물 조회
-  async findPosts(boardType: string, getPostsQueryDto: GetPostsQueryDto): Promise<{ posts: PostsEntity[]; total: number }> {
+  async findPosts(
+    boardType: string,
+    getPostsQueryDto: GetPostsQueryDto,
+  ): Promise<{ posts: PostsEntity[]; total: number }> {
     let { page, limit, search, sortOrder, sortType } = getPostsQueryDto;
 
     page = Math.max(1, page || 1);
@@ -141,7 +144,12 @@ export class PostsDAO {
   }
 
   // 본인이 작성한 게시물 조회
-  async findMyPosts(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<PostsEntity>> {
+  async findMyPosts(
+    userId: number,
+    page: number,
+    limit: number,
+    sort: 'latest' | 'popular',
+  ): Promise<IPaginatedResponse<PostsEntity>> {
     const skip = (page - 1) * limit;
     const queryBuilder = this.postsRepository
       .createQueryBuilder('post')

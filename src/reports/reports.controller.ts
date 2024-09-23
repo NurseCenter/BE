@@ -17,7 +17,7 @@ export class ReportsController {
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '신고된 게시물 전체 조회' })
-  @ApiQuery({ name: 'page', type: 'number', required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: 'number', required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: 'number', required: false, description: '페이지 사이즈' })
   @ApiResponse({
     status: 200,
@@ -58,15 +58,15 @@ export class ReportsController {
       example: {
         items: [
           {
-            reportPostId: 39,
-            userId: 39,
-            reportedUserId: 35,
-            postId: 18,
-            reportedReason: 'spam',
-            otherReportedReason: null,
+            reportId: 36,
+            postId: 15,
+            postCategory: 'job',
+            postTitle: '신규 간호사 채용 공고',
+            postAuthor: '닉넴뭐하지',
+            reportDate: '2024-09-20T03:39:09.131Z',
+            reporter: 39,
+            reportReason: 'spam',
             status: 'pending',
-            createdAt: '2024-09-20T03:39:24.128Z',
-            deletedAt: null,
           },
         ],
         totalItems: 1,

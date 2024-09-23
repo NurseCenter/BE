@@ -87,7 +87,7 @@ export class AuthService {
           userId: user.userId,
           email: user.email,
           nickname: user.nickname,
-          isAdmin: user.isAdmin
+          isAdmin: user.isAdmin,
         },
       });
     });

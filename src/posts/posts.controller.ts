@@ -38,7 +38,7 @@ export class PostsController {
       },
     },
   })
-  async getAllPostsCountByCategory(): Promise<{ boardType: EBoardType, count: number }[]> {
+  async getAllPostsCountByCategory(): Promise<{ boardType: EBoardType; count: number }[]> {
     return this.postsService.getPostsCountByCategory();
   }
 
@@ -67,7 +67,9 @@ export class PostsController {
       },
     },
   })
-  async getPostsCountByCategory(@Param('boardType') boardType?: EBoardType): Promise<{ boardType: EBoardType, count: number }[]> {
+  async getPostsCountByCategory(
+    @Param('boardType') boardType?: EBoardType,
+  ): Promise<{ boardType: EBoardType; count: number }[]> {
     return this.postsService.getPostsCountByCategory(boardType);
   }
 

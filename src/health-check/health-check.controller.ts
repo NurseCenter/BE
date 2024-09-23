@@ -31,7 +31,7 @@ export class HealthCheckController {
     },
   })
   @Get()
-  async checkHealth(): Promise<{ status: string; redis: string; mysql: string; }> {
+  async checkHealth(): Promise<{ status: string; redis: string; mysql: string }> {
     const healthStatus = await this.healthService.checkHealth();
     return {
       status: 'Healthy',
@@ -59,7 +59,7 @@ export class HealthCheckController {
     },
   })
   @Get('redis')
-  async checkRedis(): Promise<{ status: string }>  {
+  async checkRedis(): Promise<{ status: string }> {
     const redisStatus = await this.healthService.checkRedis();
     return {
       status: redisStatus ? 'Normally Connected' : 'Connection Error Occured',

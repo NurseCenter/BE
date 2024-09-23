@@ -36,7 +36,11 @@ export class UsersService {
   }
 
   // 나의 닉네임 수정
-  async updateMyNickname(sessionUser: IUserWithoutPassword, updateNicknameDto: UpdateNicknameDto, req: Request): Promise<{ message: string, newNickname: string }> {
+  async updateMyNickname(
+    sessionUser: IUserWithoutPassword,
+    updateNicknameDto: UpdateNicknameDto,
+    req: Request,
+  ): Promise<{ message: string; newNickname: string }> {
     const { userId } = sessionUser;
     const { newNickname } = updateNicknameDto;
 
@@ -56,7 +60,10 @@ export class UsersService {
   }
 
   // 나의 비밀번호 수정
-  async updateMyPassword(sessionUser: IUserWithoutPassword, updatePasswordDto: UpdatePasswordDto): Promise<{ message: string }> {
+  async updateMyPassword(
+    sessionUser: IUserWithoutPassword,
+    updatePasswordDto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const { oldPassword, newPassword } = updatePasswordDto;
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
@@ -90,7 +97,12 @@ export class UsersService {
   }
 
   // 나의 게시글 조회
-  async fetchMyPosts(sessionUser: IUserWithoutPassword, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<PostsEntity>> {
+  async fetchMyPosts(
+    sessionUser: IUserWithoutPassword,
+    page: number,
+    limit: number,
+    sort: 'latest' | 'popular',
+  ): Promise<IPaginatedResponse<PostsEntity>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) {
@@ -100,7 +112,12 @@ export class UsersService {
   }
 
   // 나의 댓글 및 답글 조회
-  async fetchMyCommentsAndReplies(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<any>> {
+  async fetchMyCommentsAndReplies(
+    userId: number,
+    page: number,
+    limit: number,
+    sort: 'latest' | 'popular',
+  ): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
     // 댓글과 답글 조회
@@ -191,7 +208,7 @@ export class UsersService {
       viewCounts: scrap.post.viewCounts, // 조회수
       likeCounts: scrap.post.likeCounts, // 좋아요수
       createdAt: scrap.post.createdAt, // 작성일
-    }))
+    }));
 
     return {
       items: formattedPosts,

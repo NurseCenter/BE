@@ -29,7 +29,12 @@ export class ScrapsDAO {
   }
 
   // 본인이 스크랩한 게시물 조회
-  async findMyScraps(userId: number, page: number, limit: number, sort: 'latest' | 'popular'): Promise<IPaginatedResponse<any>> {
+  async findMyScraps(
+    userId: number,
+    page: number,
+    limit: number,
+    sort: 'latest' | 'popular',
+  ): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.scrapsRepository.findAndCount({
@@ -56,7 +61,7 @@ export class ScrapsDAO {
       items.sort((a, b) => b.post.createdAt.getTime() - a.post.createdAt.getTime());
     }
 
-    const scrapedPosts: IScrapedPostResponse[] = items.map(item => ({
+    const scrapedPosts: IScrapedPostResponse[] = items.map((item) => ({
       postId: item.post.postId,
       boardType: item.post.boardType,
       title: item.post.title,

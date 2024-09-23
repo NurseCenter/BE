@@ -241,7 +241,10 @@ export class RepliesController {
       },
     },
   })
-  async deleteComment(@Param('replyId') replyId: number, @SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+  async deleteComment(
+    @Param('replyId') replyId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ): Promise<{ message: string }> {
     const result = await this.repliesService.deleteReply(replyId, sessionUser);
     return result;
   }

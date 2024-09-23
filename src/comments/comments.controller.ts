@@ -260,7 +260,10 @@ export class CommentsController {
       },
     },
   })
-  async deleteComment(@Param('commentId') commentId: number, @SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+  async deleteComment(
+    @Param('commentId') commentId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ): Promise<{ message: string }> {
     const result = await this.commentsService.deleteComment(commentId, sessionUser);
     return result;
   }

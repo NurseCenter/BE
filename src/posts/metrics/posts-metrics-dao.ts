@@ -38,19 +38,19 @@ export class PostsMetricsDAO {
   }
 
   // Redis에서 좋아요수 가져오기
-  async getLikeCountsFromRedis(postId: number): Promise<number | null>  {
+  async getLikeCountsFromRedis(postId: number): Promise<number | null> {
     const likeCounts = await this.redisClient.get(`post:${postId}:likes`);
     return likeCounts ? parseInt(likeCounts, 10) : null;
   }
 
   // Redis에서 스크랩수 가져오기
-  async getScrapCountsFromRedis(postId: number): Promise<number | null>  {
+  async getScrapCountsFromRedis(postId: number): Promise<number | null> {
     const scrapCounts = await this.redisClient.get(`post:${postId}:scraps`);
     return scrapCounts ? parseInt(scrapCounts, 10) : null;
   }
 
   // Redis에서 조회수 가져오기
-  async getViewCountsFromRedis(postId: number): Promise<number | null>  {
+  async getViewCountsFromRedis(postId: number): Promise<number | null> {
     const viewCounts = await this.redisClient.get(`post:${postId}:views`);
     return viewCounts ? parseInt(viewCounts, 10) : null;
   }

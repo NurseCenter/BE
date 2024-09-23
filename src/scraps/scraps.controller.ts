@@ -33,7 +33,10 @@ export class ScrapController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
   @ApiResponse({ status: 409, description: '이미 스크랩된 게시물' })
-  async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: IUserWithoutPassword): Promise<ScrapsEntity>  {
+  async scrapPost(
+    @Param('postId') postId: number,
+    @SessionUser() sessionUser: IUserWithoutPassword,
+  ): Promise<ScrapsEntity> {
     return await this.scrapsService.scrapPost(postId, sessionUser);
   }
 

@@ -55,7 +55,7 @@ export class AdminController {
           userId: 39,
           email: 'iamnewadmin@example.com',
           nickname: '새로운관리자',
-          isAdmin: true
+          isAdmin: true,
         },
       },
     },
@@ -88,11 +88,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSignIn(
-    @Body() signInUserDto: SignInUserDto,
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<void> {
+  async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response): Promise<void> {
     return await this.adminService.signInByAdmin(signInUserDto, req, res);
   }
 

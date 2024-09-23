@@ -213,8 +213,7 @@ export class PostsService {
       }
     }
 
-    const existingReport = await this.reportedPostsDAO.existsReportedPost(userId, postId);
-
+    const existingReport = await this.reportedPostsDAO.existsReportedPost(postId, userId);
     if (existingReport) {
       throw new ConflictException(`이미 신고한 게시물입니다.`);
     }

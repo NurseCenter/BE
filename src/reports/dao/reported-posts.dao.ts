@@ -44,7 +44,8 @@ export class ReportedPostsDAO {
     const count = await this.reportPostsRepository.count({
       where: { postId, userId },
     });
-    return count > 0;
+
+    return count > 0? true: false;
   }
 
   // 신고된 게시물 전체 조회

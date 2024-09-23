@@ -7,16 +7,66 @@ import { ReportPostsEntity, ReportCommentsEntity } from './entities';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto } from 'src/common/dto';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
+import { GetOneReportedDetailDto } from './dto/get-one-reported-detail.dto';
+import { UpdateReportStatusDto } from './dto/update-report-status-dto';
 
 @ApiTags('Reports')
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
+  // 신고된 특정 게시물 내역 조회
+  @UseGuards(AdminGuard)
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '신고된 특정 게시물 내역 조회' })
+  @ApiQuery({ name: 'reportId', type: 'number', description: '신고 테이블 고유 ID', required: true })
+  @ApiQuery({ name: 'postId', type: 'number', description: '게시물 ID', required: true })
+  @ApiResponse({
+    status: 200,
+    description: '신고된 특정 게시물 내역 조회 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        postAuthor: { type: 'string', description: '게시물 작성자' },
+        postDate: { type: 'string', format: 'date-time', description: '게시물 작성일자' },
+        postCategory: { type: 'string', enum: Object.values(EBoardType), description: '게시물 카테고리' },
+        postId: { type: 'integer', description: '게시물 ID' },
+        postTitle: { type: 'string', description: '게시물 제목' },
+        reporter: { type: 'string', description: '신고자 닉네임' },
+        reportDate: { type: 'string', format: 'date-time', description: '신고일자' },
+        reportId: { type: 'integer', description: '신고 테이블에서의 고유 ID' },
+        reportedReason: { type: 'string', enum: Object.values(EReportReason), description: '신고 사유' },
+        otherReportedReason: { type: 'string', description: '기타 신고 사유 (선택적)' },
+      },
+      example: {
+        postAuthor: 'Author Name',
+        postDate: '2024-09-10T10:00:00.000Z',
+        postCategory: EBoardType.EVENT,
+        postId: 1001,
+        postTitle: '신고해봐라 이것들아',
+        reporter: '정의의용사',
+        reportDate: '2024-09-10T10:00:00.000Z',
+        reportId: 1,
+        reportedReason: EReportReason.PORNOGRAPHY,
+        otherReportedReason: null,
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async getReportedPost(
+    @Query() getOneReportedDetailDto: GetOneReportedDetailDto,
+  ): Promise<IFormattedReportedPostResponse> {
+    const { reportId, postId } = getOneReportedDetailDto;
+    return await this.reportsService.getReportedPost(reportId, postId);
+  }
+
   @UseGuards(AdminGuard)
   @Get('posts')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 게시물 전체 조회' })
+  @ApiOperation({ summary: '신고된 게시물 내역 전체 조회' })
   @ApiQuery({ name: 'page', type: 'number', required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: 'number', required: false, description: '페이지 사이즈' })
   @ApiResponse({
@@ -83,55 +133,11 @@ export class ReportsController {
     return await this.reportsService.getAllReportedPosts(page, limit);
   }
 
-  // 신고된 특정 게시물 조회
+  // 신고된 게시물 처리상태를 변경
   @UseGuards(AdminGuard)
-  @Get('posts/:postId')
+  @Post('posts/update-status')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 특정 게시물 조회' })
-  @ApiParam({ name: 'postId', type: 'string', description: '게시물 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '신고된 게시물 조회 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        postAuthor: { type: 'string', description: '게시물 작성자' },
-        postDate: { type: 'string', format: 'date-time', description: '게시물 작성일자' },
-        postCategory: { type: 'string', enum: Object.values(EBoardType), description: '게시물 카테고리' },
-        postId: { type: 'integer', description: '게시물 ID' },
-        postTitle: { type: 'string', description: '게시물 제목' },
-        reporter: { type: 'string', description: '신고자 닉네임' },
-        reportDate: { type: 'string', format: 'date-time', description: '신고일자' },
-        reportId: { type: 'integer', description: '신고 테이블에서의 고유 ID' },
-        reportedReason: { type: 'string', enum: Object.values(EReportReason), description: '신고 사유' },
-        otherReportedReason: { type: 'string', description: '기타 신고 사유 (선택적)' },
-      },
-      example: {
-        postAuthor: 'Author Name',
-        postDate: '2024-09-10T10:00:00.000Z',
-        postCategory: EBoardType.EVENT,
-        postId: 1001,
-        postTitle: '신고해봐라 이것들아',
-        reporter: '정의의용사',
-        reportDate: '2024-09-10T10:00:00.000Z',
-        reportId: 1,
-        reportedReason: EReportReason.PORNOGRAPHY,
-        otherReportedReason: null, 
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getReportedPost(@Param('postId') postId: number): Promise<IFormattedReportedPostResponse> {
-    return await this.reportsService.getReportedPost(postId);
-  }
-
-  // 신고된 게시물 “처리완료”로 전환
-  @UseGuards(AdminGuard)
-  @Post('posts/:postId/complete')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 게시물 “처리완료”로 전환' })
+  @ApiOperation({ summary: '신고된 게시물 처리상태를 "처리완료" 혹은 "신고반려"로 전환' })
   @ApiParam({ name: 'postId', type: 'string', description: '게시물 ID' })
   @ApiResponse({
     status: 200,
@@ -148,35 +154,9 @@ export class ReportsController {
   })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  async markPostAsCompleted(@Param('postId') postId: number) {
-    await this.reportsService.updatePostStatus(postId, EReportStatus.COMPLETED);
-    return { message: '게시물 상태가 “처리완료”로 업데이트 되었습니다.' };
-  }
-
-  // 신고된 게시물 “신고반려”로 전환
-  @UseGuards(AdminGuard)
-  @Post('posts/:postId/reject')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 게시물 “신고반려”로 전환' })
-  @ApiParam({ name: 'postId', type: 'string', description: '게시물 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '게시물 상태를 “신고반려”로 전환 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-      },
-      example: {
-        message: '게시물 상태가 “신고반려”로 업데이트 되었습니다.',
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  async rejectPost(@Param('postId') postId: number) {
-    await this.reportsService.updatePostStatus(postId, EReportStatus.REJECTED);
-    return { message: '게시물 상태가 “신고반려”로 업데이트 되었습니다.' };
+  async updateProcessStatus(updateReportStatusDto: UpdateReportStatusDto) {
+    const { reportId, postId, status } = updateReportStatusDto;
+    return await this.reportsService.updatePostStatus(reportId, postId, status);
   }
 
   // 신고된 댓글 전체 조회

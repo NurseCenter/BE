@@ -1,22 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
-import { EReportReason, EReportStatus } from '../enum';
+import { BaseReportedDto } from './base-reported-dto';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class ReportedPostDto {
+export class ReportedPostDto extends BaseReportedDto {
   @IsNotEmpty()
+  @ApiProperty({ description: '게시물 ID', example: 1001 })
   postId: number;
-
-  @IsNotEmpty()
-  userId: number;
-
-  @IsNotEmpty()
-  reportedUserId: number;
-
-  @IsNotEmpty()
-  reportedReason: EReportReason;
-
-  @IsNotEmpty()
-  otherReportedReason: string | null;
-
-  @IsNotEmpty()
-  status: EReportStatus;
 }

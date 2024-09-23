@@ -1,22 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
-import { EReportReason, EReportStatus } from '../enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { BaseReportedDto } from './base-reported-dto';
 
-export class ReportedCommentDto {
+export class ReportedCommentDto extends BaseReportedDto {
   @IsNotEmpty()
+  @ApiProperty({ description: '댓글 ID', example: 1 })
   commentId: number;
-
-  @IsNotEmpty()
-  userId: number;
-
-  @IsNotEmpty()
-  reportedUserId: number;
-
-  @IsNotEmpty()
-  reportedReason: EReportReason;
-
-  @IsNotEmpty()
-  otherReportedReason: string | null;
-
-  @IsNotEmpty()
-  status: EReportStatus;
 }

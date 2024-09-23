@@ -11,7 +11,7 @@ export class ReportedPostsDAO {
   constructor(
     @InjectRepository(ReportPostsEntity)
     private readonly reportPostsRepository: Repository<ReportPostsEntity>,
-    private readonly usersDAO: UsersDAO
+    private readonly usersDAO: UsersDAO,
   ) {}
 
   // 게시물 신고 엔티티 생성
@@ -20,22 +20,35 @@ export class ReportedPostsDAO {
     return reportedPost;
   }
 
-  // 신고된 게시물 테이블 고유 ID로 신고된 특정 게시물 조회
+  // 신고된 게시물 테이블 고유 ID로 신고된 특정 게시물 내역 조회
   async findReportedPostByReportId(reportPostId: number) {
     return this.reportPostsRepository.findOne({
       where: { reportPostId },
     });
   }
 
-  // 게시물 ID로 신고된 특정 게시물 조회
-  async findReportedPostByPostId(postId: number): Promise<IFormattedReportedPostResponse> {
+  // 게시물 ID로 신고된 원 게시물 조회
+  async findReportedPostByPostId(reportPostId: number) {
+    return this.reportPostsRepository.findOne({
+      where: { reportPostId },
+    });
+  }
+
+  // 신고 테이블 ID와 게시물 ID로 특정 게시물 신고 내역 조회
+  async findReportedPostByReportIdAndPostId(reportId: number, postId: number) {
+    return await this.reportPostsRepository.findOne({ where: { reportPostId: reportId, postId } });
+  }
+
+  // 신고 테이블 ID와 게시물 ID로 신고된 특정 게시물 내역 조회 (formatted 된 상태)
+  async findFormattedReportedPostByReportIdAndPostId(
+    reportId: number,
+    postId: number,
+  ): Promise<IFormattedReportedPostResponse> {
     const reportedPost = await this.reportPostsRepository.findOne({
-      where: { 
+      where: {
+        reportPostId: reportId,
         postId,
-        posts: {
-          deletedAt: null
-        }
-       },
+      },
       relations: ['posts', 'posts.user'],
     });
 
@@ -52,9 +65,9 @@ export class ReportedPostsDAO {
       reportDate: reportedPost.createdAt, // 신고날짜
       reportId: reportedPost.reportPostId, // 신고 테이블에서의 고유 ID
       reportedReason: reportedPost.reportedReason, // 신고 사우
-      otherReportedReason: reportedPost.otherReportedReason // 기타 신고 사유
-    }
-    
+      otherReportedReason: reportedPost.otherReportedReason, // 기타 신고 사유
+    };
+
     return formattedPost;
   }
 
@@ -79,58 +92,37 @@ export class ReportedPostsDAO {
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.reportPostsRepository.findAndCount({
-        skip,
-        take: limit,
-        relations: ['posts', 'posts.user'], 
-        where: {
-            posts: {
-                deletedAt: null,
-            },
+      skip,
+      take: limit,
+      relations: ['posts', 'posts.user'],
+      where: {
+        posts: {
+          deletedAt: null,
         },
-        order: {
-          createdAt: 'DESC' // 기본: 신고일자 기준 내림차순
-        }
+      },
+      order: {
+        createdAt: 'DESC', // 기본: 신고일자 기준 내림차순
+      },
     });
 
-    const formattedItems = items.map(reportPost => ({
-        reportId: reportPost.reportPostId, // 신고된 게시물 ID (신고 테이블에서의 ID)
-        postId: reportPost.posts.postId, // 게시물 ID (게시물 테이블에서의 ID)
-        postCategory: reportPost.posts.boardType, // 게시물 카테고리
-        postTitle: reportPost.posts.title, // 게시물 제목
-        postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
-        reportDate: reportPost.createdAt, // 신고일자
-        reporter: reportPost.reportingUser, // 신고자
-        reportReason: reportPost.reportedReason, // 신고 사유
-        status: reportPost.status, // 처리 상태
+    const formattedItems = items.map((reportPost) => ({
+      reportId: reportPost.reportPostId, // 신고된 게시물 ID (신고 테이블에서의 ID)
+      postId: reportPost.posts.postId, // 게시물 ID (게시물 테이블에서의 ID)
+      postCategory: reportPost.posts.boardType, // 게시물 카테고리
+      postTitle: reportPost.posts.title, // 게시물 제목
+      postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
+      reportDate: reportPost.createdAt, // 신고일자
+      reporter: reportPost.reportingUser, // 신고자
+      reportReason: reportPost.reportedReason, // 신고 사유
+      status: reportPost.status, // 처리 상태
     }));
 
     return {
-        items: formattedItems,
-        totalItems: total,
-        totalPages: Math.ceil(total / limit),
-        currentPage: page,
+      items: formattedItems,
+      totalItems: total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
     };
-}
-
-  // 신고된 특정 게시물 조회
-  async findReportedPost(postId: number): Promise<any> {
-    return await this.reportPostsRepository
-      .createQueryBuilder('reportPost')
-      .leftJoinAndSelect('reportPost.posts', 'post')
-      .leftJoinAndSelect('post.user', 'user')
-      .where('post.postId = :postId', { postId })
-      .select([
-        'user.nickname AS postAuthor', // 게시물 작성자
-        'post.createdAt AS postDate', // 게시물 작성일자
-        'post.boardType AS postCategory', // 게시물 카테고리
-        'post.postId As postId', // 게시물 ID (게시물 테이블에서의 ID)
-        'post.title AS postTitle', // 게시물 제목
-        'reportPost.reportingUser AS reporter', // 신고자
-        'reportPost.createdAt AS reportDate', // 신고날짜
-        'reportPost.reportPostId AS reportId', // 신고된 게시물 ID (신고 테이블에서의 ID) (렌더링 X)
-        'reportPost.reportedReason AS reportReason', // 신고 사유
-      ])
-      .getRawOne();
   }
 
   // 신고된 특정 게시물 삭제
@@ -138,9 +130,9 @@ export class ReportedPostsDAO {
     return await this.reportPostsRepository.softDelete({ postId });
   }
 
-  // 신고된 게시물 상태 업데이트
-  async updateReportedPostStatus(reportId: number, status: EReportStatus): Promise<void> {
-    await this.reportPostsRepository.update(reportId, { status });
+  // 신고된 게시물 내역 처리상태 업데이트
+  async updateReportedPostStatus(reportId: number, postId: number, status: EReportStatus): Promise<void> {
+    await this.reportPostsRepository.update({ reportPostId: reportId, postId }, { status });
   }
 
   // 신고된 게시물 저장

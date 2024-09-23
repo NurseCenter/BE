@@ -4,7 +4,7 @@ import { dateToISOString } from 'src/common/utils/data.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
-import { IUserWithoutPassword, IMembershipStatusResponse } from '../interfaces';
+import { IUserWithoutPassword, IMembershipStatusResponse, ISignUpResponse } from '../interfaces';
 
 @Injectable()
 export class AuthUserService {
@@ -14,7 +14,7 @@ export class AuthUserService {
   ) {}
 
   // 회원 생성
-  async addNewUser(createUserDto: CreateUserDto): Promise<number> {
+  async addNewUser(createUserDto: CreateUserDto): Promise<ISignUpResponse> {
     const { email, password, nickname } = createUserDto;
 
     const existingUser = await this.usersDAO.findUserByEmail(email);
@@ -38,7 +38,10 @@ export class AuthUserService {
     await this.usersDAO.saveUser(newUser);
 
     // 새로 가입한 회원의 회원 ID 반환
-    return newUser.userId;
+    return { 
+      userId: newUser.userId,
+      nickname: newUser.nickname
+    };
   }
 
   // 입력받은 회원정보가 유효한지 확인

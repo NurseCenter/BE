@@ -20,42 +20,79 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // 회원가입
-  @Post('sign-up')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: '회원가입' })
-  @ApiBody({
-    type: CreateUserDto,
-    description: '회원가입에 필요한 정보',
-    examples: {
-      'example-1': {
-        summary: '회원가입 예시 1',
-        value: {
-          nickname: 'gildongGo',
-          email: 'gildongtest1@example.com',
-          phoneNumber: '01012341234',
-          password: 'Password1!',
-          status: 'current_student',
-          certificationDocumentUrl: 'https://my-bucket.s3.us-west-2.amazonaws.com/certification.pdf',
-        },
-      },
-      'example-2': {
-        summary: '회원가입 예시 2',
-        value: {
-          nickname: 'dooly123',
-          email: 'gildongtest1@example.com',
-          phoneNumber: '01012341234',
-          password: 'Password1!',
-          status: 'graduated_student',
-          certificationDocumentUrl: 'https://my-bucket.s3.us-west-2.amazonaws.com/certification.pdf',
-        },
+@Post('sign-up')
+@HttpCode(HttpStatus.CREATED)
+@ApiOperation({ summary: '회원가입' })
+@ApiBody({
+  type: CreateUserDto,
+  description: '회원가입에 필요한 정보',
+  examples: {
+    'example-1': {
+      summary: '회원가입 예시 1 (재학생)',
+      value: {
+        nickname: 'gildongGo',
+        email: 'gildongtest1@example.com',
+        phoneNumber: '01012341234',
+        password: 'Password1!',
+        status: 'current_student',
+        certificationDocumentUrl: 'https://my-bucket.s3.us-west-2.amazonaws.com/certification.pdf',
       },
     },
-  })
-  @ApiResponse({ status: 201, description: '회원가입이 성공적으로 완료되었습니다.' })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
+    'example-2': {
+      summary: '회원가입 예시 2 (졸업생)',
+      value: {
+        nickname: 'dooly123',
+        email: 'gildongtest1@example.com',
+        phoneNumber: '01012341234',
+        password: 'Password1!',
+        status: 'graduated_student',
+        certificationDocumentUrl: 'https://my-bucket.s3.us-west-2.amazonaws.com/certification.pdf',
+      },
+    },
+  },
+})
+@ApiResponse({
+  status: 201,
+  description: '회원가입이 성공적으로 완료되었습니다.',
+  schema: {
+    example: {
+      message: '회원가입이 성공적으로 완료되었습니다.',
+      userId: 41,
+      nickname: '간호꿈동이',
+    },
+  },
+})
+@ApiResponse({
+  status: 400,
+  description: '잘못된 요청',
+  schema: {
+    example: { message: '잘못된 요청입니다.' },
+  },
+})
+@ApiResponse({
+  status: 409,
+  description: '이미 가입된 회원입니다.',
+  schema: {
+    example: { message: '이미 가입된 회원입니다.' },
+  },
+})
+@ApiResponse({
+  status: 409,
+  description: '이미 존재하는 닉네임입니다.',
+  schema: {
+    example: { message: '이미 존재하는 닉네임입니다.' },
+  },
+})
+@ApiResponse({
+  status: 409,
+  description: '이미 탈퇴한 회원입니다.',
+  schema: {
+    example: { message: '이미 탈퇴한 회원입니다.' },
+  },
+})
   async postSignUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string; userId: number }> {
-    const userId = await this.authService.signUp(createUserDto);
-    return { message: '회원가입이 성공적으로 완료되었습니다.', userId };
+    const userInfo = await this.authService.signUp(createUserDto);
+    return { message: '회원가입이 성공적으로 완료되었습니다.', ...userInfo };
   }
 
   // 회원탈퇴

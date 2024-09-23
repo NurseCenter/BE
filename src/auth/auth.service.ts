@@ -10,6 +10,7 @@ import { maskEmail } from 'src/common/utils/email.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { promisify } from 'util';
 import clearCookieOptions from './cookie-options/clear-cookie-options';
+import { ISignUpResponse } from './interfaces';
 
 @Injectable()
 export class AuthService {
@@ -25,9 +26,9 @@ export class AuthService {
   ) {}
 
   // 회원가입
-  async signUp(createUserDto: CreateUserDto): Promise<number> {
-    const userId = await this.authUserService.addNewUser(createUserDto);
-    return userId;
+  async signUp(createUserDto: CreateUserDto): Promise<ISignUpResponse> {
+    const userInfo = await this.authUserService.addNewUser(createUserDto);
+    return userInfo;
   }
 
   // 회원탈퇴

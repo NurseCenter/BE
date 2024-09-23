@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { LoginsEntity } from '../entities/logins.entity';
 import { Request } from 'express';
@@ -34,9 +34,9 @@ export class AuthSignInService {
   }
 
   // 관리자 계정 여부 확인
-  async checkIfAdmin(email: string): Promise<void> {
+  async checkIfAdmin(email: string): Promise<boolean> {
     const user = await this.usersDAO.findUserByEmail(email);
-    if (!user.isAdmin) throw new ForbiddenException('관리자 계정이 아닙니다.');
+    return user ? !!user.isAdmin : false;
   }
 
   // 임시 비밀번호로 로그인 여부

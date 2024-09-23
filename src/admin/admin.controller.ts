@@ -39,7 +39,7 @@ export class AdminController {
     examples: {
       'application/json': {
         value: {
-          email: 'gildongtest1@example.com',
+          email: 'happyday@example.com',
           password: 'Password1!',
         },
       },
@@ -47,9 +47,37 @@ export class AdminController {
   })
   @ApiResponse({
     status: 200,
-    description: '관리자 계정으로 로그인에 성공하였습니다.',
+    description: '로그인에 성공하였습니다.',
     schema: {
-      example: { message: '관리자 계정으로 로그인이 완료되었습니다.' },
+      example: {
+        message: '로그인이 완료되었습니다.',
+        user: {
+          userId: 39,
+          email: 'iamnewadmin@example.com',
+          nickname: '새로운관리자',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '관리자 계정이 아닙니다.',
+    schema: {
+      example: { message: '관리자 계정이 아닙니다.' },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: '해당 회원이 존재하지 않습니다.',
+    schema: {
+      example: { message: '해당 회원이 존재하지 않습니다.' },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: '비밀번호가 일치하지 않습니다.',
+    schema: {
+      example: { message: '비밀번호가 일치하지 않습니다.' },
     },
   })
   @ApiResponse({
@@ -63,9 +91,8 @@ export class AdminController {
     @Body() signInUserDto: SignInUserDto,
     @Req() req: Request,
     @Res() res: Response,
-  ): Promise<{ message: string }> {
-    await this.adminService.signInByAdmin(signInUserDto, req, res);
-    return { message: '관리자 계정으로 로그인이 완료되었습니다.' };
+  ): Promise<void> {
+    return await this.adminService.signInByAdmin(signInUserDto, req, res);
   }
 
   // 관리자 회원 탈퇴 처리

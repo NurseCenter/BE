@@ -57,6 +57,7 @@ export class ReportedPostsDAO {
       .select([
         'reportPost.reportPostId AS reportId', // 신고된 게시물 ID (신고 테이블에서의 ID)
         'post.postId AS postId', // 게시물 ID (게시물 테이블에서의 ID)
+        'post.boardType AS postCategory', // 게시물 카테고리 
         'post.title AS postTitle', // 게시물 제목
         'user.nickname AS postAuthor', // 게시물 작성자
         'reportPost.createdAt AS reportDate', // 신고일자

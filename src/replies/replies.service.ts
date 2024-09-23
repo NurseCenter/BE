@@ -13,7 +13,7 @@ import { RepliesEntity } from './entities/replies.entity';
 import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { ReportDto } from 'src/posts/dto';
 import { ReportedRepliesDAO } from 'src/reports/dao';
-import { IReportedReplyResponse } from 'src/reports/interfaces/reported-reply-response';
+import { IReportedReplyResponse } from 'src/reports/interfaces/users';
 
 @Injectable()
 export class RepliesService {

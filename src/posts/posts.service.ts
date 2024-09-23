@@ -21,9 +21,9 @@ import { FileUploader } from '../images/file-uploader';
 import { ReportedPostsDAO } from 'src/reports/dao';
 import { ReportDto } from './dto/report.dto';
 import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
-import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
 import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
+import { IReportedPostResponse } from 'src/reports/interfaces/users';
 
 @Injectable()
 export class PostsService {
@@ -87,7 +87,7 @@ export class PostsService {
     sessionUser: IUserWithoutPassword,
   ): Promise<IPostDetailResponse> {
     const { userId } = sessionUser;
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
     if (!post || !existsInBoardType) {
@@ -123,7 +123,7 @@ export class PostsService {
     sessionUser: IUserWithoutPassword,
   ): Promise<IPostResponse> {
     const { userId } = sessionUser;
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
     if (!post || !existsInBoardType)
@@ -171,7 +171,7 @@ export class PostsService {
   ): Promise<{ message: string }> {
     try {
       const { userId } = sessionUser;
-      const post = await this.postsDAO.findPostById(postId);
+      const post = await this.postsDAO.findOnePostByPostId(postId);
       const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
       if (!post || !existsInBoardType)
@@ -205,7 +205,7 @@ export class PostsService {
     const { userId } = sessionUser;
     const { boardType, postId } = basePostDto;
 
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
     if (!post || !existsInBoardType)

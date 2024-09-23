@@ -9,7 +9,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { GetPostsQueryDto, CreatePostDto, UpdatePostDto, ReportDto, BasePostDto } from './dto';
 import { PostsEntity } from './entities/base-posts.entity';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
-import { IReportedPostResponse } from 'src/reports/interfaces/reported-post-response';
+import { IReportedPostResponse } from 'src/reports/interfaces/users';
 
 @ApiTags('Posts')
 @Controller('posts')

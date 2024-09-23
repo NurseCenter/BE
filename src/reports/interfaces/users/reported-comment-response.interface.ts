@@ -1,4 +1,4 @@
-import { EReportReason } from '../enum';
+import { EReportReason } from '../../enum';
 
 export interface IReportedCommentResponse {
   reportCommentId: number; // 신고 ID

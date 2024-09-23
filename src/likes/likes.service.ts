@@ -18,7 +18,7 @@ export class LikesService {
 
   async toggleLike(postId: number, sessionUser: IUserWithoutPassword): Promise<ILikeActionResponse> {
     const { userId } = sessionUser;
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
 
     const queryRunner = this.dataSource.createQueryRunner();

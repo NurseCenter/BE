@@ -1,4 +1,4 @@
-import { IReportedCommentResponse } from './reported-comment-response';
+import { IReportedCommentResponse } from './reported-comment-response.interface';
 
 export interface IReportedReplyResponse extends Omit<IReportedCommentResponse, 'reportCommentId' | 'commentId'> {
   reportReplyId: number; // 신고 ID

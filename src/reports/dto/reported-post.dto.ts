@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
-import { BaseReportedDto } from './base-reported-dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseReportedDto } from './base-reported-dto';
 
 export class ReportedPostDto extends BaseReportedDto {
   @IsNotEmpty()

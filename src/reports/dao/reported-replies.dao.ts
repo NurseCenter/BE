@@ -12,6 +12,17 @@ export class ReportedRepliesDAO {
     private readonly reportRepliesRepository: Repository<ReportRepliesEntity>,
   ) {}
 
+  // 신고된 답글 테이블의 모든 답글 내역 조회
+  async findReportedRepliesWithPagination(skip: number, take: number): Promise<[ReportRepliesEntity[], number]> {
+    const [replies, count] = await this.reportRepliesRepository
+      .createQueryBuilder('reply')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    return [replies, count];
+  }
+
   // 답글 신고 엔티티 생성
   async createReplyReport(data: Partial<ReportRepliesEntity>) {
     const reportedReply = this.reportRepliesRepository.create(data);
@@ -25,10 +36,10 @@ export class ReportedRepliesDAO {
     });
   }
 
-  // 답글 ID로 신고된 특정 답글 조회
-  async findReportedReplyByReplyId(replyId: number) {
+  // 신고된 답글 테이블 고유 ID와 답글 ID로 신고된 특정 답글 내역 조회
+  async findReportedReplyByReportIdAndReplyId(reportId: number, replyId: number) {
     return this.reportRepliesRepository.findOne({
-      where: { replyId },
+      where: { reportReplyId: reportId, replyId },
     });
   }
 
@@ -111,7 +122,7 @@ export class ReportedRepliesDAO {
 
   // 신고된 답글 상태 업데이트
   async updateReportedReplyStatus(reportId: number, status: EReportStatus): Promise<void> {
-    await this.reportRepliesRepository.update(reportId, { status });
+    await this.reportRepliesRepository.update({ reportReplyId: reportId }, { status });
   }
 
   // 신고된 답글 저장

@@ -5,6 +5,7 @@ import { ReportPostsEntity } from '../entities/report-posts.entity';
 import { EReportStatus } from '../enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { UsersDAO } from 'src/users/users.dao';
+import { IFormattedReportedPostResponse } from '../interfaces/admin';
 
 @Injectable()
 export class ReportedPostsDAO {
@@ -21,21 +22,21 @@ export class ReportedPostsDAO {
   }
 
   // 신고된 게시물 테이블 고유 ID로 신고된 특정 게시물 내역 조회
-  async findReportedPostByReportId(reportPostId: number) {
+  async findReportedPostByReportId(reportPostId: number): Promise<ReportPostsEntity | null> {
     return this.reportPostsRepository.findOne({
       where: { reportPostId },
     });
   }
 
   // 게시물 ID로 신고된 원 게시물 조회
-  async findReportedPostByPostId(reportPostId: number) {
+  async findReportedPostByPostId(reportPostId: number): Promise<ReportPostsEntity | null> {
     return this.reportPostsRepository.findOne({
       where: { reportPostId },
     });
   }
 
   // 신고 테이블 ID와 게시물 ID로 특정 게시물 신고 내역 조회
-  async findReportedPostByReportIdAndPostId(reportId: number, postId: number) {
+  async findReportedPostByReportIdAndPostId(reportId: number, postId: number): Promise<ReportPostsEntity | null> {
     return await this.reportPostsRepository.findOne({ where: { reportPostId: reportId, postId } });
   }
 
@@ -72,7 +73,7 @@ export class ReportedPostsDAO {
   }
 
   // 게시물 ID와 회원 ID로 신고된 특정 게시물 조회
-  async findReportedPostByPostIdAndUserId(postId: number, userId: number) {
+  async findReportedPostByPostIdAndUserId(postId: number, userId: number): Promise<ReportPostsEntity | null> {
     return this.reportPostsRepository.findOne({
       where: { postId, userId },
     });
@@ -114,6 +115,7 @@ export class ReportedPostsDAO {
       reportDate: reportPost.createdAt, // 신고일자
       reporter: reportPost.reportingUser, // 신고자
       reportReason: reportPost.reportedReason, // 신고 사유
+      otherReportedReason: reportPost.otherReportedReason, // 기타 신고 사유
       status: reportPost.status, // 처리 상태
     }));
 

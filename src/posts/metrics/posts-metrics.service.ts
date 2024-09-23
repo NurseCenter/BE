@@ -22,7 +22,7 @@ export class PostsMetricsService {
 
   // 좋아요 수 증가 (MySQL)
   async incrementLikeCountInMySQL(postId: number): Promise<string> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     post.likeCounts += 1;
     this.postsRepository.save(post);
     return `${postId}번 게시물의 좋아요수: ${post.likeCounts}`;
@@ -30,7 +30,7 @@ export class PostsMetricsService {
 
   // 좋아요 수 감소 (MySQL)
   async decrementLikeCountInMySQL(postId: number): Promise<string> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     post.likeCounts -= 1;
     this.postsDAO.savePost(post);
     return `${postId}번 게시물의 좋아요수: ${post.likeCounts}`;
@@ -54,7 +54,7 @@ export class PostsMetricsService {
 
   // 스크랩 수 증가 (MySQL)
   async incrementScrapCountInMySQL(postId: number): Promise<string> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     post.scrapCounts += 1;
     this.postsDAO.savePost(post);
     return `${postId}번 게시물의 스크랩수: ${post.scrapCounts}`;
@@ -62,7 +62,7 @@ export class PostsMetricsService {
 
   // 스크랩 수 감소 (MySQL)
   async decrementScrapCountInMySQL(postId: number): Promise<string> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     post.scrapCounts -= 1;
     this.postsDAO.savePost(post);
     return `${postId}번 게시물의 좋아요수: ${post.scrapCounts}`;
@@ -96,7 +96,7 @@ export class PostsMetricsService {
 
   // 좋아요수 동기화
   private async syncLikeCountsInMySQL(postId: number): Promise<void> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
@@ -111,7 +111,7 @@ export class PostsMetricsService {
 
   // 스크랩수 동기화
   private async syncScrapCountToMySQL(postId: number): Promise<void> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
@@ -126,7 +126,7 @@ export class PostsMetricsService {
 
   // 조회수 동기화
   private async syncViewCountToMySQL(postId: number): Promise<void> {
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
     }
@@ -148,7 +148,7 @@ export class PostsMetricsService {
       const keys = await this.postsMetricsDAO.getAllViewCountKeys();
       for (const key of keys) {
         const postId = parseInt(key.split(':')[1], 10);
-        const post = await this.postsDAO.findPostById(postId);
+        const post = await this.postsDAO.findOnePostByPostId(postId);
         const viewCountsFromRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
 
         if (viewCountsFromRedis !== null) {

@@ -7,7 +7,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/s
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { ReportDto } from 'src/posts/dto';
 import { RepliesEntity } from './entities/replies.entity';
-import { IReportedReplyResponse } from 'src/reports/interfaces/reported-reply-response';
+import { IReportedReplyResponse } from 'src/reports/interfaces/users';
 
 @ApiTags('Replies')
 @Controller()

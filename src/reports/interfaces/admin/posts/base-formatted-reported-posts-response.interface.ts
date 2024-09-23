@@ -1,4 +1,4 @@
-interface IFormattedReportedPostResponse {
+export interface IBaseFormattedReportedPostResponse {
   postAuthor: string; // 작성자
   postDate: Date; // 작성일자 (원 게시물)
   postCategory: string; // 카테고리
@@ -8,5 +8,5 @@ interface IFormattedReportedPostResponse {
   reportDate: Date; // 신고날짜
   reportId: number; // 신고 테이블에서의 고유 ID
   reportedReason: string; // 신고 사유
-  otherReportedReason?: string; // 기타 신고 사유 (선택적)
+  otherReportedReason?: string | null; // 기타 신고 사유 (선택적)
 }

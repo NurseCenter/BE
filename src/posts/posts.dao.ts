@@ -14,9 +14,14 @@ export class PostsDAO {
     private readonly postsRepository: Repository<PostsEntity>,
   ) {}
 
-  // 특정 게시물 ID들로 게시물 조회
+  // 특정 게시물 ID들로 게시물 엔티티 조회
   async findPostsByIds(postIds: number[]): Promise<PostsEntity[]> {
     return this.postsRepository.findBy({ postId: In(postIds) });
+  }
+
+  // 특정 게시물 ID로 게시물 엔티티 조회
+  async findPostEntityByPostId(postId: number): Promise<PostsEntity> {
+    return this.postsRepository.findOne({ where: { postId } });
   }
 
   // 전체 게시물 조회
@@ -106,7 +111,7 @@ export class PostsDAO {
   }
 
   // 특정 게시글 조회 메소드
-  async findPostById(postId: number): Promise<PostsEntity> {
+  async findOnePostByPostId(postId: number): Promise<PostsEntity> {
     return this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')

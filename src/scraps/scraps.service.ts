@@ -17,7 +17,7 @@ export class ScrapService {
   async scrapPost(postId: number, sessionUser: IUserWithoutPassword): Promise<ScrapsEntity> {
     const { userId } = sessionUser;
 
-    const post = await this.postsDAO.findPostById(postId);
+    const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
 
     const isAlreadyScraped = await this.scrapsDAO.checkIfScraped(userId, postId);

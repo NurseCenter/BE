@@ -36,6 +36,17 @@ export class CommentsDAO {
     });
   }
 
+  // 댓글 ID로 댓글 내용 조회 (100자 이상이면 축약)
+  async findCommentContentByCommentId(commentId: number): Promise<string> {
+    const { content } = await this.commentsRepository.findOne({
+      where: { commentId },
+    });
+
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+
+    return summaryContent;
+  }
+
   // 댓글 생성
   async createComment(
     createCommentDto: CreateCommentDto,

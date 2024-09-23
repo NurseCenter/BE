@@ -21,6 +21,17 @@ export class RepliesDAO {
     });
   }
 
+  // 답글 ID로 답글 내용 조회 (100자 이상이면 축약)
+  async findReplyContentByReplyId(replyId: number): Promise<string> {
+    const { content } = await this.repliesRepository.findOne({
+      where: { replyId },
+    });
+
+    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+
+    return summaryContent;
+  }
+
   // 답글 생성
   async createReply(createReplyDto: CreateCommentDto, userId: number, commentId: number): Promise<RepliesEntity> {
     const reply = this.repliesRepository.create({

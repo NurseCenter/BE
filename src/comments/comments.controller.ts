@@ -10,7 +10,7 @@ import { ReportDto } from 'src/posts/dto/report.dto';
 import { PaginationQueryDto } from 'src/common/dto';
 import { CommentsEntity } from './entities/comments.entity';
 import { IPaginatedResponse } from 'src/common/interfaces';
-import { IReportedCommentResponse } from 'src/reports/interfaces/reported-comment-response';
+import { IReportedCommentResponse } from 'src/reports/interfaces/users';
 
 @ApiTags('Comments')
 @Controller()

@@ -12,23 +12,34 @@ export class ReportedCommentsDAO {
     private readonly reportCommentsRepository: Repository<ReportCommentsEntity>,
   ) {}
 
+  // 신고된 댓글 테이블의 모든 댓글 내역 조회
+  async findReportedCommentsWithPagination(skip: number, take: number): Promise<[ReportCommentsEntity[], number]> {
+    const [comments, count] = await this.reportCommentsRepository
+      .createQueryBuilder('comment')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    return [comments, count];
+  }
+
   // 댓글 신고 엔티티 생성
   async createCommentReport(data: Partial<ReportCommentsEntity>) {
     const reportedComment = this.reportCommentsRepository.create(data);
     return reportedComment;
   }
 
-  // 신고된 댓글 테이블 고유 ID로 신고된 특정 댓글 조회
+  // 신고된 댓글 테이블 고유 ID로 신고된 특정 댓글 내역 조회
   async findReportedCommentByReportId(reportCommentId: number) {
     return this.reportCommentsRepository.findOne({
       where: { reportCommentId },
     });
   }
 
-  // 댓글 ID로 신고된 특정 댓글 조회
-  async findReportedCommentByCommentId(commentId: number) {
+  // 신고된 댓글 테이블 고유 ID와 댓글 ID로 신고된 특정 댓글 내역 조회
+  async findReportedCommentByReportIdAndCommentId(reportId: number, commentId: number) {
     return this.reportCommentsRepository.findOne({
-      where: { commentId },
+      where: { reportCommentId: reportId, commentId },
     });
   }
 
@@ -107,7 +118,7 @@ export class ReportedCommentsDAO {
 
   // 신고된 댓글 상태 업데이트
   async updateReportedCommentStatus(reportId: number, status: EReportStatus): Promise<void> {
-    await this.reportCommentsRepository.update(reportId, { status });
+    await this.reportCommentsRepository.update({ reportCommentId: reportId }, { status });
   }
 
   // 신고된 댓글 저장

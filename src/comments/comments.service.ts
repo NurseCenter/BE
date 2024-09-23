@@ -15,9 +15,9 @@ import { CommentsDAO } from './comments.dao';
 import { ReportedCommentsDAO } from 'src/reports/dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { CommentsEntity } from './entities/comments.entity';
-import { IReportedCommentResponse } from 'src/reports/interfaces/reported-comment-response';
 import { ReportedCommentDto } from 'src/reports/dto/reported-comment.dto';
 import { PaginationQueryDto } from 'src/common/dto';
+import { IReportedCommentResponse } from 'src/reports/interfaces/users';
 
 @Injectable()
 export class CommentsService {

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty } from 'class-validator';
 
-export class GetOneReportedDetailDto {
+export class GetOneReportedPostDetailDto {
   @IsNotEmpty()
   @Type(() => Number)
   @ApiProperty({ description: '신고 테이블 고유 ID', example: 36 })

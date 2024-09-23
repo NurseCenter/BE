@@ -95,32 +95,35 @@ export class ReportsController {
     schema: {
       type: 'object',
       properties: {
-        postAuthor: { type: 'string' },
-        postDate: { type: 'string', format: 'date-time' },
-        postCategory: { type: 'string', enum: Object.values(EBoardType) },
-        postId: { type: 'integer' },
-        postTitle: { type: 'string' },
-        reporter: { type: 'string' },
-        reportDate: { type: 'string', format: 'date-time' },
-        reportId: { type: 'integer' },
-        reportReason: { type: 'string', enum: Object.values(EReportReason) },
+        postAuthor: { type: 'string', description: '게시물 작성자' },
+        postDate: { type: 'string', format: 'date-time', description: '게시물 작성일자' },
+        postCategory: { type: 'string', enum: Object.values(EBoardType), description: '게시물 카테고리' },
+        postId: { type: 'integer', description: '게시물 ID' },
+        postTitle: { type: 'string', description: '게시물 제목' },
+        reporter: { type: 'string', description: '신고자 닉네임' },
+        reportDate: { type: 'string', format: 'date-time', description: '신고일자' },
+        reportId: { type: 'integer', description: '신고 테이블에서의 고유 ID' },
+        reportedReason: { type: 'string', enum: Object.values(EReportReason), description: '신고 사유' },
+        otherReportedReason: { type: 'string', description: '기타 신고 사유 (선택적)' },
       },
       example: {
         postAuthor: 'Author Name',
         postDate: '2024-09-10T10:00:00.000Z',
         postCategory: EBoardType.EVENT,
         postId: 1001,
-        postTitle: 'Sample Post Title',
-        reporter: 'Reporter Name',
+        postTitle: '신고해봐라 이것들아',
+        reporter: '정의의용사',
         reportDate: '2024-09-10T10:00:00.000Z',
         reportId: 1,
-        reportReason: EReportReason.PORNOGRAPHY,
+        reportedReason: EReportReason.PORNOGRAPHY,
+        otherReportedReason: null, 
       },
     },
   })
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  async getReportedPost(@Param('postId') postId: number) {
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async getReportedPost(@Param('postId') postId: number): Promise<IFormattedReportedPostResponse> {
     return await this.reportsService.getReportedPost(postId);
   }
 

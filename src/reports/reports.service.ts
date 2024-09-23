@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ReportPostsEntity } from './entities/report-posts.entity';
 import { ReportCommentsEntity } from './entities/report-comments.entity';
 import { EReportStatus } from './enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -23,7 +22,7 @@ export class ReportsService {
   }
 
   // 신고된 특정 게시물 조회
-  async getReportedPost(postId: number): Promise<ReportPostsEntity> {
+  async getReportedPost(postId: number): Promise<IFormattedReportedPostResponse> {
     const post = await this.reportedPostsDAO.findReportedPostByPostId(postId);
     if (!post) {
       throw new NotFoundException('해당 게시물이 존재하지 않습니다.');

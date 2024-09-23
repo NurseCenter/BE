@@ -4,12 +4,14 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ReportPostsEntity } from '../entities/report-posts.entity';
 import { EReportStatus } from '../enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { UsersDAO } from 'src/users/users.dao';
 
 @Injectable()
 export class ReportedPostsDAO {
   constructor(
     @InjectRepository(ReportPostsEntity)
     private readonly reportPostsRepository: Repository<ReportPostsEntity>,
+    private readonly usersDAO: UsersDAO
   ) {}
 
   // 게시물 신고 엔티티 생성
@@ -26,10 +28,34 @@ export class ReportedPostsDAO {
   }
 
   // 게시물 ID로 신고된 특정 게시물 조회
-  async findReportedPostByPostId(postId: number) {
-    return this.reportPostsRepository.findOne({
-      where: { postId },
+  async findReportedPostByPostId(postId: number): Promise<IFormattedReportedPostResponse> {
+    const reportedPost = await this.reportPostsRepository.findOne({
+      where: { 
+        postId,
+        posts: {
+          deletedAt: null
+        }
+       },
+      relations: ['posts', 'posts.user'],
     });
+
+    const reporterId = reportedPost.userId; // 신고자 회원 ID
+    const reporterNickname = await this.usersDAO.findUserNicknameByUserId(reporterId);
+
+    const formattedPost = {
+      postAuthor: reportedPost.posts.user.nickname, // 작성자
+      postDate: reportedPost.posts.createdAt, // 작성일자 (원 게시물)
+      postCategory: reportedPost.posts.boardType, // 카테고리
+      postId: reportedPost.posts.postId, // 원 게시물 ID
+      postTitle: reportedPost.posts.title, // 게시물 제목
+      reporter: reporterNickname, // 신고자 닉네임
+      reportDate: reportedPost.createdAt, // 신고날짜
+      reportId: reportedPost.reportPostId, // 신고 테이블에서의 고유 ID
+      reportedReason: reportedPost.reportedReason, // 신고 사우
+      otherReportedReason: reportedPost.otherReportedReason // 기타 신고 사유
+    }
+    
+    return formattedPost;
   }
 
   // 게시물 ID와 회원 ID로 신고된 특정 게시물 조회

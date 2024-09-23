@@ -39,6 +39,12 @@ export class UsersDAO {
     return this.usersRepository.findOne({ where: { userId } });
   }
 
+  // 회원 ID로 회원 닉네임 찾기
+  async findUserNicknameByUserId(userId: number): Promise<string | undefined> {
+    const user = await this.usersRepository.findOne({ where: { userId } });
+    return user.nickname;
+  }
+
   // 회원 실명과 휴대폰 번호로 회원 찾기
   async findUserByUsernameAndPhone(username: string, phoneNumber: string): Promise<UsersEntity | undefined> {
     return this.usersRepository.findOne({ where: { username, phoneNumber } });

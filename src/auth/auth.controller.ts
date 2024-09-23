@@ -156,6 +156,7 @@ export class AuthController {
                 userId: 35,
                 email: 'happyday@example.com',
                 nickname: '명란젓코난',
+                isAdmin: false
               },
             },
           },
@@ -167,6 +168,7 @@ export class AuthController {
                 userId: 35,
                 email: 'tempPassword@example.com',
                 nickname: '명란젓코난',
+                isAdmin: false
               },
             },
           },

@@ -55,6 +55,7 @@ export class AdminController {
           userId: 39,
           email: 'iamnewadmin@example.com',
           nickname: '새로운관리자',
+          isAdmin: true
         },
       },
     },

@@ -15,7 +15,7 @@ import { EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto } from './dto';
 import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
-import { IUserList, IUserInfo, IApprovalUserList, IPostList, ICommentOrReply } from './interfaces';
+import { IUserList, IUserInfo, IApprovalUserList, IPostList } from './interfaces';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
@@ -325,7 +325,7 @@ export class AdminService {
   }
 
   // 댓글 및 답글 조회
-  async findAllCommentsAndReplies(page: number, limit: number): Promise<ICommentOrReply[]> {
+  async findAllCommentsAndReplies(page: number, limit: number): Promise<any> {
     // 댓글과 답글을 모두 조회
     const [comments, replies] = await Promise.all([
       this.commentsDAO.findAllComments(),
@@ -358,33 +358,6 @@ export class AdminService {
     // 페이지네이션 처리
     const skip = (page - 1) * limit;
     return combined.slice(skip, skip + limit);
-  }
-
-  // 특정 댓글 또는 답글 조회
-  async findCommentOrReplyById(id: number) {
-    // const comment = await this.commentsDAO.findCommentById(id);
-    // if (comment) {
-    //   return {
-    //     id: comment.commentId, // 댓글 ID
-    //     category: comment.boardType, // 게시물 카테고리
-    //     postTitle: comment.post.title, // 게시물 제목
-    //     content: comment.content, // 댓글 내용
-    //     nickname: comment.user.nickname, // 작성자 닉네임
-    //     createdAt: new Date(comment.createdAt), // 작성일
-    //   };
-    // }
-    // const reply = await this.repliesDAO.findReplyById(id);
-    // if (reply) {
-    //   return {
-    //     id: reply.replyId, // 답글 ID
-    //     category: reply.post.boardType, // 게시물 카테고리
-    //     postTitle: reply.post.title, // 게시물 제목
-    //     content: reply.content, // 답글 내용
-    //     nickname: reply.user.nickname, // 작성자 닉네임
-    //     createdAt: new Date(reply.createdAt), // 작성일
-    //   };
-    // }
-    // throw new NotFoundException('댓글 또는 답글을 찾을 수 없습니다.');
   }
 
   // 댓글 또는 답글 삭제

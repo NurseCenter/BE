@@ -13,27 +13,25 @@ export class AuthSessionService {
     return randomBytes(32).toString('hex');
   }
 
-  // 세션 ID에서 사용자 ID 찾기
-  async findUserIdFromSession(sessionId: string): Promise<number | null> {
-    // 직접 Redis에서 세션 데이터 가져오기
-    const sessionData = await this.redisClient.get(`sess:${sessionId}`);
-
-    // console.log('sessionData', sessionData);
-
-    // 세션 데이터가 존재하는지 확인
-    if (sessionData) {
-      // 세션 데이터는 JSON 문자열로 저장되므로 파싱
-      const sessionObject = JSON.parse(sessionData);
-
-      // 사용자 ID 반환
-      const userId = sessionObject.passport.user.userId;
-      return userId ? Number(userId) : null;
+  // 세션 ID에서 세션 데이터 가져오기
+  async getSessionData(sessionId: string): Promise<any | null> {
+    try {
+      const sessionData = await this.redisClient.get(`sess:${sessionId}`);
+      return sessionData ? JSON.parse(sessionData) : null;
+    } catch (error) {
+      console.error('세션 데이터 조회 중 에러 발생: ', error);
+      return null;
     }
-
-    return null;
   }
 
-  // 세션 ID 삭제하기
+  // 세션 ID에서 사용자 ID 찾기
+  async findUserIdFromSession(sessionId: string): Promise<number | null> {
+    const sessionObject = await this.getSessionData(sessionId);
+    const userId = sessionObject?.passport?.user?.userId;
+    return userId ? Number(userId) : null;
+  }
+
+  // 세션 ID로 세션 데이터 삭제하기
   async deleteSessionId(sessionId: string): Promise<void> {
     await this.redisClient.del(`sessionId:${sessionId}`);
   }

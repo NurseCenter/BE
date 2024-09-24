@@ -156,7 +156,6 @@ export class AuthController {
                 userId: 35,
                 email: 'happyday@example.com',
                 nickname: '명란젓코난',
-                isAdmin: false,
               },
             },
           },
@@ -168,7 +167,6 @@ export class AuthController {
                 userId: 35,
                 email: 'tempPassword@example.com',
                 nickname: '명란젓코난',
-                isAdmin: false,
               },
             },
           },
@@ -410,9 +408,9 @@ export class AuthController {
     return { message: '휴대폰 인증이 성공하였습니다.' };
   }
 
-  // 사용자 상태 확인
+  // 사용자 상태 확인 후 전달
   // 프론트엔드의 리다이렉션을 위함.
-  @Get('status')
+  @Get('user-status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 상태 확인' })
   @ApiResponse({
@@ -420,22 +418,108 @@ export class AuthController {
     description: '사용자 상태 확인 성공',
     schema: {
       type: 'object',
-      properties: {
-        status: {
-          type: 'string',
-          enum: ['non_member', 'pending_verification', 'email_verified', 'approved_member', 'error'],
-          example: 'non_member',
+      oneOf: [
+        {
+          properties: {
+            status: { type: 'string', enum: ['non_member'], example: 'non_member' },
+            message: { type: 'string', example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' },
+          },
         },
-        message: {
+        {
+          properties: {
+            status: { type: 'string', enum: ['pending_verification'], example: 'pending_verification' },
+            message: { type: 'string', example: '회원가입 확인용 이메일을 확인해주세요.' },
+          },
+        },
+        {
+          properties: {
+            status: { type: 'string', enum: ['email_verified'], example: 'email_verified' },
+            message: { type: 'string', example: '관리자가 회원가입 승인 요청을 검토중입니다.' },
+          },
+        },
+        {
+          properties: {
+            status: { type: 'string', enum: ['approved_member'], example: 'approved_member' },
+            message: { type: 'string', example: '회원가입 승인이 완료된 정회원입니다.' },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'error' },
+        message: { type: 'string', example: '잘못된 요청입니다.' },
+      },
+    },
+  })
+  async getUserStatus(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+    const { userId } = sessionUser;
+    return await this.authService.sendUserStatus(userId);
+  }
+
+  // 세션 만료 여부 확인 후 전달
+  @Get('session-status')
+  @ApiOperation({ summary: '세션 만료 여부 확인' })
+  @ApiResponse({
+    status: 200,
+    description: '세션 만료 여부 확인. 세션이 만료되었으면 `true`, 그렇지 않으면 `false`를 반환함.',
+    schema: {
+      type: 'object',
+      properties: {
+        expires: {
+          type: 'boolean',
+          example: false,
+        },
+        remainingTime: {
           type: 'string',
-          example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.',
+          example: '1406 분',
+        },
+        userId: {
+          type: 'number',
+          example: 39,
         },
       },
     },
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getStatus(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
-    const { userId } = sessionUser;
-    return await this.authService.sendStatus(userId);
+  @ApiResponse({
+    status: 200,
+    description: '세션이 만료된 경우',
+    schema: {
+      type: 'object',
+      properties: {
+        expires: {
+          type: 'boolean',
+          example: true,
+        },
+      },
+    },
+  })
+  async getSessionStatus(@Req() req: Request) {
+    return await this.authService.sendSessionStatus(req);
+  }
+
+  // 관리자 계정 여부 확인 후 전달
+  @Get('is-admin')
+  @ApiOperation({ summary: '관리자 계정 여부 확인' })
+  @ApiResponse({
+    status: 200,
+    description: '관리자 여부 확인\n' + '관리자 계정이면 `true`, 그렇지 않으면 `false`를 반환함.',
+    schema: {
+      type: 'object',
+      properties: {
+        isAdmin: {
+          type: 'boolean',
+          example: true,
+        },
+      },
+    },
+  })
+  async getIsAdmin(@Req() req: Request) {
+    return await this.authService.sendIsAdmin(req);
   }
 }

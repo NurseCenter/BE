@@ -10,10 +10,7 @@ import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { IUpdateStatusResponse } from './interfaces/admin/update-status-response.interface';
 import { IFormattedReportedCommentResponse } from './interfaces/admin/comments/formatted-reported-comment-detail-response.interface';
-import {
-  IFormattedReportedPostResponse,
-  ICombinedReportResultResponse,
-} from './interfaces/admin';
+import { IFormattedReportedPostResponse, ICombinedReportResultResponse } from './interfaces/admin';
 
 @Injectable()
 export class ReportsService {
@@ -219,7 +216,7 @@ export class ReportsService {
         commentId = reportedComment.commentId;
         break;
       case ECommentType.REPLY:
-        reportedComment = await this.reportedRepliesDAO.findReportedReplyByReportId(reportId); 
+        reportedComment = await this.reportedRepliesDAO.findReportedReplyByReportId(reportId);
         if (!reportedComment) {
           throw new NotFoundException('해당 댓글이 존재하지 않습니다.');
         }

@@ -155,13 +155,13 @@ export class ReportsController {
         message: { type: 'string' },
         reportId: { type: 'number' },
         postId: { type: 'number' },
-        status: { type: 'string', enum: Object.values(EReportStatus) }
+        status: { type: 'string', enum: Object.values(EReportStatus) },
       },
       example: {
-        "message": "updated",
-        "reportId": 35,
-        "postId": 44,
-        "status": "rejected"
+        message: 'updated',
+        reportId: 35,
+        postId: 44,
+        status: 'rejected',
       },
     },
   })
@@ -313,7 +313,7 @@ export class ReportsController {
   @ApiOperation({ summary: '신고된 댓글 내역 처리상태를 변경' })
   @ApiBody({
     description: '신고된 댓글(혹은 답글) 내역의 상태 변경 요청 본문',
-    type: UpdateReportCommentStatusDto, 
+    type: UpdateReportCommentStatusDto,
   })
   @ApiResponse({
     status: 200,
@@ -324,25 +324,25 @@ export class ReportsController {
         message: { type: 'string' },
         reportId: { type: 'number' },
         commentId: { type: 'number' },
-        status: { type: 'string', enum: Object.values(EReportStatus) }
+        status: { type: 'string', enum: Object.values(EReportStatus) },
       },
       examples: {
         example1: {
           summary: '댓글 처리상태가 처리완료로 변경된 경우',
           value: {
-            message: "updated",
+            message: 'updated',
             reportId: 35,
             commentId: 44,
-            status: "completed",
+            status: 'completed',
           },
         },
         example2: {
-          summary: "답글 처리상태가 처리중(기본값)으로 변경된 경우",
+          summary: '답글 처리상태가 처리중(기본값)으로 변경된 경우',
           value: {
-            message: "updated",
+            message: 'updated',
             reportId: 36,
             replyId: 45,
-            status: "pending",
+            status: 'pending',
           },
         },
       },

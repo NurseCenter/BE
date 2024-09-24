@@ -124,6 +124,14 @@ export class AuthUserService {
     }
   }
 
+  // 회원 ID로 관리자 여부 확인
+  async checkIsAdminByUserId(userId: number): Promise<boolean> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    if (user.deletedAt !== null) throw new ConflictException('이미 탈퇴한 회원입니다.');
+    return user.isAdmin ? true : false;
+  }
+
   // 회원 상태 이메일 발송 후 Pending으로 변경
   async updateUserStatusToPending(email: string) {
     const user = await this.usersDAO.findUserByEmail(email);

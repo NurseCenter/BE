@@ -11,6 +11,7 @@ import { UsersDAO } from 'src/users/users.dao';
 import { promisify } from 'util';
 import clearCookieOptions from './cookie-options/clear-cookie-options';
 import { ISignUpResponse } from './interfaces';
+import { extractSessionIdFromCookie } from 'src/common/utils/extract-sessionId.util';
 
 @Injectable()
 export class AuthService {
@@ -87,7 +88,6 @@ export class AuthService {
           userId: user.userId,
           email: user.email,
           nickname: user.nickname,
-          isAdmin: user.isAdmin,
         },
       });
     });
@@ -206,8 +206,42 @@ export class AuthService {
     return this.authTwilioService.checkVerificationCode({ to, code });
   }
 
-  // 로그인한 사용자의 회원 상태 확인
-  async sendStatus(userId: number) {
+  // 로그인한 사용자의 회원 상태 전달
+  async sendUserStatus(userId: number) {
     return this.authUserService.checkStatusByUserId(userId);
+  }
+
+  // 세션 만료 여부 확인 후 전달
+  async sendSessionStatus(req: Request): Promise<{ expires: boolean; remainingTime?: string; userId?: number }> {
+    const sessionId = req.cookies[`connect.sid`];
+    const cleanedSessionId = extractSessionIdFromCookie(sessionId);
+    const sessionData = await this.authSessionService.getSessionData(cleanedSessionId);
+    if (!sessionData) return { expires: true };
+
+    const currentTime = new Date();
+    const expiresTime = new Date(sessionData?.cookie?.expires);
+
+    if (currentTime > expiresTime) {
+      return { expires: true };
+    } else {
+      const remainingTime = expiresTime.getTime() - currentTime.getTime(); // 남은 시간 (밀리초)
+      const remainingTimeInMinutes = Math.floor(remainingTime / (1000 * 60)); // 남은 시간 (분)
+
+      const userId = sessionData?.passport?.user?.userId || null;
+
+      return { expires: false, remainingTime: `${remainingTimeInMinutes} 분`, userId: Number(userId) };
+    }
+  }
+
+  // 관리자 여부 확인 후 전달
+  async sendIsAdmin(req: Request): Promise<{ isAdmin: boolean }> {
+    // 세션 ID에서 userId 추출
+    const sessionId = req.cookies['connect.sid'];
+    const cleanedSessionId = extractSessionIdFromCookie(sessionId);
+    const userId = await this.authSessionService.findUserIdFromSession(cleanedSessionId);
+
+    // userId로 isAdmin 여부 확인
+    const isAdmin = await this.authUserService.checkIsAdminByUserId(userId);
+    return { isAdmin };
   }
 }

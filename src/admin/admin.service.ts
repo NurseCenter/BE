@@ -52,7 +52,7 @@ export class AdminService {
   // 회원 계정 탈퇴 처리
   async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
     const { userId, deletionReason } = deletionUserDto;
-    console.log('userId', userId, 'deletionReason', deletionReason);
+    // console.log('userId', userId, 'deletionReason', deletionReason);
 
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);

@@ -24,6 +24,7 @@ import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
 import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
 import { IReportedPostResponse } from 'src/reports/interfaces/users';
+import { UsersDAO } from 'src/users/users.dao';
 
 @Injectable()
 export class PostsService {
@@ -34,6 +35,7 @@ export class PostsService {
     private readonly fileUploader: FileUploader,
     private readonly reportedPostsDAO: ReportedPostsDAO,
     private readonly likesDAO: LikesDAO,
+    private readonly usersDAO: UsersDAO
   ) {}
 
   // 게시글 조회
@@ -60,6 +62,15 @@ export class PostsService {
   ): Promise<IPostResponse> {
     const { title, content, imageTypes, hospitalNames } = createPostDto;
     const { userId } = sessionUser;
+
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    }
+  
+    if (boardType === EBoardType.NOTICE && !user.isAdmin) {
+      throw new ForbiddenException('공지사항은 서비스 이용에 필요한 중요한 정보를 제공하기 위해 관리자만 직접 작성할 수 있습니다.');
+    }
 
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);

@@ -103,6 +103,7 @@ export class PostsController {
               userId: 37,
               nickname: '관리자2',
             },
+            numberOfCommentsAndReplies: 23
           },
         ],
         totalItems: 1,

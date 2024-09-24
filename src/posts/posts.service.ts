@@ -50,8 +50,18 @@ export class PostsService {
     const { posts, total } = await this.postsDAO.findPosts(boardType, getPostsQueryDto);
     const { limit, page } = getPostsQueryDto;
 
+      // 각 게시물에 댓글 및 답글 수 추가
+      const postsWithCounts = await Promise.all(posts.map(async (post) => {
+        const total = await this.getNumberOfCommentsAndReplies(post.postId);
+
+        return {
+          ...post,
+          numberOfCommentsAndReplies: total
+        };
+      }));
+
     return {
-      items: posts,
+      items: postsWithCounts,
       totalItems: total,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
@@ -281,11 +291,10 @@ export class PostsService {
   // 한 게시물에 달린 댓글과 답글 수 구하기
   private async getNumberOfCommentsAndReplies(postId: number): Promise<number> {
     const numberOfComments = (await this.commentsDAO.countAllCommentsByPostId(postId)) || 0;
-    console.log("댓글 수", numberOfComments);
+
     const numberOfReplies = (await this.repliesDAO.countAllrepliesByPostId(postId)) || 0;
-    console.log("답글 수", numberOfReplies);
+
     const total = numberOfComments + numberOfReplies;
-    console.log("총 개수", total)
     return total;
   }
 }

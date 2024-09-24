@@ -306,16 +306,16 @@ export class AdminController {
     return await this.adminService.fetchUserInfoByAdmin(userId);
   }
 
-  // 관리자 회원 가입 대기자 목록 조회
+  // 관리자 정회원 승인 대기자 목록 조회
   @UseGuards(AdminGuard)
   @Get('approval')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 가입 대기자 목록 조회' })
+  @ApiOperation({ summary: '정회원 승인 대기자 목록 조회 (membershipStatus = email_verified인 회원)' })
   @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiResponse({
     status: 200,
-    description: '회원 가입 승인 목록 조회 성공',
+    description: '정회원 승인 대기자 목록 조회 성공',
     schema: {
       example: {
         items: [
@@ -324,7 +324,7 @@ export class AdminController {
             nickname: 'user_nickname',
             email: 'user@example.com',
             createdAt: '2024-01-01T00:00:00.000Z',
-            membershipStatus: 'EMAIL_VERIFIED',
+            membershipStatus: 'email_verified',
             certificationDocumentUrl: 'http://example.com/document',
           },
         ],
@@ -443,9 +443,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deletePost(@Param('postId') postId: number): Promise<{ message: string }> {
+  async deletePost(@Param('postId') postId: number): Promise<{ message: string, postId: number }> {
     await this.adminService.deletePost(postId);
-    return { message: '게시물이 성공적으로 삭제되었습니다.' };
+    return { message: '게시물이 성공적으로 삭제되었습니다.', postId };
   }
 
   // 관리자 댓글 및 답글 전체 조회

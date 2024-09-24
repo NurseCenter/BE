@@ -318,10 +318,9 @@ export class AdminService {
 
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<void> {
-    const post = await this.postsDAO.deletePost(postId);
-
-    if (!post) {
-      throw new NotFoundException('게시물이 존재하지 않거나 이미 삭제되었습니다.');
+    const result = await this.postsDAO.deletePost(postId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`게시물 삭제 중 에러가 발생하였습니다.`);
     }
   }
 

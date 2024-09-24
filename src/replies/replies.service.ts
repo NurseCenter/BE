@@ -36,6 +36,7 @@ export class RepliesService {
     }
 
     const reply = await this.repliesDAO.createReply(createReplyDto, userId, commentId);
+    reply.postId = comment.postId;
     const createdReply = await this.repliesDAO.saveReply(reply);
 
     const content = createdReply.content;

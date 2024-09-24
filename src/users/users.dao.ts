@@ -36,7 +36,12 @@ export class UsersDAO {
 
   // 회원 ID로 회원 찾기
   async findUserByUserId(userId: number): Promise<UsersEntity | undefined> {
-    return this.usersRepository.findOne({ where: { userId } });
+    return this.usersRepository.findOne({ where: { userId }});
+  }
+
+  // 회원 ID로 회원 찾기 (탈퇴한 회원도 조회됨)
+  async findUserByUserIdForAdmin(userId: number): Promise<UsersEntity | undefined> {
+    return this.usersRepository.findOne({ where: { userId }, withDeleted: true });
   }
 
   // 회원 ID로 회원 닉네임 찾기
@@ -93,7 +98,6 @@ export class UsersDAO {
   }
 
   // 승인 대기중인 회원 조회
-  // 승인 거절당하면 non_member(0)으로 상태 업데이트 시킬 것임.
   async findPendingAndRejectVerifications(page: number, limit: number = 10): Promise<[UsersEntity[], number]> {
     const [users, total] = await this.usersRepository
       .createQueryBuilder('user')
@@ -101,7 +105,7 @@ export class UsersDAO {
       .andWhere('user.membershipStatus = :status', { status: EMembershipStatus.EMAIL_VERIFIED })
       .skip((page - 1) * limit)
       .take(limit)
-      .orderBy('user.createdAt', 'DESC')
+      .orderBy('user.userId', 'DESC')
       .getManyAndCount();
 
     return [users, total];

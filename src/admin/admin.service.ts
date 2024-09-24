@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
@@ -11,7 +12,7 @@ import { UsersDAO } from 'src/users/users.dao';
 import { EmanagementStatus, ESuspensionDuration } from './enums';
 import * as dayjs from 'dayjs';
 import { EMembershipStatus } from 'src/users/enums';
-import { ApprovalUserDto, DeletionUserDto } from './dto';
+import { ApprovalUserDto } from './dto';
 import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList, ICommentOrReply } from './interfaces';
@@ -50,10 +51,7 @@ export class AdminService {
   }
 
   // 회원 계정 탈퇴 처리
-  async withdrawUserByAdmin(deletionUserDto: DeletionUserDto): Promise<void> {
-    const { userId, deletionReason } = deletionUserDto;
-    // console.log('userId', userId, 'deletionReason', deletionReason);
-
+  async withdrawUserByAdmin(userId: number, deletionReason: string): Promise<void> {
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);
 
@@ -61,24 +59,28 @@ export class AdminService {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
 
+    if (user && user.deletedAt !== null) {
+      throw new ConflictException('이미 탈퇴 처리된 회원입니다.');
+    }
+
     // 사용자 삭제 처리
     await this.authUserService.deleteUser(userId);
 
     // 이미 삭제된 사용자 확인
     const existingDeletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
-    if (existingDeletedUser?.deletedAt !== null) {
+    if (existingDeletedUser && existingDeletedUser?.deletedAt !== null) {
       throw new ConflictException('이미 탈퇴처리가 된 회원입니다.');
     }
 
-    // 새 삭제 사용자 생성
+    // deleted_users에 새로운 엔티티 생성
     const newDeletedUser = await this.deletedUsersDAO.createDeletedUser(userId);
+    await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
     if (!newDeletedUser) {
       throw new NotFoundException('해당 회원 탈퇴 처리 중 오류가 발생하였습니다.');
     }
 
     newDeletedUser.userId = userId;
     newDeletedUser.deletionReason = deletionReason;
-    newDeletedUser.deletedAt = new Date(); // 현재 날짜로 설정
     await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
   }
 
@@ -86,58 +88,80 @@ export class AdminService {
   async cancelWithdrawal(userId: number): Promise<void> {
     const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
     if (!deletedUser) throw new NotFoundException('해당 회원의 탈퇴 기록을 찾을 수 없습니다.');
-    deletedUser.deletedAt = null;
+    deletedUser.deletedAt = new Date();
     await this.deletedUsersDAO.saveDeletedUser(deletedUser);
 
-    const user = await this.usersDAO.findUserByUserId(userId);
+    const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     user.deletedAt = null;
     await this.usersDAO.saveUser(user);
   }
 
   // 회원 계정 정지 처리
-  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<void> {
+  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ userId: number, suspensionEndDate: Date }> {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     try {
       const user = await this.usersDAO.findUserByUserId(userId);
       if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-      const newSuspendedUser = await this.suspendedUsersDAO.createSuspendedUser(userId);
-      if (!newSuspendedUser)
-        throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
-
-      newSuspendedUser.suspensionReason = suspensionReason;
-      newSuspendedUser.suspensionDuration = suspensionDuration;
-      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
-
+      const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
       const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
 
+      // 1. 이미 정지처리된 회원
+      if (alreadySuspendedUser && alreadySuspendedUser.deletedAt === null) {
+        throw new ConflictException('이미 활동 정지 처리된 회원입니다.')
+      }
+
+      // 2. 정지된 회원테이블에 있는데 deletedAt이 날짜 (정지해제된 경우)
+      // => 정지 누적 카운트를 1 증가, 기존 내역을 덮어씌우기
+      if (alreadySuspendedUser && alreadySuspendedUser.deletedAt !== null) {
+        alreadySuspendedUser.deletedAt = null; // 초기화 (정지상태로)
+        alreadySuspendedUser.suspensionReason = suspensionReason;
+        alreadySuspendedUser.suspensionDuration = suspensionDuration;
+        alreadySuspendedUser.suspensionCount += 1;
+        alreadySuspendedUser.suspensionEndDate = suspensionEndDate;
+        await this.suspendedUsersDAO.saveSuspendedUser(alreadySuspendedUser);
+      } else {
+        // 3. 기존 내역이 없는 회원 => 새로 생성
+        const newSuspendedUser = await this.suspendedUsersDAO.createSuspendedUser(userId);
+        if (!newSuspendedUser) {
+          throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
+        }
+        newSuspendedUser.suspensionReason = suspensionReason;
+        newSuspendedUser.suspensionDuration = suspensionDuration;
+        newSuspendedUser.suspensionCount = 1;
+        newSuspendedUser.suspensionEndDate = suspensionEndDate;
+        await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
+      }
+
+      // Users 테이블에 회원 정보 업데이트
       user.suspensionEndDate = suspensionEndDate;
       await this.usersDAO.saveUser(user);
 
-      newSuspendedUser.suspensionEndDate = suspensionEndDate;
-      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
+      return { userId: user.userId, suspensionEndDate: user.suspensionEndDate }
     } catch (error) {
-      console.error('실행중 에러', error);
+      console.error('회원 계정 정치 처리 중 에러 발생: ', error);
+      throw new InternalServerErrorException('회원 계정 정지 처리 중 오류가 발생했습니다.');
     }
   }
 
   // 회원 계정 정지 취소
-  async cancelSuspension(userId: number): Promise<{ message: string }> {
+  async cancelSuspension(userId: number): Promise<{ message: string, userId: number }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
     user.suspensionEndDate = null;
     await this.usersDAO.saveUser(user);
 
     const suspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
-    if (!suspendedUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    if (!suspendedUser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
+    suspendedUser.suspensionEndDate = new Date();
     suspendedUser.deletedAt = new Date();
     await this.suspendedUsersDAO.saveSuspendedUser(suspendedUser);
 
-    return { message: '회원 정지 취소가 완료되었습니다.' };
+    return { message: '회원 정지 취소가 완료되었습니다.', userId };
   }
 
   // 모든 회원 조회
@@ -190,7 +214,7 @@ export class AdminService {
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-    const returnUserInfo = { nickname: user.nickname, email: user.email };
+    const returnUserInfo = { userId: user.userId, nickname: user.nickname, email: user.email };
     return returnUserInfo as IUserInfo;
   }
 

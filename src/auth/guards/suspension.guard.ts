@@ -10,7 +10,7 @@ export class SuspensionGuard implements CanActivate {
     const userId = request.user?.userId;
 
     if (!userId) {
-      throw new UnauthorizedException('로그인된 사용자가 아닙니다.');
+      throw new UnauthorizedException('로그인한 회원한 이용 가능합니다.');
     }
 
     const user = await this.usersDAO.findUserByUserId(userId); 

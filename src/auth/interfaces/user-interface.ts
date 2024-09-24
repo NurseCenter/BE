@@ -1,4 +1,4 @@
-import { EStudentStatus } from 'src/users/enums';
+import { EMembershipStatus, EStudentStatus } from 'src/users/enums';
 
 export interface IUser {
   userId: number; // 회원 ID
@@ -8,7 +8,7 @@ export interface IUser {
   password: string; // 비밀번호
   email: string; // 이메일
   tempPasswordIssuedDate: Date | null; // 임시 비밀번호 발급 날짜
-  membershipStatus: number; // 회원 상태
+  membershipStatus: EMembershipStatus; // 회원 상태
   studentStatus: EStudentStatus; // 졸업생 혹은 재학생
   isAdmin: boolean; // 관리자 여부
   certificationDocumentUrl: string; // 인증서 URL

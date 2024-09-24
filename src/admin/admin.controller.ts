@@ -94,9 +94,9 @@ export class AdminController {
 
   // 관리자 회원 탈퇴 처리
   @UseGuards(AdminGuard)
-  @Delete('withdrawal')
+  @Post('withdrawal')
   @HttpCode(200)
-  @ApiOperation({ summary: '회원 탈퇴 처리' })
+  @ApiOperation({ summary: '관리자의 회원 강제 탈퇴 처리' })
   @ApiBody({
     type: DeletionUserDto,
     description: '회원 탈퇴에 필요한 정보',
@@ -111,9 +111,9 @@ export class AdminController {
   })
   @ApiResponse({
     status: 200,
-    description: '회원 탈퇴 처리가 완료되었습니다.',
+    description: '회원 강제 탈퇴 처리가 완료되었습니다.',
     schema: {
-      example: { message: '회원 탈퇴 처리가 완료되었습니다.' },
+      example: { message: '회원 강제 탈퇴 처리가 완료되었습니다.', userId: 17 },
     },
   })
   @ApiResponse({
@@ -123,19 +123,20 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string }> {
-    await this.adminService.withdrawUserByAdmin(deleteUserDto);
-    return { message: '회원 탈퇴 처리가 완료되었습니다.' };
+  async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string, userId }> {
+    const { userId, deletionReason } = deleteUserDto;
+    await this.adminService.withdrawUserByAdmin(userId, deletionReason);
+    return { message: '회원 강제 탈퇴 처리가 완료되었습니다.', userId };
   }
 
   // 관리자 회원 탈퇴 취소
   @UseGuards(AdminGuard)
   @Post('withdrawal/cancel')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 탈퇴 취소' })
+  @ApiOperation({ summary: '관리자의 회원 강제 탈퇴 취소' })
   @ApiBody({
     type: Number,
-    description: '탈퇴 취소에 필요한 사용자 ID',
+    description: '강제 탈퇴 취소에 필요한 사용자 ID',
     examples: {
       'application/json': {
         value: 123,
@@ -144,9 +145,9 @@ export class AdminController {
   })
   @ApiResponse({
     status: 200,
-    description: '회원 탈퇴 취소가 완료되었습니다.',
+    description: '회원 강제 탈퇴 취소 처리가 완료되었습니다.',
     schema: {
-      example: { message: '회원 탈퇴 취소가 완료되었습니다.' },
+      example: { message: '회원 강제 탈퇴 취소 처리가 완료되었습니다.', userId: 17 },
     },
   })
   @ApiResponse({
@@ -159,14 +160,14 @@ export class AdminController {
   async postCancelWithdrawal(@Body() userIdDto: UserIdDto) {
     const { userId } = userIdDto;
     await this.adminService.cancelWithdrawal(userId);
-    return { message: '회원 탈퇴 취소가 완료되었습니다.' };
+    return { message: '회원 강제 탈퇴 취소 처리가 완료되었습니다.', userId };
   }
 
   // 관리자 회원 정지 처리
   @UseGuards(AdminGuard)
   @Post('suspension')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 정지 처리' })
+  @ApiOperation({ summary: '관리자의 회원 정지 처리' })
   @ApiBody({
     type: SuspensionUserDto,
     description: '회원 정지에 필요한 정보',
@@ -184,7 +185,11 @@ export class AdminController {
     status: 200,
     description: '회원 정지 처리가 완료되었습니다.',
     schema: {
-      example: { message: '회원 정지 처리가 완료되었습니다.' },
+      example: {
+        "message": "회원 정지 처리가 완료되었습니다.",
+        "userId": 60,
+        "suspensionEndDate": "2024-10-08T11:37:41.823Z"
+      },
     },
   })
   @ApiResponse({
@@ -194,9 +199,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSuspensionByAdmin(@Body() suspensionUserDto: SuspensionUserDto): Promise<{ message: string }> {
-    await this.adminService.suspendUserByAdmin(suspensionUserDto);
-    return { message: '회원 정지 처리가 완료되었습니다.' };
+  async postSuspensionByAdmin(@Body() suspensionUserDto: SuspensionUserDto): Promise<{ message: string, userId: number, suspensionEndDate: Date }> {
+    const result = await this.adminService.suspendUserByAdmin(suspensionUserDto);
+    return { message: '회원 정지 처리가 완료되었습니다.', ...result };
   }
 
   // 관리자 회원 정지 취소
@@ -251,7 +256,7 @@ export class AdminController {
             commentCount: 5,
             createdAt: '2024-01-01T00:00:00.000Z',
             managementStatus: '정지',
-            managementReason: '정지 사유',
+            managementReason: '정지된 사유',
           },
         ],
         totalItems: 100,
@@ -284,7 +289,8 @@ export class AdminController {
     description: '회원 정보 조회 성공',
     schema: {
       example: {
-        nickname: 'user_nickname',
+        userId: 128,
+        nickname: '개똥말숙',
         email: 'user@example.com',
       },
     },

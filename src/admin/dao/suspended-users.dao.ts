@@ -28,8 +28,10 @@ export class SuspendedUsersDAO {
 
   // 특정 정지된 회원 조회
   async findSuspendedUserByUserId(userId: number): Promise<SuspendedUsersEntity> {
-    return await this.suspendedUsersRepository.findOne({
+    const suspendedUser = await this.suspendedUsersRepository.findOne({
       where: { userId },
+      withDeleted: true,
     });
+    return suspendedUser;
   }
 }

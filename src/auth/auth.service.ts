@@ -207,8 +207,11 @@ export class AuthService {
   }
 
   // 로그인한 사용자의 회원 상태 전달
-  async sendUserStatus(userId: number) {
-    return this.authUserService.checkStatusByUserId(userId);
+  async sendUserStatus(req: Request) {
+    const sessionId = req.cookies['connect.sid'];
+    const cleanedSessionId = extractSessionIdFromCookie(sessionId);
+    const userId = await this.authSessionService.findUserIdFromSession(cleanedSessionId);
+    return this.authUserService.checkUserStatusByUserId(userId);
   }
 
   // 세션 만료 여부 확인 후 전달

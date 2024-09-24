@@ -457,9 +457,8 @@ export class AuthController {
       },
     },
   })
-  async getUserStatus(@SessionUser() sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
-    const { userId } = sessionUser;
-    return await this.authService.sendUserStatus(userId);
+  async getUserStatus(@Req() req: Request): Promise<{ message: string }> {
+    return await this.authService.sendUserStatus(req);
   }
 
   // 세션 만료 여부 확인 후 전달

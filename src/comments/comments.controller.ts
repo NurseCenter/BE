@@ -141,8 +141,14 @@ export class CommentsController {
     @Param('postId') postId: number,
     @Query() paginationQueryDto: PaginationQueryDto,
   ): Promise<IPaginatedResponse<CommentsEntity>> {
-    const result = await this.commentsService.getCommentsInOnePost(boardType, postId, paginationQueryDto);
-    return result;
+    const { withReplies = false } = paginationQueryDto;
+    if (withReplies) {
+      const result = await this.commentsService.getCommentsWithRepliesInOnePost(boardType, postId, paginationQueryDto);
+      return result;
+    } else {
+      const result = await this.commentsService.getCommentsInOnePost(boardType, postId, paginationQueryDto);
+      return result;
+    }
   }
 
   // 댓글 수정

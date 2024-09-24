@@ -58,7 +58,8 @@ export class RepliesService {
       throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
     }
 
-    const replies = comment.replies;
+    // 답글을 createdAt 기준으로 오름차순 정렬 (작성순서대로 나와야 함.)
+    const replies = comment.replies.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     return replies;
   }
 

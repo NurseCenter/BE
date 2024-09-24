@@ -23,4 +23,13 @@ export class PaginationQueryDto {
   @Min(1, { message: '1페이지에 최소 1개 이상의 내용이 첨부되어야 합니다.' })
   @IsOptional()
   limit?: number = 10;
+
+  @IsOptional()
+  @ApiProperty({
+    description: '특정 게시물에 대한 댓글 조회시, 답글이 함께 나오도록 하는 옵션 (Optional Query Parameter)',
+    example: true,
+    required: false,
+    default: false,
+  })
+  withReplies?: boolean = false;
 }

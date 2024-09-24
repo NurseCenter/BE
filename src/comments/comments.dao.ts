@@ -5,6 +5,7 @@ import { DeleteResult, FindOneOptions, Repository } from 'typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { CommentWithRepliesDto } from './dto/comment-with-replies.dto';
 
 @Injectable()
 export class CommentsDAO {
@@ -70,6 +71,78 @@ export class CommentsDAO {
     });
   }
 
+  // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
+  async findCommentsWithReplies(postId: number, page: number, limit: number): Promise<{ comments: CommentWithRepliesDto[]; total: number }> {
+    const skip = (page - 1) * limit;
+  
+    // 댓글 조회
+    const comments = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .where('comment.postId = :postId AND comment.deletedAt IS NULL', { postId })
+      .select([
+        'comment.commentId AS commentId',
+        'comment.content AS content',
+        'comment.postId AS postId',
+        'comment.boardType AS boardType',
+        'comment.createdAt AS createdAt',
+        'comment.updatedAt AS updatedAt',
+        'user.userId AS userId',
+        'user.nickname AS nickname',
+      ])
+      .orderBy('comment.createdAt', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getRawMany();
+  
+    // 총 댓글 수 조회
+    const total = await this.commentsRepository.count({
+      where: {
+        postId,
+        deletedAt: null,
+      },
+    });
+  
+    // 댓글과 각 댓글에 대한 답글 조회
+    const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(comments.map(async (comment) => {
+      const replies = await this.repliesRepository
+        .createQueryBuilder('reply')
+        .leftJoinAndSelect('reply.user', 'user')
+        .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId: comment.commentId })
+        .select([
+          'reply.replyId AS replyId',
+          'reply.content AS content',
+          'reply.createdAt AS createdAt',
+          'reply.updatedAt AS updatedAt',
+          'user.userId AS userId',
+          'user.nickname AS nickname',
+        ])
+        .orderBy('reply.createdAt', 'ASC')
+        .getRawMany();
+  
+      return {
+        commentId: comment.commentId,
+        content: comment.content,
+        postId: comment.postId,
+        boardType: comment.boardType,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        userId: comment.userId,
+        nickname: comment.nickname,
+        replies: replies.map(reply => ({
+          replyId: reply.replyId,
+          content: reply.content,
+          createdAt: reply.createdAt,
+          updatedAt: reply.updatedAt,
+          userId: reply.userId,
+          nickname: reply.nickname,
+        })),
+      };
+    }));
+  
+    return { comments: commentsWithReplies, total };
+  }
+
   // 특정 게시물의 모든 댓글 조회
   async findCommentsInOnePost(
     boardType: EBoardType,
@@ -95,7 +168,7 @@ export class CommentsDAO {
       .where('comment.postId = :postId', { postId })
       .andWhere('comment.boardType = :boardType', { boardType })
       .andWhere('comment.deletedAt IS NULL')
-      .orderBy('comment.createdAt', 'DESC')
+      .orderBy('comment.createdAt', 'ASC')
       .skip(skip)
       .take(limit)
       .getRawMany();

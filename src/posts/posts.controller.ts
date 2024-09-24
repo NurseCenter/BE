@@ -161,6 +161,7 @@ export class PostsController {
           userId: 35,
           nickname: '닉넴뭐하지',
         },
+        numberOfComments: 25,
         images: [
           {
             imageId: 1,

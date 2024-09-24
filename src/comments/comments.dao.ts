@@ -201,4 +201,9 @@ export class CommentsDAO {
     // 댓글도 답글도 아닌 경우
     throw new Error('댓글 또는 답글을 찾을 수 없습니다.');
   }
+
+  // 특정 게시물에 달린 댓글 수 구하기
+  async countAllCommentsByPostId(postId: number): Promise<number> {
+    return this.commentsRepository.count({ where: { postId, deletedAt: null }})
+  }
 }

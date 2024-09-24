@@ -111,4 +111,9 @@ export class RepliesDAO {
   async saveReply(reply: RepliesEntity): Promise<RepliesEntity> {
     return this.repliesRepository.save(reply);
   }
+
+  // 특정 게시물에 달린 댓글 수 구하기
+  async countAllrepliesByPostId(postId: number): Promise<number> {
+    return this.repliesRepository.count({ where: { postId, deletedAt: null }})
+  }
 }

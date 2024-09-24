@@ -25,6 +25,8 @@ import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
 import { IReportedPostResponse } from 'src/reports/interfaces/users';
 import { UsersDAO } from 'src/users/users.dao';
+import { CommentsDAO } from 'src/comments/comments.dao';
+import { RepliesDAO } from 'src/replies/replies.dao';
 
 @Injectable()
 export class PostsService {
@@ -35,10 +37,12 @@ export class PostsService {
     private readonly fileUploader: FileUploader,
     private readonly reportedPostsDAO: ReportedPostsDAO,
     private readonly likesDAO: LikesDAO,
-    private readonly usersDAO: UsersDAO
+    private readonly usersDAO: UsersDAO,
+    private readonly commentsDAO: CommentsDAO,
+    private readonly repliesDAO: RepliesDAO
   ) {}
 
-  // 게시글 조회
+  // 모든 게시글 조회
   async getAllPosts(
     boardType: EBoardType,
     getPostsQueryDto: GetPostsQueryDto,
@@ -100,6 +104,7 @@ export class PostsService {
     const { userId } = sessionUser;
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
+    const numberOfCommentsAndReplies = await this.getNumberOfCommentsAndReplies(postId);
 
     if (!post || !existsInBoardType) {
       throw new NotFoundException(`${boardType} 게시판에서 ${postId}번 게시물을 찾을 수 없습니다.`);
@@ -123,6 +128,7 @@ export class PostsService {
       isLiked, // 좋아요 여부
       isScraped, // 스크랩 여부
       user: post.user, // 작성자 정보
+      numberOfComments: numberOfCommentsAndReplies // 댓글과 답글 수
     };
   }
 
@@ -270,5 +276,16 @@ export class PostsService {
   // 게시판 카테고리별 게시물 수 조회
   async getPostsCountByCategory(boardType?: EBoardType): Promise<{ boardType: EBoardType; count: number }[]> {
     return this.postsDAO.countPostsByCategory(boardType);
+  }
+
+  // 한 게시물에 달린 댓글과 답글 수 구하기
+  private async getNumberOfCommentsAndReplies(postId: number): Promise<number> {
+    const numberOfComments = (await this.commentsDAO.countAllCommentsByPostId(postId)) || 0;
+    console.log("댓글 수", numberOfComments);
+    const numberOfReplies = (await this.repliesDAO.countAllrepliesByPostId(postId)) || 0;
+    console.log("답글 수", numberOfReplies);
+    const total = numberOfComments + numberOfReplies;
+    console.log("총 개수", total)
+    return total;
   }
 }

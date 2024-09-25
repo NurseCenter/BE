@@ -135,7 +135,7 @@ export class AuthUserService {
       nickname: user.nickname, // 닉네임
       membershipStatus: status, // 회원 상태
       rejected: user.rejected, // 정회원 승인 거절 여부
-      rejectedReason: rejectedUser.rejectedReason, // 정회원 승인 거절 이유
+      rejectedReason: rejectedUser?.rejectedReason, // 정회원 승인 거절 이유
       isTempPasswordSignIn: await this.authSignInService.checkTempPasswordSignIn(userId), // 임시 비밀번호 로그인 여부
       isSuspended, // 계정 정지 여부
       ...(isSuspended ? suspensionDetails : {}), // 정지사유, 정지해제 날짜, 정지 기간

@@ -74,7 +74,7 @@ export class UsersController {
       },
     },
   })
-  async checkNickname(@Body() body: { nickname: string }) {
+  async checkNickname(@Body() body: { nickname: string }): Promise<{ available: boolean }> {
     const available = await this.usersService.isNicknameAvailable(body.nickname);
     return { available };
   }

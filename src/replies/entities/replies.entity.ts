@@ -60,6 +60,11 @@ export class RepliesEntity {
   @JoinColumn({ name: 'commentId', referencedColumnName: 'commentId' })
   comments: CommentsEntity;
 
+  // // 게시물과의 관계 설정
+  // @ManyToOne(() => PostsEntity, (post) => post.replies)
+  // @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
+  // post: PostsEntity;
+
   // 이 답글에 대한 신고 기록들
   @OneToMany(() => ReportRepliesEntity, (report) => report.replies)
   reportReplies: ReportRepliesEntity[];

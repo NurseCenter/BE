@@ -54,17 +54,14 @@ export class RepliesDAO {
     return this.repliesRepository
       .createQueryBuilder('reply')
       .leftJoinAndSelect('reply.user', 'user')
-      .leftJoinAndSelect('reply.post', 'post')
       .select([
         'reply.replyId', // 답글 ID
         'reply.content', // 답글 내용
         'reply.createdAt', // 작성일
         'user.nickname', // 작성자 닉네임
-        'post.title', // 게시물 제목
-        'post.boardType', // 게시물 카테고리
       ])
       .where('reply.deletedAt IS NULL')
-      .getRawMany();
+      .getMany();
   }
 
   // 특정 답글 조회

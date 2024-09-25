@@ -226,7 +226,8 @@ export class CommentsDAO {
         'post.boardType', // 게시물 카테고리
       ])
       .where('comment.deletedAt IS NULL')
-      .getRawMany();
+      .andWhere('post.deletedAt IS NULL') // 원 게시물이 삭제되었으면 해당 댓글도 안 나오게 함.
+      .getMany();
   }
 
   // 관리자 특정 댓글 조회

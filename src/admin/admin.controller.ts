@@ -29,6 +29,7 @@ import {
   ApprovalUserDto,
   GetOneCommentDto,
 } from './dto';
+import { RejectUserDto } from './dto/reject-user.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -352,40 +353,53 @@ export class AdminController {
   }
 
   // 관리자의 정회원 승인 및 거절 처리
-  @UseGuards(AdminGuard)
-  @Post('approval')
+  @Post('user/approval')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 가입 승인 및 거절 처리' })
-  @ApiBody({
-    description: '회원 가입 승인 또는 거절을 위한 정보',
-    examples: {
-      '승인 완료': {
-        value: { userId: 123, isApproved: true },
-        description: '회원 가입을 승인합니다. 승인 받은 회원은 정회원이 됩니다.',
-      },
-      '승인 거절': {
-        value: { userId: 123, isApproved: false },
-        description: '회원 가입을 거절합니다.',
-      },
-    },
-  })
+  @ApiOperation({ summary: '회원 가입 승인 처리' })
+  @ApiBody({ type: ApprovalUserDto })
   @ApiResponse({
     status: 200,
-    description: '회원 가입 승인 또는 거절 처리 성공',
+    description: '회원 가입 승인 처리 성공',
     schema: {
-      example: { message: '회원 가입 처리 결과가 성공적으로 반영되었습니다.' },
+      example: { message: '정회원 승인이 완료되었습니다.', userId: 123, membershipStatus: 'approved_member' },
     },
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
     schema: {
-      example: { message: '잘못된 요청입니다.' },
+      example: { message: '아직 이메일 인증을 완료하지 않은 회원입니다.' },
     },
   })
   async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
-    const result = await this.adminService.processUserApproval(approvalDto);
-    return result;
+    return this.adminService.processUserApproval(approvalDto);
+  }
+
+  // 관리자의 정회원 거절 처리
+  @Post('user/reject')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '회원 가입 거절 처리' })
+  @ApiBody({
+    description: '회원 가입 거절을 위한 정보',
+    type: ApprovalUserDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '회원 가입 거절 처리 성공',
+    schema: {
+      example: { message: '정회원 승인이 거절되었습니다.', userId: 123 },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: '해당 회원이 존재하지 않음',
+    schema: {
+      example: { message: '해당 회원이 존재하지 않습니다.' },
+    },
+  })
+  async postRejectByAdmin(@Body() rejectDto: RejectUserDto) {
+    const { userId, rejectedReason } = rejectDto;
+    return this.adminService.processUserReject(userId, rejectedReason);
   }
 
   // 관리자 게시물 전체 조회 및 검색

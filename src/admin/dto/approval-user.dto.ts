@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class ApprovalUserDto {
   @ApiProperty({
@@ -8,11 +8,4 @@ export class ApprovalUserDto {
   })
   @IsNumber()
   userId: number;
-
-  @ApiProperty({
-    description: '회원 가입 승인 여부',
-    example: true,
-  })
-  @IsBoolean()
-  isApproved: boolean;
 }

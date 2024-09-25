@@ -22,6 +22,7 @@ import { PostsDAO } from 'src/posts/posts.dao';
 import { SignInUserDto } from 'src/auth/dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Request, Response } from 'express';
+import { RejectedUsersDAO } from './dao/rejected-users.dao';
 
 @Injectable()
 export class AdminService {
@@ -35,6 +36,7 @@ export class AdminService {
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
     private readonly repliesDAO: RepliesDAO,
+    private readonly rejectedUsersDAO: RejectedUsersDAO,
   ) {}
 
   // 관리자 계정으로 로그인
@@ -218,42 +220,50 @@ export class AdminService {
     return returnUserInfo as IUserInfo;
   }
 
-  // 관리자 특정 회원 승인
+  // 관리자 특정 회원 정회원 승인
   async processUserApproval(
     approvalDto: ApprovalUserDto,
   ): Promise<{ message: string; userId: number; membershipStatus: EMembershipStatus }> {
-    const { userId, isApproved } = approvalDto;
+    const { userId } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-    // 1 : 이메일 인증 완료 상태
-    const isEmailVerified = user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED;
-    // 2 : 비회원 또는 이메일 인증 대기 상태
-    const isNonMemberOrPending =
-      user.membershipStatus === EMembershipStatus.NON_MEMBER ||
-      user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION;
-    // 3 : 이미 정회원 상태
-    const isAlreadyApproved = user.membershipStatus === EMembershipStatus.APPROVED_MEMBER;
+    const membershipStatus = user.membershipStatus;
 
-    if (isApproved) {
-      if (isEmailVerified) {
-        user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
-        await this.usersDAO.saveUser(user);
-        return {
-          message: '정회원 승인이 완료되었습니다.',
-          userId: user.userId,
-          membershipStatus: user.membershipStatus,
-        };
-      } else if (isNonMemberOrPending) {
-        throw new BadRequestException('아직 이메일 인증을 완료하지 않은 회원입니다.');
-      } else if (isAlreadyApproved) {
-        throw new BadRequestException('이미 정회원으로 처리된 회원입니다.');
-      }
-    } else {
-      user.rejected = true;
+    if (membershipStatus === EMembershipStatus.EMAIL_VERIFIED) {
+      const user = await this.usersDAO.findUserByUserId(userId);
+      user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
       await this.usersDAO.saveUser(user);
-      return { message: '정회원 승인이 보류되었습니다.', userId: user.userId, membershipStatus: user.membershipStatus };
+      return {
+        message: '정회원 승인이 완료되었습니다.',
+        userId: user.userId,
+        membershipStatus: user.membershipStatus,
+      };
+    } else if (
+      membershipStatus === EMembershipStatus.NON_MEMBER ||
+      membershipStatus === EMembershipStatus.PENDING_VERIFICATION
+    ) {
+      throw new BadRequestException('아직 이메일 인증을 완료하지 않은 회원입니다.');
+    } else if (membershipStatus === EMembershipStatus.APPROVED_MEMBER) {
+      throw new BadRequestException('이미 정회원으로 처리된 회원입니다.');
     }
+  }
+
+  // 관리자 특정 회원 정회원 거절
+  async processUserReject(
+    userId: number,
+    rejectedReason: string,
+  ): Promise<{ message: string; userId: number; rejectedReason: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    user.rejected = true;
+    const rejectedUser = await this.rejectedUsersDAO.createRejectedUser(userId, rejectedReason);
+
+    await this.rejectedUsersDAO.saveRejectedUser(rejectedUser);
+    await this.usersDAO.saveUser(user); 
+
+    return { message: '정회원 승인이 거절되었습니다.', userId, rejectedReason };
   }
 
   // 정지 날짜 계산

@@ -179,8 +179,8 @@ export class UsersService {
       });
     }
 
-   // 전체 결과에 대해 페이지네이션 적용
-   const paginatedResults = combinedResults.slice(skip, skip + limit);
+    // 전체 결과에 대해 페이지네이션 적용
+    const paginatedResults = combinedResults.slice(skip, skip + limit);
 
     return {
       items: paginatedResults,

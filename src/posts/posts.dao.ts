@@ -289,14 +289,16 @@ export class PostsDAO {
   }
 
   // 게시물 ID로 제목과 카테고리만 반환하는 함수
-  async findPostTitleAndBoardTypeByPostId(postId: number): Promise<{ postId: number, title: string; boardType: EBoardType } | null> {
+  async findPostTitleAndBoardTypeByPostId(
+    postId: number,
+  ): Promise<{ postId: number; title: string; boardType: EBoardType } | null> {
     const post = await this.postsRepository
       .createQueryBuilder('post')
       .select(['post.title', 'post.boardType'])
       .where('post.postId = :postId', { postId })
       .andWhere('post.deletedAt IS NULL') // 삭제된 게시물 제외
       .getOne();
-  
+
     return post ? { postId: post.postId, title: post.title, boardType: post.boardType } : null;
   }
 }

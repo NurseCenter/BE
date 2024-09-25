@@ -98,7 +98,7 @@ export class AdminService {
   }
 
   // 회원 계정 정지 처리
-  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ userId: number, suspensionEndDate: Date }> {
+  async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ userId: number; suspensionEndDate: Date }> {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     try {
@@ -110,7 +110,7 @@ export class AdminService {
 
       // 1. 이미 정지처리된 회원
       if (alreadySuspendedUser && alreadySuspendedUser.deletedAt === null) {
-        throw new ConflictException('이미 활동 정지 처리된 회원입니다.')
+        throw new ConflictException('이미 활동 정지 처리된 회원입니다.');
       }
 
       // 2. 정지된 회원테이블에 있는데 deletedAt이 날짜 (정지해제된 경우)
@@ -139,7 +139,7 @@ export class AdminService {
       user.suspensionEndDate = suspensionEndDate;
       await this.usersDAO.saveUser(user);
 
-      return { userId: user.userId, suspensionEndDate: user.suspensionEndDate }
+      return { userId: user.userId, suspensionEndDate: user.suspensionEndDate };
     } catch (error) {
       console.error('회원 계정 정치 처리 중 에러 발생: ', error);
       throw new InternalServerErrorException('회원 계정 정지 처리 중 오류가 발생했습니다.');
@@ -147,7 +147,7 @@ export class AdminService {
   }
 
   // 회원 계정 정지 취소
-  async cancelSuspension(userId: number): Promise<{ message: string, userId: number }> {
+  async cancelSuspension(userId: number): Promise<{ message: string; userId: number }> {
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
@@ -325,111 +325,71 @@ export class AdminService {
   }
 
   // 댓글 및 답글 조회
-async findAllCommentsAndReplies(page: number = 1, limit: number = 10): Promise<IPaginatedResponse<any>> {
-  const skip = (page - 1) * limit;
+  async findAllCommentsAndReplies(page: number = 1, limit: number = 10): Promise<IPaginatedResponse<any>> {
+    const skip = (page - 1) * limit;
 
-  // 댓글과 답글을 모두 조회
-  const [comments, replies] = await Promise.all([
-    this.commentsDAO.findAllComments(),
-    this.repliesDAO.findAllReplies(),
-  ]);
+    // 댓글과 답글을 모두 조회
+    const [comments, replies] = await Promise.all([
+      this.commentsDAO.findAllComments(),
+      this.repliesDAO.findAllReplies(),
+    ]);
 
-  // 댓글과 답글을 합침
-  const combinedPromises = comments.map(async (comment) => {
-    const post = await this.postsDAO.findPostEntityByPostId(comment.postId); 
+    // 댓글과 답글을 합침
+    const combinedPromises = comments.map(async (comment) => {
+      const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+
+      return {
+        id: comment.commentId, // 댓글 ID
+        type: ECommentType.COMMENT, // 댓글 표시
+        postId: post.postId || null,
+        category: post.boardType || null, // 게시물 카테고리
+        postTitle: post.title || null, // 게시물 제목
+        content: comment.content, // 댓글 내용
+        nickname: comment.nickname, // 작성자 닉네임
+        createdAt: new Date(comment.createdAt), // 작성일
+      };
+    });
+
+    const replyPromises = replies.map(async (reply) => {
+      const comment = await this.commentsDAO.findCommentById(reply.commentId);
+      const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+
+      return {
+        id: reply.replyId, // 답글 ID
+        type: ECommentType.REPLY, // 답글 표시
+        postId: post.postId || null,
+        category: post.boardType || null, // 게시물 카테고리
+        postTitle: post.title || null, // 게시물 제목
+        content: reply.content, // 답글 내용
+        nickname: reply.nickname, // 작성자 닉네임
+        createdAt: new Date(reply.createdAt), // 작성일
+      };
+    });
+
+    // 모든 댓글과 답글에 대한 Promise를 실행
+    const combined = await Promise.all([...combinedPromises, ...replyPromises]);
+
+    // 작성일자 기준으로 정렬
+    combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // 페이지네이션 처리
+    const paginatedResults = combined.slice(skip, skip + limit);
 
     return {
-      id: comment.commentId, // 댓글 ID
-      type: ECommentType.COMMENT, // 댓글 표시
-      postId: post.postId || null,
-      category: post.boardType || null, // 게시물 카테고리
-      postTitle: post.title || null, // 게시물 제목
-      content: comment.content, // 댓글 내용
-      nickname: comment.nickname, // 작성자 닉네임
-      createdAt: new Date(comment.createdAt), // 작성일
+      items: paginatedResults,
+      totalItems: combined.length,
+      totalPages: Math.ceil(combined.length / limit),
+      currentPage: page,
     };
-  });
-
-  const replyPromises = replies.map(async (reply) => {
-    const comment = await this.commentsDAO.findCommentById(reply.commentId);
-    const post = await this.postsDAO.findPostEntityByPostId(comment.postId); 
-
-    return {
-      id: reply.replyId, // 답글 ID
-      type: ECommentType.REPLY, // 답글 표시
-      postId: post.postId || null,
-      category: post.boardType || null, // 게시물 카테고리
-      postTitle: post.title || null, // 게시물 제목
-      content: reply.content, // 답글 내용
-      nickname: reply.nickname, // 작성자 닉네임
-      createdAt: new Date(reply.createdAt), // 작성일
-    };
-  });
-
-  // 모든 댓글과 답글에 대한 Promise를 실행
-  const combined = await Promise.all([...combinedPromises, ...replyPromises]);
-
-  // 작성일자 기준으로 정렬
-  combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-  // 페이지네이션 처리
-  const paginatedResults = combined.slice(skip, skip + limit);
-
-  return {
-    items: paginatedResults,
-    totalItems: combined.length,
-    totalPages: Math.ceil(combined.length / limit),
-    currentPage: page,
-  };
-}
-
-  // // 댓글 및 답글 조회
-  // async findAllCommentsAndReplies(page: number = 1, limit: number = 1): Promise<IPaginatedResponse<any>> {
-  //   const skip = (page - 1) * limit;
-
-  //   // 댓글과 답글을 모두 조회
-  //   const [comments, replies] = await Promise.all([
-  //     this.commentsDAO.findAllComments(),
-  //     this.repliesDAO.findAllReplies(),
-  //   ]);
-
-  //   // 댓글과 답글을 합침
-  //   const combined = [
-  //     ...comments.map((comment) => ({
-  //       id: comment.commentId, // 댓글 ID
-  //       type: ECommentType.COMMENT, // 댓글 혹은 답글 구분 표시
-  //       category: comment.boardType, // 게시물 카테고리
-  //       postTitle: comment.title, // 게시물 제목
-  //       content: comment.content, // 댓글 내용
-  //       nickname: comment.nickname, // 작성자 닉네임
-  //       createdAt: new Date(comment.createdAt), // 작성일
-  //     })),
-  //     ...replies.map((reply) => ({
-  //       id: reply.replyId, // 답글 ID
-  //       type: ECommentType.REPLY, // 댓글 혹은 답글 표시
-  //       category: reply.boardType, // 게시물 카테고리
-  //       postTitle: reply.title, // 게시물 제목
-  //       content: reply.content, // 답글 내용
-  //       nickname: reply.nickname, // 작성자 닉네임
-  //       createdAt: new Date(reply.createdAt), // 작성일
-  //     })),
-  //   ];
-
-  //   // 작성일자 기준으로 정렬
-  //   combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-  //   const paginatedResults = combined.slice(skip, skip + limit);
-
-  //   return {
-  //     items: paginatedResults,
-  //     totalItems: combined.length,
-  //     totalPages: Math.ceil(combined.length / limit),
-  //     currentPage: page
-  //   }
-  // }
+  }
 
   // 댓글 또는 답글 삭제
-  async deleteCommentOrReplyById(id: number): Promise<void> {
-    await this.commentsDAO.deleteCommentOrReply(id);
+  async deleteCommentOrReplyById(type: ECommentType, commentId: number): Promise<void> {
+    switch (type) {
+      case ECommentType.COMMENT:
+        await this.commentsDAO.deleteComment(commentId);
+      case ECommentType.REPLY:
+        await this.repliesDAO.deleteReply(commentId);
+    }
   }
 }

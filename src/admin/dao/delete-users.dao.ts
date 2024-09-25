@@ -30,7 +30,7 @@ export class DeletedUsersDAO {
   async findDeletedUserByUserId(userId: number): Promise<DeletedUsersEntity> {
     return await this.deletedUsersRepository.findOne({
       where: { userId },
-      withDeleted: true
+      withDeleted: true,
     });
   }
 }

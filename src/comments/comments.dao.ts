@@ -72,9 +72,13 @@ export class CommentsDAO {
   }
 
   // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
-  async findCommentsWithReplies(postId: number, page: number, limit: number): Promise<{ comments: CommentWithRepliesDto[]; total: number }> {
+  async findCommentsWithReplies(
+    postId: number,
+    page: number,
+    limit: number,
+  ): Promise<{ comments: CommentWithRepliesDto[]; total: number }> {
     const skip = (page - 1) * limit;
-  
+
     // 댓글 조회
     const comments = await this.commentsRepository
       .createQueryBuilder('comment')
@@ -94,7 +98,7 @@ export class CommentsDAO {
       .skip(skip)
       .take(limit)
       .getRawMany();
-  
+
     // 총 댓글 수 조회
     const total = await this.commentsRepository.count({
       where: {
@@ -102,44 +106,46 @@ export class CommentsDAO {
         deletedAt: null,
       },
     });
-  
+
     // 댓글과 각 댓글에 대한 답글 조회
-    const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(comments.map(async (comment) => {
-      const replies = await this.repliesRepository
-        .createQueryBuilder('reply')
-        .leftJoinAndSelect('reply.user', 'user')
-        .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId: comment.commentId })
-        .select([
-          'reply.replyId AS replyId',
-          'reply.content AS content',
-          'reply.createdAt AS createdAt',
-          'reply.updatedAt AS updatedAt',
-          'user.userId AS userId',
-          'user.nickname AS nickname',
-        ])
-        .orderBy('reply.createdAt', 'ASC')
-        .getRawMany();
-  
-      return {
-        commentId: comment.commentId,
-        content: comment.content,
-        postId: comment.postId,
-        boardType: comment.boardType,
-        createdAt: comment.createdAt,
-        updatedAt: comment.updatedAt,
-        userId: comment.userId,
-        nickname: comment.nickname,
-        replies: replies.map(reply => ({
-          replyId: reply.replyId,
-          content: reply.content,
-          createdAt: reply.createdAt,
-          updatedAt: reply.updatedAt,
-          userId: reply.userId,
-          nickname: reply.nickname,
-        })),
-      };
-    }));
-  
+    const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(
+      comments.map(async (comment) => {
+        const replies = await this.repliesRepository
+          .createQueryBuilder('reply')
+          .leftJoinAndSelect('reply.user', 'user')
+          .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId: comment.commentId })
+          .select([
+            'reply.replyId AS replyId',
+            'reply.content AS content',
+            'reply.createdAt AS createdAt',
+            'reply.updatedAt AS updatedAt',
+            'user.userId AS userId',
+            'user.nickname AS nickname',
+          ])
+          .orderBy('reply.createdAt', 'ASC')
+          .getRawMany();
+
+        return {
+          commentId: comment.commentId,
+          content: comment.content,
+          postId: comment.postId,
+          boardType: comment.boardType,
+          createdAt: comment.createdAt,
+          updatedAt: comment.updatedAt,
+          userId: comment.userId,
+          nickname: comment.nickname,
+          replies: replies.map((reply) => ({
+            replyId: reply.replyId,
+            content: reply.content,
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
+            userId: reply.userId,
+            nickname: reply.nickname,
+          })),
+        };
+      }),
+    );
+
     return { comments: commentsWithReplies, total };
   }
 
@@ -248,36 +254,8 @@ export class CommentsDAO {
       .getRawOne();
   }
 
-  // 관리자 댓글 또는 답글 삭제
-  async deleteCommentOrReply(id: number): Promise<void> {
-    // 댓글인지 확인
-    const comment = await this.commentsRepository.findOne({
-      where: { commentId: id, deletedAt: null },
-    });
-
-    if (comment) {
-      // 댓글 삭제
-      await this.commentsRepository.softDelete(id);
-      return;
-    }
-
-    // 답글인지 확인
-    const reply = await this.repliesRepository.findOne({
-      where: { replyId: id, deletedAt: null },
-    });
-
-    if (reply) {
-      // 답글 삭제
-      await this.repliesRepository.softDelete(id);
-      return;
-    }
-
-    // 댓글도 답글도 아닌 경우
-    throw new Error('댓글 또는 답글을 찾을 수 없습니다.');
-  }
-
   // 특정 게시물에 달린 댓글 수 구하기
   async countAllCommentsByPostId(postId: number): Promise<number> {
-    return this.commentsRepository.count({ where: { postId, deletedAt: null }})
+    return this.commentsRepository.count({ where: { postId, deletedAt: null } });
   }
 }

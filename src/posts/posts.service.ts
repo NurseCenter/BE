@@ -39,7 +39,7 @@ export class PostsService {
     private readonly likesDAO: LikesDAO,
     private readonly usersDAO: UsersDAO,
     private readonly commentsDAO: CommentsDAO,
-    private readonly repliesDAO: RepliesDAO
+    private readonly repliesDAO: RepliesDAO,
   ) {}
 
   // 모든 게시글 조회
@@ -50,15 +50,17 @@ export class PostsService {
     const { posts, total } = await this.postsDAO.findPosts(boardType, getPostsQueryDto);
     const { limit, page } = getPostsQueryDto;
 
-      // 각 게시물에 댓글 및 답글 수 추가
-      const postsWithCounts = await Promise.all(posts.map(async (post) => {
+    // 각 게시물에 댓글 및 답글 수 추가
+    const postsWithCounts = await Promise.all(
+      posts.map(async (post) => {
         const total = await this.getNumberOfCommentsAndReplies(post.postId);
 
         return {
           ...post,
-          numberOfCommentsAndReplies: total
+          numberOfCommentsAndReplies: total,
         };
-      }));
+      }),
+    );
 
     return {
       items: postsWithCounts,
@@ -81,9 +83,11 @@ export class PostsService {
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
-  
+
     if (boardType === EBoardType.NOTICE && !user.isAdmin) {
-      throw new ForbiddenException('공지사항은 서비스 이용에 필요한 중요한 정보를 제공하기 위해 관리자만 직접 작성할 수 있습니다.');
+      throw new ForbiddenException(
+        '공지사항은 서비스 이용에 필요한 중요한 정보를 제공하기 위해 관리자만 직접 작성할 수 있습니다.',
+      );
     }
 
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
@@ -138,7 +142,7 @@ export class PostsService {
       isLiked, // 좋아요 여부
       isScraped, // 스크랩 여부
       user: post.user, // 작성자 정보
-      numberOfComments: numberOfCommentsAndReplies // 댓글과 답글 수
+      numberOfComments: numberOfCommentsAndReplies, // 댓글과 답글 수
     };
   }
 

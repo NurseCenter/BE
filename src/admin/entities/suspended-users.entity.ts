@@ -32,7 +32,7 @@ export class SuspendedUsersEntity {
   // 정지당한 횟수
   // 기본이 0이고, 누적될 때마다 1씩 증가
   @Column({ default: 1 })
-  suspensionCount: number; 
+  suspensionCount: number;
 
   // 정지당한 날짜
   @CreateDateColumn()

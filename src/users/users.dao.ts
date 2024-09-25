@@ -36,7 +36,7 @@ export class UsersDAO {
 
   // 회원 ID로 회원 찾기
   async findUserByUserId(userId: number): Promise<UsersEntity | undefined> {
-    return this.usersRepository.findOne({ where: { userId }});
+    return this.usersRepository.findOne({ where: { userId } });
   }
 
   // 회원 ID로 회원 찾기 (탈퇴한 회원도 조회됨)

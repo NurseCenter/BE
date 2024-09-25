@@ -52,22 +52,22 @@ export class CommentsService {
     };
   }
 
-    // 특정 게시물의 모든 댓글 조회 (답글 포함)
-    async getCommentsWithRepliesInOnePost(
-      boardType: EBoardType,
-      postId: number,
-      paginationQueryDto: PaginationQueryDto,
-    ): Promise<IPaginatedResponse<any>> {
-      const { page = 1, limit = 10 } = paginationQueryDto;
-      const result = await this.commentsDAO.findCommentsWithReplies(postId, page, limit);
-  
-      return {
-        items: result.comments,
-        totalItems: result.total,
-        totalPages: Math.ceil(result.total / limit),
-        currentPage: page,
-      };
-    }
+  // 특정 게시물의 모든 댓글 조회 (답글 포함)
+  async getCommentsWithRepliesInOnePost(
+    boardType: EBoardType,
+    postId: number,
+    paginationQueryDto: PaginationQueryDto,
+  ): Promise<IPaginatedResponse<any>> {
+    const { page = 1, limit = 10 } = paginationQueryDto;
+    const result = await this.commentsDAO.findCommentsWithReplies(postId, page, limit);
+
+    return {
+      items: result.comments,
+      totalItems: result.total,
+      totalPages: Math.ceil(result.total / limit),
+      currentPage: page,
+    };
+  }
 
   // 특정 게시물의 모든 댓글 조회
   async getCommentsInOnePost(

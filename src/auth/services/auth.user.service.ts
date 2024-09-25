@@ -105,7 +105,6 @@ export class AuthUserService {
     }
   }
 
-
   // 회원 ID로 회원 상태 확인
   async checkUserStatusByUserId(userId: number): Promise<IMembershipStatusResponse> {
     const user = await this.usersDAO.findUserByUserId(userId);

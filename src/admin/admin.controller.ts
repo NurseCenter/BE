@@ -23,6 +23,8 @@ import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { SignInUserDto } from 'src/auth/dto';
 import { Request, Response } from 'express';
 import { UserIdDto } from './dto/userId-dto';
+import { GetOneCommentDto } from './dto/get-one-comment.dto';
+import { ECommentType } from 'src/users/enums';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -123,7 +125,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string, userId }> {
+  async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string; userId }> {
     const { userId, deletionReason } = deleteUserDto;
     await this.adminService.withdrawUserByAdmin(userId, deletionReason);
     return { message: '회원 강제 탈퇴 처리가 완료되었습니다.', userId };
@@ -186,9 +188,9 @@ export class AdminController {
     description: '회원 정지 처리가 완료되었습니다.',
     schema: {
       example: {
-        "message": "회원 정지 처리가 완료되었습니다.",
-        "userId": 60,
-        "suspensionEndDate": "2024-10-08T11:37:41.823Z"
+        message: '회원 정지 처리가 완료되었습니다.',
+        userId: 60,
+        suspensionEndDate: '2024-10-08T11:37:41.823Z',
       },
     },
   })
@@ -199,7 +201,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSuspensionByAdmin(@Body() suspensionUserDto: SuspensionUserDto): Promise<{ message: string, userId: number, suspensionEndDate: Date }> {
+  async postSuspensionByAdmin(
+    @Body() suspensionUserDto: SuspensionUserDto,
+  ): Promise<{ message: string; userId: number; suspensionEndDate: Date }> {
     const result = await this.adminService.suspendUserByAdmin(suspensionUserDto);
     return { message: '회원 정지 처리가 완료되었습니다.', ...result };
   }
@@ -443,7 +447,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deletePost(@Param('postId') postId: number): Promise<{ message: string, postId: number }> {
+  async deletePost(@Param('postId') postId: number): Promise<{ message: string; postId: number }> {
     await this.adminService.deletePost(postId);
     return { message: '게시물이 성공적으로 삭제되었습니다.', postId };
   }
@@ -462,17 +466,27 @@ export class AdminController {
       example: {
         items: [
           {
-            id: 123,
-            category: '공지사항',
-            postTitle: '게시물 제목',
-            content: '댓글 내용',
-            nickname: '홍길동',
-            createdAt: '2024-01-01T00:00:00Z',
+            id: 29,
+            type: 'reply',
+            postId: 8,
+            category: 'notice',
+            postTitle: '간호학과 실습 병원 변경 안내',
+            content: '유저41번이 남긴 답글이다',
+            createdAt: '2024-09-23T05:23:22.541Z',
+          },
+          {
+            id: 67,
+            type: 'comment',
+            postId: 1,
+            category: 'job',
+            postTitle: '제목 수정할게요. 되는지 보자',
+            content: '유저41번이 남긴 댓글',
+            createdAt: '2024-09-23T05:21:23.690Z',
           },
         ],
-        totalItems: 1,
-        totalPages: 1,
-        currentPage: 1,
+        totalItems: 119,
+        totalPages: 12,
+        currentPage: 4,
       },
     },
   })
@@ -489,17 +503,18 @@ export class AdminController {
   }
 
   // 관리자 특정 댓글 혹은 답글 삭제
-  // 댓글이나 답글 ID 넘겨주면 삭제함.
+  // 댓글 혹은 답글의 종류, ID 값을 넘겨주면 삭제함.
   @UseGuards(AdminGuard)
-  @Delete('comments/:commentId')
+  @Delete('comments')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
-  @ApiParam({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
+  @ApiQuery({ name: 'type', type: String, description: '댓글 또는 답글 타입', enum: ECommentType })
+  @ApiQuery({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
   @ApiResponse({
     status: 200,
     description: '댓글 또는 답글 삭제 성공',
     schema: {
-      example: { message: '댓글이 성공적으로 삭제되었습니다.' },
+      example: { message: '댓글이 성공적으로 삭제되었습니다.', type: 'reply', commentId: 128 },
     },
   })
   @ApiResponse({
@@ -509,8 +524,11 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteComment(@Param('commentId') commentId: number): Promise<{ message: string }> {
-    await this.adminService.deleteCommentOrReplyById(commentId);
-    return { message: '댓글이 성공적으로 삭제되었습니다.' };
+  async deleteComment(
+    @Query() getOneCommentDto: GetOneCommentDto,
+  ): Promise<{ message: string; type: ECommentType; commentId: number }> {
+    const { type, commentId } = getOneCommentDto;
+    await this.adminService.deleteCommentOrReplyById(type, commentId);
+    return { message: '댓글이 성공적으로 삭제되었습니다.', type, commentId };
   }
 }

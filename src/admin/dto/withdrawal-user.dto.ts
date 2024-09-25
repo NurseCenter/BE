@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class DeletionUserDto {
+export class WithdrawalUserDto {
   @ApiProperty({
     description: '사용자 ID',
     example: 123,

@@ -14,17 +14,14 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
-import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { ApprovalUserDto, DeletionUserDto } from './dto';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
-import { SignInUserDto } from 'src/auth/dto';
 import { Request, Response } from 'express';
-import { UserIdDto } from './dto/userId-dto';
-import { GetOneCommentDto } from './dto/get-one-comment.dto';
 import { ECommentType } from 'src/users/enums';
+import { SignInUserDto } from 'src/auth/dto';
+import { WithdrawalUserDto, CancelWithdrawalDto, UserIdDto, SuspensionUserDto, ApprovalUserDto, GetOneCommentDto } from './dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -100,13 +97,13 @@ export class AdminController {
   @HttpCode(200)
   @ApiOperation({ summary: '관리자의 회원 강제 탈퇴 처리' })
   @ApiBody({
-    type: DeletionUserDto,
+    type: WithdrawalUserDto,
     description: '회원 탈퇴에 필요한 정보',
     examples: {
       'application/json': {
         value: {
           userId: 123,
-          deletionReason: '탈퇴 사유',
+          deletionReason: '회원이 탈퇴 당하는 사유',
         },
       },
     },
@@ -125,25 +122,20 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteUserByAdmin(@Body() deleteUserDto: DeletionUserDto): Promise<{ message: string; userId }> {
-    const { userId, deletionReason } = deleteUserDto;
+  async postWithdrawalByAdmin(@Body() withdrawalUserDto: WithdrawalUserDto): Promise<{ message: string; userId: number }> {
+    const { userId, deletionReason } = withdrawalUserDto;
     await this.adminService.withdrawUserByAdmin(userId, deletionReason);
     return { message: '회원 강제 탈퇴 처리가 완료되었습니다.', userId };
   }
 
-  // 관리자 회원 탈퇴 취소
+  // 관리자 회원 강제 탈퇴 취소(해제)
   @UseGuards(AdminGuard)
   @Post('withdrawal/cancel')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '관리자의 회원 강제 탈퇴 취소' })
   @ApiBody({
-    type: Number,
-    description: '강제 탈퇴 취소에 필요한 사용자 ID',
-    examples: {
-      'application/json': {
-        value: 123,
-      },
-    },
+    type: CancelWithdrawalDto,
+    description: '관리자의 회원 강제 탈퇴 취소(해제)에 필요한 사용자 ID',
   })
   @ApiResponse({
     status: 200,
@@ -162,7 +154,7 @@ export class AdminController {
   async postCancelWithdrawal(@Body() userIdDto: UserIdDto) {
     const { userId } = userIdDto;
     await this.adminService.cancelWithdrawal(userId);
-    return { message: '회원 강제 탈퇴 취소 처리가 완료되었습니다.', userId };
+    return { message: '회원 강제 탈퇴 취소(해제) 처리가 완료되었습니다.', userId };
   }
 
   // 관리자 회원 정지 처리

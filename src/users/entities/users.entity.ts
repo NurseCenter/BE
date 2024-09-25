@@ -3,10 +3,19 @@ import { PostsEntity } from '../../posts/entities/base-posts.entity';
 import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { LoginsEntity } from 'src/auth/entities/logins.entity';
 import { ReportPostsEntity } from '../../reports/entities/report-posts.entity';
 import { ReportCommentsEntity } from '../../reports/entities/report-comments.entity';
+import { DeletedUsersEntity, RejectedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
 
 @Entity('users')
 export class UsersEntity {
@@ -64,7 +73,7 @@ export class UsersEntity {
   @Column()
   certificationDocumentUrl: string;
 
-  // 가입 보류 여부
+  // 정회원 승인 보류 여부 (가입 거절)
   @Column({ type: 'boolean', default: false })
   rejected: boolean;
 
@@ -117,4 +126,16 @@ export class UsersEntity {
   // 이 사용자가 신고받은 댓글들
   @OneToMany(() => ReportCommentsEntity, (reportPost) => reportPost.reportedUser)
   receivedCommentReports: ReportCommentsEntity[];
+
+  // 이 회원이 정회원 승인 보류 (가입거절)된 경우의 기록 (1:1 관계)
+  @OneToOne(() => RejectedUsersEntity, (rejectedUser) => rejectedUser.user, { nullable: true })
+  rejectedUser: RejectedUsersEntity;
+
+  // 이 회원의 탈퇴 정보 (1:1 관계)
+  @OneToOne(() => DeletedUsersEntity, (deletedUser) => deletedUser.user, { nullable: true })
+  deletedUser: DeletedUsersEntity;
+
+  // 이 회원의 정지 정보 (1:1 관계)
+  @OneToOne(() => SuspendedUsersEntity, (suspendedUser) => suspendedUser.user, { nullable: true })
+  suspendedUser: SuspendedUsersEntity;
 }

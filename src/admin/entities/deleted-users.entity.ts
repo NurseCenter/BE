@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { UsersEntity } from 'src/users/entities/users.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn, OneToOne } from 'typeorm';
 
 @Entity('deleted_users')
 export class DeletedUsersEntity {
@@ -22,4 +23,8 @@ export class DeletedUsersEntity {
   // 원래 상태로 돌아감
   @DeleteDateColumn()
   deletedAt: Date;
+
+  // 탈퇴된 회원과의 관계 설정 (1:1 관계)
+  @OneToOne(() => UsersEntity, (user) => user.deletedUser)
+  user: UsersEntity;
 }

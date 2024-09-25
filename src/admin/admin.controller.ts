@@ -21,7 +21,14 @@ import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { Request, Response } from 'express';
 import { ECommentType } from 'src/users/enums';
 import { SignInUserDto } from 'src/auth/dto';
-import { WithdrawalUserDto, CancelWithdrawalDto, UserIdDto, SuspensionUserDto, ApprovalUserDto, GetOneCommentDto } from './dto';
+import {
+  WithdrawalUserDto,
+  CancelWithdrawalDto,
+  UserIdDto,
+  SuspensionUserDto,
+  ApprovalUserDto,
+  GetOneCommentDto,
+} from './dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -122,7 +129,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postWithdrawalByAdmin(@Body() withdrawalUserDto: WithdrawalUserDto): Promise<{ message: string; userId: number }> {
+  async postWithdrawalByAdmin(
+    @Body() withdrawalUserDto: WithdrawalUserDto,
+  ): Promise<{ message: string; userId: number }> {
     const { userId, deletionReason } = withdrawalUserDto;
     await this.adminService.withdrawUserByAdmin(userId, deletionReason);
     return { message: '회원 강제 탈퇴 처리가 완료되었습니다.', userId };
@@ -200,23 +209,23 @@ export class AdminController {
     return { message: '회원 정지 처리가 완료되었습니다.', ...result };
   }
 
-  // 관리자 회원 정지 취소
+  // 관리자 회원 정지 취소(해제)
   @UseGuards(AdminGuard)
   @Post('suspension/cancel')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '회원 정지 취소' })
+  @ApiOperation({ summary: '관리자의 회원 정지 해제' })
   @ApiBody({
     type: Number,
-    description: '정지 취소에 필요한 사용자 ID',
+    description: '관리자의 활동정지 해제 요청에 필요한 회원 ID',
     schema: {
       example: { userId: 123 },
     },
   })
   @ApiResponse({
     status: 200,
-    description: '회원 정지 취소가 완료되었습니다.',
+    description: '관리자의 회원 활동 정지 해제가 완료되었습니다.',
     schema: {
-      example: { message: '회원 정지 취소가 완료되었습니다.' },
+      example: { message: '관리자의 회원 활동 정지 해제가 완료되었습니다.' },
     },
   })
   @ApiResponse({
@@ -342,7 +351,7 @@ export class AdminController {
     return await this.adminService.showUserApprovals(page, limit);
   }
 
-  // 관리자 회원 가입 승인 및 거절 처리
+  // 관리자의 정회원 승인 및 거절 처리
   @UseGuards(AdminGuard)
   @Post('approval')
   @HttpCode(HttpStatus.OK)
@@ -352,7 +361,7 @@ export class AdminController {
     examples: {
       '승인 완료': {
         value: { userId: 123, isApproved: true },
-        description: '회원 가입을 승인합니다.',
+        description: '회원 가입을 승인합니다. 승인 받은 회원은 정회원이 됩니다.',
       },
       '승인 거절': {
         value: { userId: 123, isApproved: false },

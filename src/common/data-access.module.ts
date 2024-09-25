@@ -9,7 +9,7 @@ import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { DeletedUsersDAO, SuspendedUsersDAO } from 'src/admin/dao';
-import { DeletedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
+import { DeletedUsersEntity, RejectedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
 import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { LikesDAO } from 'src/likes/likes.dao';
@@ -17,6 +17,7 @@ import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { ReportCommentsEntity, ReportPostsEntity } from 'src/reports/entities';
 import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
 import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
+import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
       RepliesEntity,
       DeletedUsersEntity,
       SuspendedUsersEntity,
+      RejectedUsersEntity,
       ScrapsEntity,
       LikesEntity,
       ReportPostsEntity,
@@ -41,6 +43,7 @@ import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
     RepliesDAO,
     DeletedUsersDAO,
     SuspendedUsersDAO,
+    RejectedUsersDAO,
     ScrapsDAO,
     LikesDAO,
     ReportedPostsDAO,
@@ -54,6 +57,7 @@ import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
     RepliesDAO,
     DeletedUsersDAO,
     SuspendedUsersDAO,
+    RejectedUsersDAO,
     ScrapsDAO,
     LikesDAO,
     ReportedPostsDAO,

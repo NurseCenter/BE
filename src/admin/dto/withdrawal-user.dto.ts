@@ -4,7 +4,7 @@ import { IsString, IsNotEmpty } from 'class-validator';
 
 export class WithdrawalUserDto {
   @ApiProperty({
-    description: '사용자 ID',
+    description: '회원 ID',
     example: 123,
   })
   @IsNotEmpty()

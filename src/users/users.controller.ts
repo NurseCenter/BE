@@ -107,7 +107,7 @@ export class UsersController {
       },
     },
   })
-  async checkEmail(@Body() body: { email: string }) {
+  async checkEmail(@Body() body: { email: string }): Promise<{ available: boolean }> {
     const available = await this.usersService.isEmailAvailable(body.email);
     return { available };
   }

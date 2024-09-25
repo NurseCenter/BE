@@ -244,7 +244,7 @@ export class UsersService {
 
   // 회원가입시 닉네임 중복여부 확인
   async isNicknameAvailable(nickname: string): Promise<boolean> {
-    const user = await this.usersDAO.findUserByNickname(nickname);
+    const user = await this.usersDAO.checkNicknameExists(nickname);
     return !user;
   }
 

@@ -221,7 +221,7 @@ export class AdminService {
   // 관리자 특정 회원 승인
   async processUserApproval(
     approvalDto: ApprovalUserDto,
-  ): Promise<{ message: string; membershipStatus: EMembershipStatus }> {
+  ): Promise<{ message: string; userId: number; membershipStatus: EMembershipStatus }> {
     const { userId, isApproved } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
@@ -239,7 +239,11 @@ export class AdminService {
       if (isEmailVerified) {
         user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
         await this.usersDAO.saveUser(user);
-        return { message: '회원 가입 승인이 완료되었습니다.', membershipStatus: user.membershipStatus };
+        return {
+          message: '정회원 승인이 완료되었습니다.',
+          userId: user.userId,
+          membershipStatus: user.membershipStatus,
+        };
       } else if (isNonMemberOrPending) {
         throw new BadRequestException('아직 이메일 인증을 완료하지 않은 회원입니다.');
       } else if (isAlreadyApproved) {
@@ -248,7 +252,7 @@ export class AdminService {
     } else {
       user.rejected = true;
       await this.usersDAO.saveUser(user);
-      return { message: '회원 가입 승인이 거절되었습니다.', membershipStatus: user.membershipStatus };
+      return { message: '정회원 승인이 보류되었습니다.', userId: user.userId, membershipStatus: user.membershipStatus };
     }
   }
 

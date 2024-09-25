@@ -5,12 +5,14 @@ import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
 import { IUserWithoutPassword, IMembershipStatusResponse, ISignUpResponse } from '../interfaces';
+import { SuspendedUsersDAO } from 'src/admin/dao';
 
 @Injectable()
 export class AuthUserService {
   constructor(
     private readonly authPasswordService: AuthPasswordService,
     private readonly usersDAO: UsersDAO,
+    private readonly suspendedUsersDAO: SuspendedUsersDAO,
   ) {}
 
   // 회원 생성
@@ -145,5 +147,35 @@ export class AuthUserService {
     await this.usersDAO.saveUser(user);
 
     return user;
+  }
+
+  // 회원 정지 여부 확인
+  async isUserSuspended(userId: number): Promise<boolean> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    }
+
+    const suspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
+
+    // suspendedUser가 존재하지 않으면 false
+    if (!suspendedUser) {
+      return false;
+    }
+
+    // deletedAt이 null이면 정지 상태
+    if (!suspendedUser.deletedAt) {
+      return true;
+    }
+
+    // suspensionEndDate가 있는 경우
+    // 현재 날짜보다 최신이면 정지 상태
+    if (user.suspensionEndDate) {
+      const now = new Date();
+      return user.suspensionEndDate > now;
+    }
+
+    // 나머지 경우는 정지되지 않은 것으로 간주
+    return false;
   }
 }

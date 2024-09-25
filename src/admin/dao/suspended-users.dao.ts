@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
+import { ESuspensionDuration } from '../enums';
 
 @Injectable()
 export class SuspendedUsersDAO {
@@ -33,5 +34,43 @@ export class SuspendedUsersDAO {
       withDeleted: true,
     });
     return suspendedUser;
+  }
+
+  // 특정 회원의 정지 내역 정보 제공
+  async findSuspendedUserInfoByUserId(userId: number) {
+    const suspendedUser = await this.suspendedUsersRepository.findOne({
+      where: { userId },
+    });
+
+    // suspendedUser가 없을 경우 null 반환
+    if (!suspendedUser) {
+      return null;
+    }
+
+    const { suspensionDuration, suspensionEndDate, suspensionReason } = suspendedUser;
+    const formattedDuration = this.formatSuspensionDuration(suspensionDuration);
+
+    return {
+      userId,
+      suspensionDuration: formattedDuration,
+      suspensionEndDate,
+      suspensionReason,
+    };
+  }
+
+  // 정지 기간 클라이언트 반환시 포맷 변경
+  private formatSuspensionDuration(duration: ESuspensionDuration): string {
+    switch (duration) {
+      case ESuspensionDuration.ONE_WEEK:
+        return '1주';
+      case ESuspensionDuration.TWO_WEEKS:
+        return '2주';
+      case ESuspensionDuration.THREE_WEEKS:
+        return '3주';
+      case ESuspensionDuration.FOUR_WEEKS:
+        return '4주';
+      default:
+        return '알 수 없는 기간';
+    }
   }
 }

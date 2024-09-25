@@ -12,6 +12,8 @@ import { promisify } from 'util';
 import clearCookieOptions from './cookie-options/clear-cookie-options';
 import { ISignUpResponse } from './interfaces';
 import { extractSessionIdFromCookie } from 'src/common/utils/extract-sessionId.util';
+import { SuspendedUsersDAO } from 'src/admin/dao';
+import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +26,8 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly authTwilioService: AuthTwilioService,
     private readonly usersDAO: UsersDAO,
+    private readonly suspendedUsersDAO: SuspendedUsersDAO,
+    private readonly rejectedUsersDAO: RejectedUsersDAO,
   ) {}
 
   // 회원가입
@@ -64,7 +68,22 @@ export class AuthService {
     // 4. 임시 비밀번호로 로그인했는지 확인
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(user.userId);
 
-    // 5. req.login을 통해 세션에 사용자 정보 저장
+    // 5. 회원의 정지 여부 확인
+    const isSuspended = await this.authUserService.isUserSuspended(user.userId);
+
+    let suspensionDetails = null;
+    if (isSuspended) {
+      // 6. 회원의 정지 정보 가져오기 (정지된 경우에만)
+      suspensionDetails = await this.suspendedUsersDAO.findSuspendedUserInfoByUserId(user.userId);
+    }
+
+    // 7. 회원의 정회원 거절 여부 정보 가져오기
+    let rejectedReason = null;
+    if (user.rejected) {
+      rejectedReason = await this.rejectedUsersDAO.findRejectedUserByUserId(user.userId);
+    }
+
+    // 8. req.login을 통해 세션에 사용자 정보 저장
     req.login(user, async (err) => {
       if (err) {
         console.error('로그인 실패: ', err);
@@ -73,7 +92,7 @@ export class AuthService {
 
       // console.log('현재 로그인 후 req.sessionID', req.sessionID);
 
-      // 6. MySQL에 회원 로그인 기록을 저장
+      // 9. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
       // 전송할 메시지 설정
@@ -81,13 +100,18 @@ export class AuthService {
         ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
         : '로그인이 완료되었습니다.';
 
-      // 7. 응답 전송
+      // 10. 응답 전송
       return res.status(200).json({
         message,
         user: {
           userId: user.userId,
           email: user.email,
           nickname: user.nickname,
+          rejected: user.rejected,
+          rejectedReason,
+          isTempPasswordSignIn,
+          isSuspended,
+          ...suspensionDetails,
         },
       });
     });

@@ -1,12 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EMembershipStatus } from 'src/users/enums';
-import { dateToISOString } from 'src/common/utils/data.utils';
+import { ConversionUtil } from 'src/common/utils/conversion.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
 import { IUserWithoutPassword, ISignUpResponse } from '../interfaces';
 import { SuspendedUsersDAO } from 'src/admin/dao';
 import { AuthSignInService } from './auth.signIn.service';
+import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 
 @Injectable()
 export class AuthUserService {
@@ -15,6 +16,7 @@ export class AuthUserService {
     private readonly authSignInService: AuthSignInService,
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
+    private readonly rejectedUsersDAO: RejectedUsersDAO,
   ) {}
 
   // 회원 생성
@@ -61,6 +63,8 @@ export class AuthUserService {
 
     // 비밀번호를 제외한 사용자 정보 반환
     const { password, ...userWithoutPassword } = user;
+
+    const { dateToISOString } = ConversionUtil;
 
     const returnedUser = {
       ...userWithoutPassword,
@@ -117,36 +121,20 @@ export class AuthUserService {
     const suspensionDetails = await this.suspendedUsersDAO.findSuspendedUserInfoByUserId(userId);
     const isSuspended = !!suspensionDetails;
 
+    const rejectedUser = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);
+
     return {
-      userId: user.userId,
-      email: user.email,
-      nickname: user.nickname,
-      membershipStatus: status,
-      rejected: user.rejected,
-      isTempPasswordSignIn: await this.authSignInService.checkTempPasswordSignIn(userId),
-      isSuspended,
-      ...(isSuspended ? suspensionDetails : {}),
+      userId: user.userId, // 회원 ID
+      email: user.email, // 이메일
+      nickname: user.nickname, // 닉네임
+      membershipStatus: status, // 회원 상태
+      rejected: user.rejected, // 정회원 승인 거절 여부
+      rejectedReason: rejectedUser.rejectedReason, // 정회원 승인 거절 이유
+      isTempPasswordSignIn: await this.authSignInService.checkTempPasswordSignIn(userId), // 임시 비밀번호 로그인 여부
+      isSuspended, // 계정 정지 여부
+      ...(isSuspended ? suspensionDetails : {}), // 정지사유, 정지해제 날짜, 정지 기간
     };
   }
-
-  // // 회원 ID로 회원 상태 확인
-  // async checkUserStatusByUserId(userId: number): Promise<IMembershipStatusResponse> {
-  //   const user = await this.usersDAO.findUserByUserId(userId);
-  //   const status = user.membershipStatus;
-
-  //   switch (status) {
-  //     case EMembershipStatus.NON_MEMBER:
-  //       return { status: 'non_member', message: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' };
-  //     case EMembershipStatus.PENDING_VERIFICATION:
-  //       return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
-  //     case EMembershipStatus.EMAIL_VERIFIED:
-  //       return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.' };
-  //     case EMembershipStatus.APPROVED_MEMBER:
-  //       return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.' };
-  //     default:
-  //       throw new Error('존재하지 않는 사용자 상태입니다.');
-  //   }
-  // }
 
   // 회원 ID로 관리자 여부 확인
   async checkIsAdminByUserId(userId: number): Promise<boolean> {

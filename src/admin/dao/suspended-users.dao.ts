@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
 import { ESuspensionDuration } from '../enums';
+import { ConversionUtil } from 'src/common/utils/conversion.utils'; 
 
 @Injectable()
 export class SuspendedUsersDAO {
@@ -47,13 +48,14 @@ export class SuspendedUsersDAO {
       return null;
     }
 
+    const { toKST } = ConversionUtil;
     const { suspensionDuration, suspensionEndDate, suspensionReason } = suspendedUser;
     const formattedDuration = this.formatSuspensionDuration(suspensionDuration);
 
     return {
       userId,
       suspensionDuration: formattedDuration,
-      suspensionEndDate,
+      suspensionEndDate: toKST(suspensionEndDate),
       suspensionReason,
     };
   }

@@ -78,9 +78,11 @@ export class AuthService {
     }
 
     // 7. 회원의 정회원 거절 여부 정보 가져오기
+    let rejectedUser = null;
     let rejectedReason = null;
     if (user.rejected) {
-      rejectedReason = await this.rejectedUsersDAO.findRejectedUserByUserId(user.userId);
+      rejectedUser = await this.rejectedUsersDAO.findRejectedUserByUserId(user.userId);
+      rejectedReason = rejectedUser?.rejectedReason;
     }
 
     // 8. req.login을 통해 세션에 사용자 정보 저장
@@ -107,8 +109,9 @@ export class AuthService {
           userId: user.userId,
           email: user.email,
           nickname: user.nickname,
+          membershipStatus: user.membershipStatus,
           rejected: user.rejected,
-          rejectedReason,
+          ...(rejectedReason !== null && { rejectedReason }),
           isTempPasswordSignIn,
           isSuspended,
           ...suspensionDetails,

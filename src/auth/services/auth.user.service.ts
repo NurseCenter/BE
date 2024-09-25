@@ -23,16 +23,21 @@ export class AuthUserService {
   async addNewUser(createUserDto: CreateUserDto): Promise<ISignUpResponse> {
     const { email, password, nickname } = createUserDto;
 
+    // 이메일로 존재하는 회원 확인
     const existingUser = await this.usersDAO.findUserByEmail(email);
 
     if (existingUser) {
       if (existingUser.deletedAt !== null) {
         throw new ConflictException('이미 탈퇴한 회원입니다.');
-      } else if (existingUser.email === email) {
+      } else {
         throw new ConflictException('이미 가입된 회원입니다.');
-      } else if (existingUser.nickname === nickname) {
-        throw new ConflictException('이미 존재하는 닉네임입니다.');
       }
+    }
+
+    // 닉네임 중복 여부 확인
+    const nicknameExists = await this.usersDAO.checkNicknameExists(nickname);
+    if (nicknameExists) {
+      throw new ConflictException('이미 사용 중인 닉네임 입니다.');
     }
 
     // 해싱된 비밀번호 가져오기
@@ -46,6 +51,7 @@ export class AuthUserService {
     // 새로 가입한 회원의 회원 ID 반환
     return {
       userId: newUser.userId,
+      email: newUser.email,
       nickname: newUser.nickname,
     };
   }

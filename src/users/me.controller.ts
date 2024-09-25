@@ -63,7 +63,7 @@ export class MeController {
     status: 200,
     description: '닉네임이 성공적으로 수정되었습니다.',
     schema: {
-      example: { message: '닉네임이 수정되었습니다.' },
+      example: { message: '닉네임이 수정되었습니다.', newNickname: '맥모닝굿모닝' },
     },
   })
   @ApiResponse({
@@ -83,6 +83,16 @@ export class MeController {
       example: {
         statusCode: 401,
         message: '인증이 필요합니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: '인증 실패',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: '이미 사용 중인 닉네임입니다.',
       },
     },
   })
@@ -149,7 +159,8 @@ export class MeController {
     },
   })
   async patchMyPassword(@SessionUser() user: IUserWithoutPassword, @Body() updatePasswordDto: UpdatePasswordDto) {
-    return this.usersService.updateMyPassword(user, updatePasswordDto);
+    const { userId } = user;
+    return this.usersService.updateMyPassword(userId, updatePasswordDto);
   }
 
   // 본인 게시글 전체 조회

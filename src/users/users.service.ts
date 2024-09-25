@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { AuthPasswordService, AuthSessionService, AuthSignInService } from 'src/auth/services';
@@ -50,6 +50,12 @@ export class UsersService {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
 
+    // 닉네임 중복 여부 확인
+    const nicknameExists = await this.usersDAO.checkNicknameExists(newNickname);
+    if (nicknameExists) {
+      throw new ConflictException('이미 사용 중인 닉네임입니다.')
+    }
+
     // 닉네임 업데이트
     user.nickname = newNickname;
     const updatedUser = await this.usersDAO.saveUser(user);
@@ -61,10 +67,9 @@ export class UsersService {
 
   // 나의 비밀번호 수정
   async updateMyPassword(
-    sessionUser: IUserWithoutPassword,
+    userId: number,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<{ message: string }> {
-    const { userId } = sessionUser;
     const { oldPassword, newPassword } = updatePasswordDto;
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 
@@ -74,7 +79,7 @@ export class UsersService {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
 
-    const isOldPasswordValid = this.authPasswordService.matchPassword(oldPassword, user.password);
+    const isOldPasswordValid = await this.authPasswordService.matchPassword(oldPassword, user.password);
 
     if (!isOldPasswordValid) {
       throw new BadRequestException('현재 비밀번호가 저장된 비밀번호와 일치하지 않습니다.');

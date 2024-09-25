@@ -387,7 +387,11 @@ export class AdminController {
     status: 200,
     description: '회원 가입 거절 처리 성공',
     schema: {
-      example: { message: '정회원 승인이 거절되었습니다.', userId: 123 },
+      example: {
+        message: '정회원 승인이 거절되었습니다.',
+        userId: 123,
+        rejectedReason: '인증 서류가 졸업증명서나 재학증명서가 아닙니다. 확인 부탁드립니다.',
+      },
     },
   })
   @ApiResponse({

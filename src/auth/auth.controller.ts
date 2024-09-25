@@ -156,6 +156,9 @@ export class AuthController {
                 userId: 35,
                 email: 'happyday@example.com',
                 nickname: '명란젓코난',
+                rejected: false,
+                isTempPasswordSignIn: false,
+                isSuspended: false,
               },
             },
           },
@@ -167,6 +170,12 @@ export class AuthController {
                 userId: 35,
                 email: 'tempPassword@example.com',
                 nickname: '명란젓코난',
+                rejected: false,
+                isTempPasswordSignIn: true,
+                isSuspended: false,
+                suspensionDuration: '2주',
+                suspensionEndDate: '2024-09-30T00:00:00Z',
+                suspensionReason: '스팸/도배',
               },
             },
           },
@@ -409,7 +418,6 @@ export class AuthController {
   }
 
   // 사용자 상태 확인 후 전달
-  // 프론트엔드의 리다이렉션을 위함.
   @Get('user-status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 상태 확인' })
@@ -418,32 +426,27 @@ export class AuthController {
     description: '사용자 상태 확인 성공',
     schema: {
       type: 'object',
-      oneOf: [
-        {
+      properties: {
+        user: {
+          type: 'object',
           properties: {
-            status: { type: 'string', enum: ['non_member'], example: 'non_member' },
-            message: { type: 'string', example: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' },
+            userId: { type: 'number', example: 123 },
+            email: { type: 'string', example: 'user@example.com' },
+            nickname: { type: 'string', example: 'nickname' },
+            membershipStatus: {
+              type: 'string',
+              enum: ['non_member', 'pending_verification', 'email_verified', 'approved_member'],
+              example: 'approved_member',
+            },
+            rejected: { type: 'boolean', example: false },
+            isTempPasswordSignIn: { type: 'boolean', example: false },
+            isSuspended: { type: 'boolean', example: false },
+            suspensionReason: { type: 'string', nullable: true, example: '부적절한 행동' },
+            suspensionDuration: { type: 'number', nullable: true, example: 30 },
+            suspensionEndDate: { type: 'string', nullable: true, example: '2024-09-30T00:00:00Z' },
           },
         },
-        {
-          properties: {
-            status: { type: 'string', enum: ['pending_verification'], example: 'pending_verification' },
-            message: { type: 'string', example: '회원가입 확인용 이메일을 확인해주세요.' },
-          },
-        },
-        {
-          properties: {
-            status: { type: 'string', enum: ['email_verified'], example: 'email_verified' },
-            message: { type: 'string', example: '관리자가 회원가입 승인 요청을 검토중입니다.' },
-          },
-        },
-        {
-          properties: {
-            status: { type: 'string', enum: ['approved_member'], example: 'approved_member' },
-            message: { type: 'string', example: '회원가입 승인이 완료된 정회원입니다.' },
-          },
-        },
-      ],
+      },
     },
   })
   @ApiResponse({
@@ -457,8 +460,9 @@ export class AuthController {
       },
     },
   })
-  async getUserStatus(@Req() req: Request): Promise<{ message: string }> {
-    return await this.authService.sendUserStatus(req);
+  async getUserStatus(@SessionUser() sessionUser: IUserWithoutPassword) {
+    const { userId } = sessionUser;
+    return this.authService.sendUserStatus(userId);
   }
 
   // 세션 만료 여부 확인 후 전달

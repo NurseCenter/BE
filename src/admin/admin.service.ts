@@ -261,7 +261,7 @@ export class AdminService {
     const rejectedUser = await this.rejectedUsersDAO.createRejectedUser(userId, rejectedReason);
 
     await this.rejectedUsersDAO.saveRejectedUser(rejectedUser);
-    await this.usersDAO.saveUser(user); 
+    await this.usersDAO.saveUser(user);
 
     return { message: '정회원 승인이 거절되었습니다.', userId, rejectedReason };
   }

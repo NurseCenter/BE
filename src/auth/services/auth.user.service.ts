@@ -4,13 +4,15 @@ import { dateToISOString } from 'src/common/utils/data.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
-import { IUserWithoutPassword, IMembershipStatusResponse, ISignUpResponse } from '../interfaces';
+import { IUserWithoutPassword, ISignUpResponse } from '../interfaces';
 import { SuspendedUsersDAO } from 'src/admin/dao';
+import { AuthSignInService } from './auth.signIn.service';
 
 @Injectable()
 export class AuthUserService {
   constructor(
     private readonly authPasswordService: AuthPasswordService,
+    private readonly authSignInService: AuthSignInService,
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
   ) {}
@@ -108,23 +110,43 @@ export class AuthUserService {
   }
 
   // 회원 ID로 회원 상태 확인
-  async checkUserStatusByUserId(userId: number): Promise<IMembershipStatusResponse> {
+  async checkUserStatusByUserId(userId: number) {
     const user = await this.usersDAO.findUserByUserId(userId);
     const status = user.membershipStatus;
 
-    switch (status) {
-      case EMembershipStatus.NON_MEMBER:
-        return { status: 'non_member', message: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' };
-      case EMembershipStatus.PENDING_VERIFICATION:
-        return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
-      case EMembershipStatus.EMAIL_VERIFIED:
-        return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.' };
-      case EMembershipStatus.APPROVED_MEMBER:
-        return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.' };
-      default:
-        throw new Error('존재하지 않는 사용자 상태입니다.');
-    }
+    const suspensionDetails = await this.suspendedUsersDAO.findSuspendedUserInfoByUserId(userId);
+    const isSuspended = !!suspensionDetails;
+
+    return {
+      userId: user.userId,
+      email: user.email,
+      nickname: user.nickname,
+      membershipStatus: status,
+      rejected: user.rejected,
+      isTempPasswordSignIn: await this.authSignInService.checkTempPasswordSignIn(userId),
+      isSuspended,
+      ...(isSuspended ? suspensionDetails : {}),
+    };
   }
+
+  // // 회원 ID로 회원 상태 확인
+  // async checkUserStatusByUserId(userId: number): Promise<IMembershipStatusResponse> {
+  //   const user = await this.usersDAO.findUserByUserId(userId);
+  //   const status = user.membershipStatus;
+
+  //   switch (status) {
+  //     case EMembershipStatus.NON_MEMBER:
+  //       return { status: 'non_member', message: '회원가입 폼이 제출되었습니다. 인증 절차를 진행해 주세요.' };
+  //     case EMembershipStatus.PENDING_VERIFICATION:
+  //       return { status: 'pending_verification', message: '회원가입 확인용 이메일을 확인해주세요.' };
+  //     case EMembershipStatus.EMAIL_VERIFIED:
+  //       return { status: 'email_verified', message: '관리자가 회원가입 승인 요청을 검토중입니다.' };
+  //     case EMembershipStatus.APPROVED_MEMBER:
+  //       return { status: 'approved_member', message: '회원가입 승인이 완료된 정회원입니다.' };
+  //     default:
+  //       throw new Error('존재하지 않는 사용자 상태입니다.');
+  //   }
+  // }
 
   // 회원 ID로 관리자 여부 확인
   async checkIsAdminByUserId(userId: number): Promise<boolean> {

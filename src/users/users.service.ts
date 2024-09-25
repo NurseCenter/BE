@@ -121,8 +121,8 @@ export class UsersService {
     const skip = (page - 1) * limit;
 
     // 댓글과 답글 조회
-    const [comments, commentsCount] = await this.commentsDAO.findCommentsByUserIdWithPagination(userId, skip, limit);
-    const [replies, repliesCount] = await this.repliesDAO.findRepliesByUserIdWithPagination(userId, skip, limit);
+    const [comments, commentsCount] = await this.commentsDAO.findCommentsByUserIdWithPagination(userId, 0, 0);
+    const [replies, repliesCount] = await this.repliesDAO.findRepliesByUserIdWithPagination(userId, 0, 0);
 
     const postIds = [
       ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.commentId))),
@@ -179,8 +179,11 @@ export class UsersService {
       });
     }
 
+   // 전체 결과에 대해 페이지네이션 적용
+   const paginatedResults = combinedResults.slice(skip, skip + limit);
+
     return {
-      items: combinedResults,
+      items: paginatedResults,
       totalItems: commentsCount + repliesCount,
       totalPages: Math.ceil((commentsCount + repliesCount) / limit),
       currentPage: page,

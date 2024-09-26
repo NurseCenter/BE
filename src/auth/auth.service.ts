@@ -150,7 +150,7 @@ export class AuthService {
 
     // 이메일 링크 생성
     const token = await this.authSessionService.generateSessionId();
-    const emailVerificationLink = `${process.env.FRONTEND_URL}?token=${token}`;
+    const emailVerificationLink = `${process.env.SERVER_URL}/sign-up/email-verification?token=${token}`;
 
     // Redis에 사용자 이메일과 토큰 저장
     await this.redisClient.set(`emailVerificationToken:${token}`, user.email);

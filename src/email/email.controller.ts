@@ -7,12 +7,18 @@ export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
   // 테스트용 이메일 발송
-  @ApiOperation({ summary: '이메일 인증 발송' })
+  @ApiOperation({ summary: '테스트용 이메일 인증 발송' })
   @ApiBody({
     description: '이메일 주소',
-    type: String,
-    examples: {
-      example: { value: 'test@example.com' },
+    schema: {
+      type: 'object',
+      properties: {
+        email: {
+          type: 'string', 
+          example: 'test@example.com',
+        },
+      },
+      required: ['email'],
     },
   })
   @ApiResponse({

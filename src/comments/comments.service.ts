@@ -18,6 +18,7 @@ import { CommentsEntity } from './entities/comments.entity';
 import { ReportedCommentDto } from 'src/reports/dto/reported-comment.dto';
 import { PaginationQueryDto } from 'src/common/dto';
 import { IReportedCommentResponse } from 'src/reports/interfaces/users';
+import { summarizeContent } from 'src/common/utils/summarize.utils';
 
 @Injectable()
 export class CommentsService {
@@ -44,7 +45,7 @@ export class CommentsService {
     const createdComment = await this.commentsDAO.saveComment(comment);
 
     const content = createdComment.content;
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return {
       ...createdComment,
@@ -104,7 +105,7 @@ export class CommentsService {
     const updatedComment = await this.commentsDAO.findCommentById(commentId);
 
     const content = updatedComment.content;
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return {
       ...updatedComment,

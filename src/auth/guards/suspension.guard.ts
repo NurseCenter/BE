@@ -17,7 +17,7 @@ export class SuspensionGuard implements CanActivate {
     if (user && user.suspensionEndDate && user.suspensionEndDate > new Date()) {
       const daysRemaining = Math.ceil((user.suspensionEndDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
       throw new UnauthorizedException(
-        `현재 계정이 정지 상태입니다. ${daysRemaining}일 후에 해제됩니다. 마이페이지에서 확인해 주세요.`,
+        `현재 계정이 정지 상태이므로 게시물 및 댓글 조회만 가능합니다. ${daysRemaining}일 후에 해제됩니다. 마이페이지에서 확인해 주세요.`,
       );
     }
 

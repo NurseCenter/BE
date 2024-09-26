@@ -14,6 +14,7 @@ import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { ReportDto } from 'src/posts/dto';
 import { ReportedRepliesDAO } from 'src/reports/dao';
 import { IReportedReplyResponse } from 'src/reports/interfaces/users';
+import { summarizeContent } from 'src/common/utils/summarize.utils';
 
 @Injectable()
 export class RepliesService {
@@ -40,7 +41,7 @@ export class RepliesService {
     const createdReply = await this.repliesDAO.saveReply(reply);
 
     const content = createdReply.content;
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return {
       ...createdReply,
@@ -81,7 +82,7 @@ export class RepliesService {
     const updatedReply = await this.repliesDAO.findReplyById(replyId);
 
     const content = updatedReply.content;
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return {
       ...updatedReply,

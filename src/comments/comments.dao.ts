@@ -6,6 +6,7 @@ import { CommentsEntity } from './entities/comments.entity';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentWithRepliesDto } from './dto/comment-with-replies.dto';
+import { summarizeContent } from 'src/common/utils/summarize.utils';
 
 @Injectable()
 export class CommentsDAO {
@@ -43,7 +44,7 @@ export class CommentsDAO {
       where: { commentId },
     });
 
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return summaryContent;
   }

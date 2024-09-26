@@ -10,6 +10,7 @@ import { GetPostsQueryDto, CreatePostDto, UpdatePostDto, ReportDto, BasePostDto 
 import { PostsEntity } from './entities/base-posts.entity';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
 import { IReportedPostResponse } from 'src/reports/interfaces/users';
+import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -223,7 +224,7 @@ export class PostsController {
   }
 
   // 게시글 생성
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post(':boardType')
   @HttpCode(201)
   @ApiOperation({ summary: '게시글 생성' })
@@ -284,7 +285,7 @@ export class PostsController {
         postId: 2,
         userId: 1,
         title: '새 게시글 제목',
-        summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        content: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
@@ -335,7 +336,7 @@ export class PostsController {
   }
 
   // 게시글 수정
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Put(':boardType/:postId')
   @HttpCode(200)
   @ApiOperation({ summary: '게시글 수정' })
@@ -392,7 +393,7 @@ export class PostsController {
         postId: 2,
         userId: 35,
         title: '새 게시글 제목',
-        summaryContent: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        content: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
         presignedPostData: [
@@ -464,7 +465,7 @@ export class PostsController {
   }
 
   // 게시글 삭제
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Delete(':boardType/:postId')
   @HttpCode(200)
   @ApiOperation({ summary: '게시글 삭제' })
@@ -529,7 +530,7 @@ export class PostsController {
   }
 
   // 특정 게시글 신고
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post(':boardType/:postId/reports')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 게시글 신고' })

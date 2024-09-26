@@ -27,6 +27,7 @@ import { IReportedPostResponse } from 'src/reports/interfaces/users';
 import { UsersDAO } from 'src/users/users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
+import { summarizeContent } from 'src/common/utils/summarize.utils';
 
 @Injectable()
 export class PostsService {
@@ -96,13 +97,13 @@ export class PostsService {
     const imageEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
     createdPost.images = imageEntities;
 
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return {
       postId: createdPost.postId, // 게시물 ID
       userId: createdPost.userId, // 작성자 ID
       title: createdPost.title, // 게시물 제목
-      summaryContent, // 내용 (요약본)
+      content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
       presignedPostData: imageEntities.map((img) => img.url), // presigned URL
@@ -179,14 +180,13 @@ export class PostsService {
 
     const updatedPost = await this.postsDAO.savePost(post);
 
-    const summaryContent =
-      updatedPost.content.length > 100 ? updatedPost.content.substring(0, 100) + '...' : updatedPost.content;
+    const summaryContent = summarizeContent(updatedPost.content);
 
     return {
       postId: updatedPost.postId, // 게시물 ID
       userId: updatedPost.user.userId, // 작성자 ID
       title: updatedPost.title, // 게시물 제목
-      summaryContent, // 내용 (요약본)
+      content: summaryContent, // 내용 (요약본)
       hospitalNames: updatedPost.hospitalNames, // 병원 이름
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일

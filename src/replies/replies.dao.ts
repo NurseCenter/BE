@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { CreateCommentDto } from 'src/comments/dto/create-comment.dto';
+import { summarizeContent } from 'src/common/utils/summarize.utils';
 
 @Injectable()
 export class RepliesDAO {
@@ -27,7 +28,7 @@ export class RepliesDAO {
       where: { replyId },
     });
 
-    const summaryContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const summaryContent = summarizeContent(content);
 
     return summaryContent;
   }

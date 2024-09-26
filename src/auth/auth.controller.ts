@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -12,7 +12,7 @@ import {
 } from './dto';
 import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -255,36 +255,23 @@ export class AuthController {
     return { message: '회원가입 인증용 이메일을 발송하였습니다.' };
   }
 
-  // 이메일 인증 확인
-  @Post('sign-up/email-verification')
+  @Get('sign-up/email-verification')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '이메일 인증 확인' })
-  @ApiBody({
-    type: Object,
-    description: '이메일 인증 토큰',
-    examples: {
-      'example-1': {
-        summary: '이메일 인증 확인 예시',
-        value: {
-          token: 'b1e2d3f4a5c6e7d8f9a0b1c2d3e4f5a6789abcdef0123456789abcdef012345',
-        },
-      },
-    },
-  })
+  @ApiQuery({ name: 'token', required: true, type: String, description: '이메일 인증 토큰' })
   @ApiResponse({
-    status: 200,
-    description: '이메일 인증에 성공하였습니다.',
-    schema: {
-      example: {
-        message: '이메일 인증에 성공하였습니다.',
+      status: 200,
+      description: '이메일 인증에 성공하였습니다.',
+      schema: {
+          example: {
+              message: '이메일 인증에 성공하였습니다.',
+          },
       },
-    },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async postSignUpEmailVerification(@Body() body: { token: string }): Promise<{ message: string }> {
-    const { token } = body;
-    await this.authService.verifyEmail(token);
-    return { message: '이메일 인증에 성공하였습니다.' };
+  async getSignUpEmailVerification(@Query('token') token: string): Promise<{ message: string }> {
+      await this.authService.verifyEmail(token);
+      return { message: '이메일 인증에 성공하였습니다.' };
   }
 
   // 이메일 찾기

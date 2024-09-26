@@ -10,9 +10,14 @@ import { ReportCommentsEntity } from '../reports/entities/report-comments.entity
 import { ReportedCommentsDAO } from 'src/reports/dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { CommentsDAO } from './comments.dao';
+import { DataAccessModule } from 'src/common/data-access.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity, ReportCommentsEntity]), PostsModule],
+  imports: [
+    TypeOrmModule.forFeature([CommentsEntity, RepliesEntity, PostsEntity, ReportCommentsEntity]),
+    PostsModule,
+    DataAccessModule,
+  ],
   providers: [CommentsService, CommentsDAO, ReportedCommentsDAO, PostsDAO],
   controllers: [CommentsController],
   exports: [CommentsDAO],

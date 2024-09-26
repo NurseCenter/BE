@@ -8,6 +8,7 @@ import { CreateReplyDto } from './dto/create-reply.dto';
 import { ReportDto } from 'src/posts/dto';
 import { RepliesEntity } from './entities/replies.entity';
 import { IReportedReplyResponse } from 'src/reports/interfaces/users';
+import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
 
 @ApiTags('Replies')
 @Controller()
@@ -15,7 +16,7 @@ export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}
 
   // 답글 작성
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post('comments/:commentId/replies')
   @HttpCode(201)
   @ApiOperation({ summary: '답글 작성' })
@@ -127,7 +128,7 @@ export class RepliesController {
   }
 
   // 답글 수정
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Put('replies/:replyId')
   @HttpCode(200)
   @ApiOperation({ summary: '답글 수정' })
@@ -197,7 +198,7 @@ export class RepliesController {
   }
 
   // 답글 삭제
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Delete('replies/:replyId')
   @HttpCode(200)
   @ApiOperation({ summary: '답글 삭제' })
@@ -250,7 +251,7 @@ export class RepliesController {
   }
 
   // 특정 답글 신고
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post('replies/:replyId/reports')
   @HttpCode(200)
   @ApiOperation({ summary: '답글 신고' })

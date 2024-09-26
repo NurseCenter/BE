@@ -15,7 +15,7 @@ export class EmailController {
       type: 'object',
       properties: {
         email: {
-          type: 'string', 
+          type: 'string',
           example: 'test@example.com',
         },
       },

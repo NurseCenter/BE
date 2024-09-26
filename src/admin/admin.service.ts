@@ -3,7 +3,6 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
@@ -103,49 +102,44 @@ export class AdminService {
   async suspendUserByAdmin(suspensionUserDto: SuspensionUserDto): Promise<{ userId: number; suspensionEndDate: Date }> {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
-    try {
-      const user = await this.usersDAO.findUserByUserId(userId);
-      if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-      const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
-      const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
+    const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
+    const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
 
-      // 1. 이미 정지처리된 회원
-      if (alreadySuspendedUser && alreadySuspendedUser.deletedAt === null) {
-        throw new ConflictException('이미 활동 정지 처리된 회원입니다.');
-      }
-
-      // 2. 정지된 회원테이블에 있는데 deletedAt이 날짜 (정지해제된 경우)
-      // => 정지 누적 카운트를 1 증가, 기존 내역을 덮어씌우기
-      if (alreadySuspendedUser && alreadySuspendedUser.deletedAt !== null) {
-        alreadySuspendedUser.deletedAt = null; // 초기화 (정지상태로)
-        alreadySuspendedUser.suspensionReason = suspensionReason;
-        alreadySuspendedUser.suspensionDuration = suspensionDuration;
-        alreadySuspendedUser.suspensionCount += 1;
-        alreadySuspendedUser.suspensionEndDate = suspensionEndDate;
-        await this.suspendedUsersDAO.saveSuspendedUser(alreadySuspendedUser);
-      } else {
-        // 3. 기존 내역이 없는 회원 => 새로 생성
-        const newSuspendedUser = await this.suspendedUsersDAO.createSuspendedUser(userId);
-        if (!newSuspendedUser) {
-          throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
-        }
-        newSuspendedUser.suspensionReason = suspensionReason;
-        newSuspendedUser.suspensionDuration = suspensionDuration;
-        newSuspendedUser.suspensionCount = 1;
-        newSuspendedUser.suspensionEndDate = suspensionEndDate;
-        await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
-      }
-
-      // Users 테이블에 회원 정보 업데이트
-      user.suspensionEndDate = suspensionEndDate;
-      await this.usersDAO.saveUser(user);
-
-      return { userId: user.userId, suspensionEndDate: user.suspensionEndDate };
-    } catch (error) {
-      console.error('회원 계정 정치 처리 중 에러 발생: ', error);
-      throw new InternalServerErrorException('회원 계정 정지 처리 중 오류가 발생했습니다.');
+    // 1. 이미 정지처리된 회원
+    if (alreadySuspendedUser && alreadySuspendedUser.deletedAt === null) {
+      throw new ConflictException('이미 활동 정지 처리된 회원입니다.');
     }
+
+    // 2. 정지된 회원테이블에 있는데 deletedAt이 날짜 (정지해제된 경우)
+    // => 정지 누적 카운트를 1 증가, 기존 내역을 덮어씌우기
+    if (alreadySuspendedUser && alreadySuspendedUser.deletedAt !== null) {
+      alreadySuspendedUser.deletedAt = null; // 초기화 (정지상태로)
+      alreadySuspendedUser.suspensionReason = suspensionReason;
+      alreadySuspendedUser.suspensionDuration = suspensionDuration;
+      alreadySuspendedUser.suspensionCount += 1;
+      alreadySuspendedUser.suspensionEndDate = suspensionEndDate;
+      await this.suspendedUsersDAO.saveSuspendedUser(alreadySuspendedUser);
+    } else {
+      // 3. 기존 내역이 없는 회원 => 새로 생성
+      const newSuspendedUser = await this.suspendedUsersDAO.createSuspendedUser(userId);
+      if (!newSuspendedUser) {
+        throw new NotFoundException('정지된 회원 목록에 새 회원을 추가하는 중 오류가 발생하였습니다.');
+      }
+      newSuspendedUser.suspensionReason = suspensionReason;
+      newSuspendedUser.suspensionDuration = suspensionDuration;
+      newSuspendedUser.suspensionCount = 1;
+      newSuspendedUser.suspensionEndDate = suspensionEndDate;
+      await this.suspendedUsersDAO.saveSuspendedUser(newSuspendedUser);
+    }
+
+    // Users 테이블에 회원 정보 업데이트
+    user.suspensionEndDate = suspensionEndDate;
+    await this.usersDAO.saveUser(user);
+
+    return { userId: user.userId, suspensionEndDate: user.suspensionEndDate };
   }
 
   // 회원 계정 정지 취소

@@ -11,6 +11,7 @@ import { PaginationQueryDto } from 'src/common/dto';
 import { CommentsEntity } from './entities/comments.entity';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IReportedCommentResponse } from 'src/reports/interfaces/users';
+import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
 
 @ApiTags('Comments')
 @Controller()
@@ -18,7 +19,7 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   // 댓글 작성
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post('posts/:boardType/:postId/comments')
   @HttpCode(201)
   @ApiOperation({ summary: '댓글 작성' })
@@ -152,7 +153,7 @@ export class CommentsController {
   }
 
   // 댓글 수정
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Put('comments/:commentId')
   @HttpCode(200)
   @ApiOperation({ summary: '댓글 수정' })
@@ -222,7 +223,7 @@ export class CommentsController {
   }
 
   // 댓글 삭제
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Delete('comments/:commentId')
   @HttpCode(200)
   @ApiOperation({ summary: '댓글 삭제' })
@@ -275,7 +276,7 @@ export class CommentsController {
   }
 
   // 특정 댓글 신고
-  @UseGuards(RegularMemberGuard)
+  @UseGuards(RegularMemberGuard, SuspensionGuard)
   @Post('comments/:commentId/reports')
   @HttpCode(200)
   @ApiOperation({ summary: '댓글 신고' })

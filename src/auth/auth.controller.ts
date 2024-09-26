@@ -260,18 +260,18 @@ export class AuthController {
   @ApiOperation({ summary: '이메일 인증 확인' })
   @ApiQuery({ name: 'token', required: true, type: String, description: '이메일 인증 토큰' })
   @ApiResponse({
-      status: 200,
-      description: '이메일 인증에 성공하였습니다.',
-      schema: {
-          example: {
-              message: '이메일 인증에 성공하였습니다.',
-          },
+    status: 200,
+    description: '이메일 인증에 성공하였습니다.',
+    schema: {
+      example: {
+        message: '이메일 인증에 성공하였습니다.',
       },
+    },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async getSignUpEmailVerification(@Query('token') token: string): Promise<{ message: string }> {
-      await this.authService.verifyEmail(token);
-      return { message: '이메일 인증에 성공하였습니다.' };
+    await this.authService.verifyEmail(token);
+    return { message: '이메일 인증에 성공하였습니다.' };
   }
 
   // 이메일 찾기

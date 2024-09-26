@@ -7,9 +7,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RepliesDAO } from './replies.dao';
 import { CommentsModule } from 'src/comments/comments.module';
 import { ReportsModule } from 'src/reports/reports.module';
+import { DataAccessModule } from 'src/common/data-access.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CommentsEntity, RepliesEntity]), CommentsModule, ReportsModule],
+  imports: [TypeOrmModule.forFeature([CommentsEntity, RepliesEntity]), CommentsModule, ReportsModule, DataAccessModule],
   controllers: [RepliesController],
   providers: [RepliesService, RepliesDAO],
 })

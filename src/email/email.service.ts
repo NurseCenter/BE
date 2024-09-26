@@ -3,6 +3,7 @@ import * as nodemailer from 'nodemailer';
 import { join } from 'path';
 import * as ejs from 'ejs';
 import { promises as fs } from 'fs';
+import { ConversionUtil } from 'src/common/utils';
 
 @Injectable()
 export class EmailService {
@@ -12,7 +13,7 @@ export class EmailService {
   constructor() {
     this.transpoter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
+      port: ConversionUtil.stringToNumber(process.env.EMAIL_PORT),
       secure: process.env.EMAIL_SECURE === 'true',
       auth: {
         user: process.env.EMAIL_USER,

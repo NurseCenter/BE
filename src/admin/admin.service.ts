@@ -232,6 +232,16 @@ export class AdminService {
 
     if (membershipStatus === EMembershipStatus.EMAIL_VERIFIED) {
       const user = await this.usersDAO.findUserByUserId(userId);
+      const rejectedUser = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);
+
+      // 이미 정회원 거절이 된 회원의 경우
+      if (rejectedUser && user.rejected) {
+        rejectedUser.deletedAt = new Date();
+        await this.rejectedUsersDAO.saveRejectedUser(rejectedUser);
+        user.rejected = false;
+        await this.usersDAO.saveUser(user);
+      }
+
       user.membershipStatus = EMembershipStatus.APPROVED_MEMBER;
       await this.usersDAO.saveUser(user);
       return {

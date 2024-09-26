@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
 import { ESuspensionDuration } from '../enums';
-import { ConversionUtil } from 'src/common/utils/conversion.utils'; 
+import { ConversionUtil } from 'src/common/utils/conversion.utils';
 
 @Injectable()
 export class SuspendedUsersDAO {

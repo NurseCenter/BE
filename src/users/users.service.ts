@@ -53,7 +53,7 @@ export class UsersService {
     // 닉네임 중복 여부 확인
     const nicknameExists = await this.usersDAO.checkNicknameExists(newNickname);
     if (nicknameExists) {
-      throw new ConflictException('이미 사용 중인 닉네임입니다.')
+      throw new ConflictException('이미 사용 중인 닉네임입니다.');
     }
 
     // 닉네임 업데이트
@@ -66,10 +66,7 @@ export class UsersService {
   }
 
   // 나의 비밀번호 수정
-  async updateMyPassword(
-    userId: number,
-    updatePasswordDto: UpdatePasswordDto,
-  ): Promise<{ message: string }> {
+  async updateMyPassword(userId: number, updatePasswordDto: UpdatePasswordDto): Promise<{ message: string }> {
     const { oldPassword, newPassword } = updatePasswordDto;
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 

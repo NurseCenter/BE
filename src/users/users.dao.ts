@@ -63,8 +63,8 @@ export class UsersDAO {
   // 닉네임 중복여부 확인
   async checkNicknameExists(nickname: string): Promise<boolean> {
     const user = await this.usersRepository.findOne({ where: { nickname } });
-  return !!user;
-}
+    return !!user;
+  }
 
   // 페이지네이션 회원 조회
   async findUsersWithDetails(page: number = 1, limit: number = 10): Promise<[any[], number]> {

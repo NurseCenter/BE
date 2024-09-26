@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto, FindEmailDto, FindPasswordDto, SendEmailDto, SignInUserDto, VerifyEmailDto } from './dto';
 import Redis from 'ioredis';
 import { AuthPasswordService, AuthSessionService, AuthSignInService, AuthUserService } from './services';
@@ -178,14 +178,21 @@ export class AuthService {
     const email = await this.redisClient.get(`emailVerificationToken:${token}`);
     if (!email) throw new NotFoundException('해당 이메일 확인 링크가 존재하지 않습니다.');
 
-    // 사용자 찾기
+    // 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-    // 사용자 상태를 EMAIL_VERIFIED으로 변경
-    await this.authUserService.updateUserStatusByEmail(email, EMembershipStatus.EMAIL_VERIFIED);
-
-    // 추가) 이미 사용자 상태가 email_verified = 2면 메일 요청이 계속 가지 않도록 해야함. => 주기를 정할 것
+    // 회원 이메일 상태를 확인
+    if (user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION) {
+      // 사용자 상태를 EMAIL_VERIFIED으로 변경
+      await this.authUserService.updateUserStatusByEmail(email, EMembershipStatus.EMAIL_VERIFIED);
+    } else if (user.membershipStatus === EMembershipStatus.NON_MEMBER) {
+      throw new NotFoundException('회원 가입 양식 제출 후 인증용 메일이 전송되지 않은 회원입니다.');
+    } else if (user.membershipStatus === EMembershipStatus.APPROVED_MEMBER) {
+      throw new ConflictException('이미 정회원이라 이메일 인증이 필요하지 않는 회원입니다.');
+    } else {
+      throw new ConflictException('이미 이메일 인증이 완료되어 관리자의 정회원 승인이 대기중인 회원입니다.');
+    }
 
     // Redis에서 토큰 삭제
     await this.redisClient.del(`emailVerificationToken:${token}`);

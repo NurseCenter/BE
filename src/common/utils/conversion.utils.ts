@@ -1,4 +1,4 @@
-import * as moment from "moment-timezone";
+import * as moment from 'moment-timezone';
 
 export class ConversionUtil {
   static stringToNumber(value: string): number {

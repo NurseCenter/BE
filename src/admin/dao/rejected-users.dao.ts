@@ -31,7 +31,7 @@ export class RejectedUsersDAO {
   // 특정 거절된 회원 조회
   async findRejectedUserByUserId(userId: number): Promise<RejectedUsersEntity> {
     const rejectedUser = await this.rejectedUsersRepository.findOne({
-      where: { userId }
+      where: { userId },
     });
     return rejectedUser;
   }

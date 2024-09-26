@@ -64,4 +64,10 @@ export class EmailService {
     const data = { nickname, tempPassword };
     await this.send(to, '임시 비밀번호 발송', 'reset-password-email', data);
   }
+
+  // 이메일 발송 테스트
+  async sendEmailForTest(to: string): Promise<void> {
+    console.log('to', to);
+    await this.send(to, '이메일 발송 테스트', 'test-email', to);
+  }
 }

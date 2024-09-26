@@ -153,7 +153,8 @@ export class AuthUserService {
   // 회원 상태 이메일 발송 후 Pending으로 변경
   async updateUserStatusToPending(email: string) {
     const user = await this.usersDAO.findUserByEmail(email);
-    if (!user) throw new ConflictException('사용자를 찾을 수 없습니다.');
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    
     if (user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED)
       throw new ConflictException('이미 이메일 인증이 완료된 회원입니다.');
     if (user.membershipStatus === EMembershipStatus.APPROVED_MEMBER)

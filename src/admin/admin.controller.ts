@@ -381,7 +381,7 @@ export class AdminController {
   @ApiOperation({ summary: '회원 가입 거절 처리' })
   @ApiBody({
     description: '회원 가입 거절을 위한 정보',
-    type: ApprovalUserDto,
+    type: RejectUserDto,
   })
   @ApiResponse({
     status: 200,

@@ -7,5 +7,5 @@ export class ApprovalUserDto {
     example: 123,
   })
   @IsNumber()
-  userId: number;
+  userId: number;  
 }

@@ -39,7 +39,7 @@ export class AdminService {
   ) {}
 
   // 관리자 계정으로 로그인
-  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response) {
+  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response): Promise<void> {
     // 1. 관리자 계정 여부 확인
     const isAdmin = await this.authSignInService.checkIfAdmin(signInUserDto.email);
 
@@ -206,7 +206,7 @@ export class AdminService {
   }
 
   // 회원 정보 (닉네임, 이메일) 조회
-  async fetchUserInfoByAdmin(userId: number) {
+  async fetchUserInfoByAdmin(userId: number): Promise<IUserInfo> {
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 

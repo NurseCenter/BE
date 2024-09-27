@@ -24,7 +24,7 @@ export class RejectedUsersDAO {
 
   // 거절된 회원 전체 조회
   // deletedAt이 날짜인 회원은 재가입한 회원임.
-  async findRejectedUsers() {
+  async findRejectedUsers(): Promise<RejectedUsersEntity[]> {
     return this.rejectedUsersRepository.find({ where: { deletedAt: null } });
   }
 

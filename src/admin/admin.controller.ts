@@ -19,7 +19,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { Request, Response } from 'express';
-import { ECommentType } from 'src/users/enums';
+import { ECommentType, EMembershipStatus } from 'src/users/enums';
 import { SignInUserDto } from 'src/auth/dto';
 import {
   WithdrawalUserDto,
@@ -161,7 +161,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postCancelWithdrawal(@Body() userIdDto: UserIdDto) {
+  async postCancelWithdrawal(@Body() userIdDto: UserIdDto): Promise<{ message: string; userId: number }> {
     const { userId } = userIdDto;
     await this.adminService.cancelWithdrawal(userId);
     return { message: '회원 강제 탈퇴 취소(해제) 처리가 완료되었습니다.', userId };
@@ -226,7 +226,7 @@ export class AdminController {
     status: 200,
     description: '관리자의 회원 활동 정지 해제가 완료되었습니다.',
     schema: {
-      example: { message: '관리자의 회원 활동 정지 해제가 완료되었습니다.' },
+      example: { message: '관리자의 회원 활동 정지 해제가 완료되었습니다.', userId: 153 },
     },
   })
   @ApiResponse({
@@ -236,7 +236,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postCancelSuspension(@Body() userIdDto: UserIdDto) {
+  async postCancelSuspension(@Body() userIdDto: UserIdDto): Promise<{ message: string; userId: number }> {
     const { userId } = userIdDto;
     return this.adminService.cancelSuspension(userId);
   }
@@ -371,7 +371,9 @@ export class AdminController {
       example: { message: '아직 이메일 인증을 완료하지 않은 회원입니다.' },
     },
   })
-  async postApprovalByAdmin(@Body() approvalDto: ApprovalUserDto) {
+  async postApprovalByAdmin(
+    @Body() approvalDto: ApprovalUserDto,
+  ): Promise<{ message: string; userId: number; membershipStatus: EMembershipStatus }> {
     return this.adminService.processUserApproval(approvalDto);
   }
 
@@ -401,7 +403,9 @@ export class AdminController {
       example: { message: '해당 회원이 존재하지 않습니다.' },
     },
   })
-  async postRejectByAdmin(@Body() rejectDto: RejectUserDto) {
+  async postRejectByAdmin(
+    @Body() rejectDto: RejectUserDto,
+  ): Promise<{ message: string; userId: number; rejectedReason: string }> {
     const { userId, rejectedReason } = rejectDto;
     return this.adminService.processUserReject(userId, rejectedReason);
   }
@@ -516,7 +520,7 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async getAllComments(@Query() query: PaginationQueryDto) {
+  async getAllComments(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<any>> {
     const { page, limit } = query;
     return await this.adminService.findAllCommentsAndReplies(page, limit);
   }

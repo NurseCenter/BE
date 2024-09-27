@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
 import { ESuspensionDuration } from '../enums';
 import { ConversionUtil } from 'src/common/utils/conversion.utils';
+import { ISuspendedUserInfoResponse } from '../interfaces';
 
 @Injectable()
 export class SuspendedUsersDAO {
@@ -24,7 +25,7 @@ export class SuspendedUsersDAO {
   }
 
   // 정지된 회원 전체 조회
-  async findSuspendedUsers() {
+  async findSuspendedUsers(): Promise<SuspendedUsersEntity[]> {
     return this.suspendedUsersRepository.find({ where: { deletedAt: null } });
   }
 
@@ -38,7 +39,7 @@ export class SuspendedUsersDAO {
   }
 
   // 특정 회원의 정지 내역 정보 제공
-  async findSuspendedUserInfoByUserId(userId: number) {
+  async findSuspendedUserInfoByUserId(userId: number): Promise<ISuspendedUserInfoResponse> {
     const suspendedUser = await this.suspendedUsersRepository.findOne({
       where: { userId },
     });

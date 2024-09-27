@@ -9,4 +9,4 @@ export class SuspendedAccountException extends UnauthorizedException {
       isSuspended: true, // 계정 정지 여부
     });
   }
-} 
+}

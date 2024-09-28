@@ -6,6 +6,7 @@ import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { ESortType, ESortOrder } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { ConversionUtil } from 'src/common/utils';
 
 @Injectable()
 export class PostsDAO {
@@ -14,19 +15,43 @@ export class PostsDAO {
     private readonly postsRepository: Repository<PostsEntity>,
   ) {}
 
-  // 특정 게시물 ID들로 게시물 엔티티 조회
+  // 특정 게시물 ID들로 게시물 엔티티들을 조회
   async findPostsByIds(postIds: number[]): Promise<PostsEntity[]> {
-    return this.postsRepository.findBy({ postId: In(postIds) });
+    const posts = await this.postsRepository.findBy({ postId: In(postIds) });
+    return posts.map((post) => ({
+      ...post,
+      createdAt: ConversionUtil.toKST(post.createdAt),
+      updatedAt: ConversionUtil.toKST(post.updatedAt),
+      deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+    }));
   }
 
   // 특정 게시물 ID로 게시물 엔티티 조회
-  async findPostEntityByPostId(postId: number): Promise<PostsEntity> {
-    return this.postsRepository.findOne({ where: { postId } });
+  async findPostEntityByPostId(postId: number): Promise<PostsEntity | null> {
+    const post = await this.postsRepository.findOne({ where: { postId } });
+
+    if (post) {
+      return {
+        ...post,
+        createdAt: ConversionUtil.toKST(post.createdAt),
+        updatedAt: ConversionUtil.toKST(post.updatedAt),
+        deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+      };
+    }
+
+    return null;
   }
 
   // 전체 게시물 조회
   async findAllPostsWithoutConditions(): Promise<PostsEntity[]> {
-    return this.postsRepository.find();
+    const posts = await this.postsRepository.find();
+
+    return posts.map((post) => ({
+      ...post,
+      createdAt: ConversionUtil.toKST(post.createdAt),
+      updatedAt: ConversionUtil.toKST(post.updatedAt),
+      deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+    }));
   }
 
   // 게시물 생성
@@ -107,12 +132,17 @@ export class PostsDAO {
       .take(limit)
       .getManyAndCount();
 
-    return { posts: posts || [], total };
-  }
+    // 날짜 데이터 변환
+    const convertedPosts = posts.map((post) => ({
+      ...post,
+      createdAt: ConversionUtil.toKST(post.createdAt),
+    }));
 
+    return { posts: convertedPosts, total };
+  }
   // 특정 게시글 조회 메소드
   async findOnePostByPostId(postId: number): Promise<PostsEntity> {
-    return this.postsRepository
+    const post = await this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .where('post.postId = :postId', { postId })
@@ -133,6 +163,12 @@ export class PostsDAO {
         'user.nickname', // 작성자 닉네임
       ])
       .getOne();
+
+    // createdAt, updatedAt 변환
+    post.createdAt = ConversionUtil.toKST(post.createdAt);
+    post.updatedAt = ConversionUtil.toKST(post.updatedAt);
+
+    return post;
   }
 
   // 특정 게시물의 카테고리 일치 여부 확인
@@ -181,8 +217,14 @@ export class PostsDAO {
 
     const [items, total] = await queryBuilder.getManyAndCount();
 
+    // 날짜 데이터 변환
+    const convertedItems = items.map((item) => ({
+      ...item,
+      createdAt: ConversionUtil.toKST(item.createdAt),
+    }));
+
     return {
-      items,
+      items: convertedItems,
       totalItems: total,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
@@ -190,7 +232,7 @@ export class PostsDAO {
   }
 
   // 게시물 관리 페이지 데이터 조회 및 검색
-  async findAllPosts(page: number, limit: number, search?: string): Promise<[PostsEntity[], number]> {
+  async findAllPostsByAdmin(page: number, limit: number, search?: string): Promise<[PostsEntity[], number]> {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.postsRepository

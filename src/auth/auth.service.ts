@@ -12,8 +12,8 @@ import { promisify } from 'util';
 import clearCookieOptions from './cookie-options/clear-cookie-options';
 import { ISignUpResponse } from './interfaces';
 import { extractSessionIdFromCookie } from 'src/common/utils/extract-sessionId.util';
-import { SuspendedUsersDAO } from 'src/admin/dao';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
+import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 
 @Injectable()
 export class AuthService {
@@ -244,14 +244,6 @@ export class AuthService {
   async sendUserStatus(userId: number) {
     return this.authUserService.checkUserStatusByUserId(userId);
   }
-
-  // // 로그인한 사용자의 회원 상태 전달
-  // async sendUserStatus(req: Request) {
-  //   const sessionId = req.cookies['connect.sid'];
-  //   const cleanedSessionId = extractSessionIdFromCookie(sessionId);
-  //   const userId = await this.authSessionService.findUserIdFromSession(cleanedSessionId);
-  //   return this.authUserService.checkUserStatusByUserId(userId);
-  // }
 
   // 세션 만료 여부 확인 후 전달
   async sendSessionStatus(req: Request): Promise<{ expires: boolean; remainingTime?: string; userId?: number }> {

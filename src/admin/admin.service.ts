@@ -12,7 +12,6 @@ import { EmanagementStatus, ESuspensionDuration } from './enums';
 import * as dayjs from 'dayjs';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto } from './dto';
-import { DeletedUsersDAO, SuspendedUsersDAO } from './dao';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList } from './interfaces';
 import { CommentsDAO } from 'src/comments/comments.dao';
@@ -22,6 +21,8 @@ import { SignInUserDto } from 'src/auth/dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Request, Response } from 'express';
 import { RejectedUsersDAO } from './dao/rejected-users.dao';
+import { DeletedUsersDAO } from './dao/delete-users.dao';
+import { SuspendedUsersDAO } from './dao/suspended-users.dao';
 
 @Injectable()
 export class AdminService {
@@ -316,7 +317,7 @@ export class AdminService {
 
   // 게시물 관리 페이지 데이터 조회
   async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-    const [posts, total] = await this.postsDAO.findAllPosts(page, limit, search);
+    const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
 
     const items = posts.map((post) => ({
       postId: post.postId, // 게시물 ID

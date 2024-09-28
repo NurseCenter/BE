@@ -8,7 +8,6 @@ import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { RepliesDAO } from 'src/replies/replies.dao';
-import { DeletedUsersDAO, SuspendedUsersDAO } from 'src/admin/dao';
 import { DeletedUsersEntity, RejectedUsersEntity, SuspendedUsersEntity } from 'src/admin/entities';
 import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
@@ -18,6 +17,8 @@ import { ReportCommentsEntity, ReportPostsEntity } from 'src/reports/entities';
 import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
 import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
+import { DeletedUsersDAO } from 'src/admin/dao/delete-users.dao';
+import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 
 @Module({
   imports: [

@@ -6,7 +6,6 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
-import { CommonModule } from './common/common.module';
 import { ScrapModule } from './scraps/scraps.module';
 import { LikesModule } from './likes/likes.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -43,7 +42,6 @@ import { ReportsModule } from './reports/reports.module';
     CommentsModule,
     UsersModule,
     AdminModule,
-    CommonModule,
     ConfigModule,
     ScrapModule,
     LikesModule,

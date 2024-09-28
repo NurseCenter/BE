@@ -5,9 +5,9 @@ import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
 import { IUserWithoutPassword, ISignUpResponse } from '../interfaces';
-import { SuspendedUsersDAO } from 'src/admin/dao';
 import { AuthSignInService } from './auth.signIn.service';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
+import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 
 @Injectable()
 export class AuthUserService {

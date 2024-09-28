@@ -14,6 +14,8 @@ import { ISignUpResponse } from './interfaces';
 import { extractSessionIdFromCookie } from 'src/common/utils/extract-sessionId.util';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
+import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
+import { InvalidPhoneNumberException } from 'src/common/exceptions/invalid-phone-number.exception';
 
 @Injectable()
 export class AuthService {
@@ -230,9 +232,12 @@ export class AuthService {
   }
 
   // 휴대폰 번호 인증 메시지 보내기
-  // +821012341234 로 파싱 필요함.
   async sendPhoneVerificationCode(to: string) {
-    return this.authTwilioService.sendVerificationCode({ to });
+    const formattedPhoneNumber = formattingPhoneNumber(to);
+    if (!formattedPhoneNumber) {
+      throw new InvalidPhoneNumberException();
+    }
+    return this.authTwilioService.sendVerificationCode({ to: formattedPhoneNumber});
   }
 
   // 휴대폰 번호 인증 확인

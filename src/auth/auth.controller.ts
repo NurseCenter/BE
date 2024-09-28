@@ -13,6 +13,7 @@ import {
 import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -398,9 +399,10 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async postPhoneVerificationConfirm(verifyPhoneNumberDto: VerifyPhoneNumberDto) {
+  async postPhoneVerificationConfirm(@Body() verifyPhoneNumberDto: VerifyPhoneNumberDto) {
     const { phoneNumber, code } = verifyPhoneNumberDto;
-    await this.authService.verifyPhoneNumberCode(phoneNumber, code);
+    const formattedPhoneNumber = formattingPhoneNumber(phoneNumber);
+    await this.authService.verifyPhoneNumberCode(formattedPhoneNumber, code);
     return { message: '휴대폰 인증이 성공하였습니다.' };
   }
 

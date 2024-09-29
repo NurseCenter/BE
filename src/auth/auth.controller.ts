@@ -14,7 +14,7 @@ import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
-import { AlreadyPhoneVerifiedException, InvalidPhoneNumberException, InvalidPhoneVerificationCodeException, MaxCheckAttemptsException, NoPhoneVerificationRecordException } from 'src/common/exceptions/twilio-sms.exceptions';
+import { InvalidPhoneVerificationCodeException } from 'src/common/exceptions/twilio-sms.exceptions';
 import { handlePostPhoneVerificationConfirmError } from './error-handler/handle-post-phone-verification-confirm-error';
 
 @ApiTags('Auth')
@@ -402,28 +402,63 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description: '잘못된 전화번호 형식입니다.',
-    type: InvalidPhoneNumberException,
+    description: '잘못된 전화번호 형식입니다. 전화번호는 01012345678과 같은 11자리 숫자로 이루어져야 합니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '잘못된 전화번호 형식입니다. 전화번호는 01012345678과 같은 11자리 숫자로 이루어져야 합니다.' },
+        error: { type: 'string', example: 'Invalid PhoneNumber Request Type' },
+        statusCode: { type: 'number', example: 400 },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '잘못된 인증 코드입니다. 입력한 코드를 확인해주세요.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '잘못된 인증 코드입니다. 입력한 코드를 확인해주세요.' },
+        error: { type: 'string', example: 'Invalid Verification Code' },
+        statusCode: { type: 'number', example: 403 },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: '잘못된 인증 코드입니다.',
-    type: InvalidPhoneVerificationCodeException,
-  })
-  @ApiResponse({
-    status: 400,
-    description: '해당 전화번호에 대한 인증 내역이 없습니다.',
-    type: NoPhoneVerificationRecordException,
+    description: '해당 전화번호에 대한 인증 내역이 없습니다. 인증이 없거나 유효 기간이 지났습니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '해당 전화번호에 대한 인증 내역이 없습니다. 인증이 없거나 유효 기간이 지났습니다.' },
+        error: { type: 'string', example: 'No Verification Record' },
+        statusCode: { type: 'number', example: 400 },
+      },
+    },
   })
   @ApiResponse({
     status: 409,
-    description: '이미 인증이 완료된 전화번호입니다.',
-    type: AlreadyPhoneVerifiedException,
+    description: '이미 인증이 완료된 전화번호입니다. 추가 인증이 필요하지 않습니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '이미 인증이 완료된 전화번호입니다. 추가 인증이 필요하지 않습니다.' },
+        error: { type: 'string', example: 'Already Verified' },
+        statusCode: { type: 'number', example: 409 },
+      },
+    },
   })
   @ApiResponse({
-    status: 400,
-    description: '최대 인증 시도 횟수에 도달했습니다.',
-    type: MaxCheckAttemptsException,
+    status: 429,
+    description: '최대 인증 시도 횟수(5회)에 도달했습니다. 인증을 처음부터 다시 시도해주세요.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '최대 인증 시도 횟수(5회)에 도달했습니다. 인증을 처음부터 다시 시도해주세요.' },
+        error: { type: 'string', example: 'Max Check Attempts Reached' },
+        statusCode: { type: 'number', example: 429 },
+      },
+    },
   })
   @ApiResponse({
     status: 500,

@@ -17,11 +17,13 @@ export class AuthTwilioService {
       .verifications.create({ to: options.to, channel: 'sms' });
   }
 
-  // 전송한 메시지 확인하기
-  checkVerificationCode(options: { to: string; code: string }) {
-    return this.client.verify.v2.services(this.verifyServiceSid).verificationChecks.create({
+  // 전송한 메시지 인증번호 확인하기
+  async checkVerificationCode(options: { to: string; code: string }) {
+    const result = await this.client.verify.v2.services(this.verifyServiceSid).verificationChecks.create({
       to: options.to,
       code: options.code,
     });
+
+    return result;
   }
 }

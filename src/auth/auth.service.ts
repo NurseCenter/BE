@@ -15,7 +15,7 @@ import { extractSessionIdFromCookie } from 'src/common/utils/extract-sessionId.u
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
-import { InvalidPhoneNumberException } from 'src/common/exceptions/invalid-phone-number.exception';
+import { InvalidPhoneNumberException } from 'src/common/exceptions/twilio-sms.exceptions';
 
 @Injectable()
 export class AuthService {
@@ -237,12 +237,12 @@ export class AuthService {
     if (!formattedPhoneNumber) {
       throw new InvalidPhoneNumberException();
     }
-    return this.authTwilioService.sendVerificationCode({ to: formattedPhoneNumber});
+    return this.authTwilioService.sendVerificationCode({ to: formattedPhoneNumber });
   }
 
   // 휴대폰 번호 인증 확인
   async verifyPhoneNumberCode(to: string, code: string) {
-    return this.authTwilioService.checkVerificationCode({ to, code });
+    return await this.authTwilioService.checkVerificationCode({ to, code });
   }
 
   // 로그인한 사용자의 회원 상태 전달

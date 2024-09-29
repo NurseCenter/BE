@@ -56,13 +56,19 @@ export class EmailService {
   // 회원가입 후 이메일 발송
   async sendVerificationEmail(to: string, nickname: string, emailVerificationLink: string): Promise<void> {
     const data = { nickname, emailVerificationLink, email: to };
-    await this.send(to, '회원가입 인증', 'sign-up-email', data);
+    await this.send(to, '중간이들 회원가입 인증', 'sign-up-email', data);
   }
 
   // 임시 비밀번호 발급용 이메일 발송
   async sendTempPasswordEmail(to: string, nickname: string, tempPassword: string): Promise<void> {
     const data = { nickname, tempPassword };
-    await this.send(to, '임시 비밀번호 발송', 'reset-password-email', data);
+    await this.send(to, '중간이들 임시 비밀번호 발송', 'reset-password-email', data);
+  }
+
+  // 정회원 승인 거절 이메일 발송
+  async sendRejectionEmail(to: string, nickname: string, rejectedReason: string): Promise<void> {
+    const data = { nickname, rejectedReason };
+    await this.send(to, '중간이들 정회원 승인 거절', 'regular-member-rejection', data);
   }
 
   // 이메일 발송 테스트

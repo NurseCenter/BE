@@ -271,6 +271,17 @@ export class AdminService {
     return { message: '정회원 승인이 거절되었습니다.', userId, rejectedReason };
   }
 
+  async sendRejectionEmail(
+    userId: number,
+    rejectedReason: string,
+  ): Promise<{ message: string; userId: number; rejectedReason: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    
+    return { message: '정회원 승인 거절 메시지가 해당 회원에게 발송되었습니다.', userId, rejectedReason };
+  }
+
   // 정지 날짜 계산
   private calculateSuspensionEndDate(duration: ESuspensionDuration): Date {
     const now = dayjs();

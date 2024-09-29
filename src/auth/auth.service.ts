@@ -108,9 +108,6 @@ export class AuthService {
       return res.status(200).json({
         message,
         user: {
-          userId: user.userId,
-          email: user.email,
-          nickname: user.nickname,
           membershipStatus: user.membershipStatus,
           rejected: user.rejected,
           ...(rejectedReason !== null && { rejectedReason }),

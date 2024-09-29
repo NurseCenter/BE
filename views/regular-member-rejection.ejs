@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; text-align: center; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
+        <div style="margin: 0; padding: 0; margin-bottom: 50px;">
+            <img src="https://caugannies.s3.ap-northeast-2.amazonaws.com/logo/email-logo.png" alt="gannies_logo" style="max-width: 100%; height: auto;">
+        </div>
+        <h1 style="color: #333; text-align: center; margin-bottom: 20px;">
+            <span style="color: #333;">정회원 </span>
+            <span style="color: #5080E1;">승인 보류</span>
+            <span style="color: #333;">사유 안내</span>
+        </h1>
+        <p>안녕하세요. <%= nickname %>님!</p>
+        <p>정회원 가입을 신청해주셔서 감사합니다.</p>
+        <p>하지만 검토 결과,<span style="color: #5080E1;">아래와 같은 사유</span>로 인해 정회원 승인이 보류되었습니다.</p>
+        
+        <div style="background-color: #F8F8F8; padding: 10px; border-radius: 5px; color: #333; margin: 10px 0; display: inline-block;">
+            <%= rejectedReason %>
+        </div>
+
+        <p><span style="color: #333;">관리자에게 직접 문의를 하거나</span>
+        <p><span style="color: #333;">사이트에 로그인 후 <span style="color: #FF7F50;">인증서류를 다시 업로드</span> 해주시면 감사하겠습니다.</span></p>
+        <p><span style="color: #333;">버튼을 클릭하시면, 중간이들 로그인 페이지로 이동합니다</span></p>
+        
+        <a href="<%= frontEndLoginPageUrl %>" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: white; background-color: #5080E1; text-decoration: none; border-radius: 5px; margin: 10px 0;">로그인 페이지로 가기</a>
+
+        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
+            <p>정회원 승인 거절 사유에 대한 안내 이메일</p>
+        </div>
+    </div>
+</body>
+</html>

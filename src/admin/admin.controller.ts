@@ -410,6 +410,36 @@ export class AdminController {
     return this.adminService.processUserReject(userId, rejectedReason);
   }
 
+  // 정회원 거절 이메일 발송
+  @Post('user/send-rejection-email')
+@HttpCode(HttpStatus.OK)
+@ApiOperation({ summary: '정회원 거절 이메일 발송' })
+@ApiBody({
+  description: '정회원 거절 이메일 발송을 위한 정보',
+  type: RejectUserDto,
+})
+@ApiResponse({
+  status: 200,
+  description: '이메일 발송 성공',
+  schema: {
+    example: { message: '정회원 거절 처리 내역이 이메일로 발송되었습니다.' },
+  },
+})
+@ApiResponse({
+  status: 404,
+  description: '해당 회원이 존재하지 않음',
+  schema: {
+    example: { message: '해당 회원이 존재하지 않습니다.' },
+  },
+})
+async sendRejectionEmail(
+  @Body() rejectEmailDto: RejectUserDto,
+): Promise<{ message: string }> {
+  const { userId, rejectedReason } = rejectEmailDto;
+  // 이메일 발송 로직 구현
+  return this.adminService.sendRejectionEmail(userId, rejectedReason);
+}
+
   // 관리자 게시물 전체 조회 및 검색
   @UseGuards(AdminGuard)
   @Get('posts')

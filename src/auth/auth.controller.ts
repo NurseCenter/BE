@@ -14,7 +14,7 @@ import { SessionUser } from './decorators/get-user.decorator';
 import { IUserWithoutPassword } from './interfaces';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
-import { InvalidPhoneVerificationCodeException } from 'src/common/exceptions/twilio-sms.exceptions';
+import { AlreadyPhoneVerifiedException, InvalidPhoneNumberException, InvalidPhoneVerificationCodeException, MaxCheckAttemptsException, NoPhoneVerificationRecordException } from 'src/common/exceptions/twilio-sms.exceptions';
 import { handlePostPhoneVerificationConfirmError } from './error-handler/handle-post-phone-verification-confirm-error';
 
 @ApiTags('Auth')
@@ -402,60 +402,40 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description: '잘못된 전화번호 형식',
-    schema: {
-      example: {
-        message: '잘못된 전화번호 형식입니다. 전화번호는 01012345678과 같은 숫자 11자리로 이루어진 문자열입니다.',
-        error: 'Invalid PhoneNumber Request Type',
-        statusCode: 400,
-      },
-    },
+    description: '잘못된 전화번호 형식입니다.',
+    type: InvalidPhoneNumberException,
   })
   @ApiResponse({
     status: 400,
     description: '잘못된 인증 코드입니다.',
-    schema: {
-      example: {
-        message: '잘못된 인증 코드입니다. 입력한 코드를 다시 확인해주세요.',
-        error: 'Invalid Verification Code',
-        statusCode: 400,
-      },
-    },
+    type: InvalidPhoneVerificationCodeException,
   })
   @ApiResponse({
     status: 400,
     description: '해당 전화번호에 대한 인증 내역이 없습니다.',
-    schema: {
-      example: {
-        message: '해당 전화번호에 대한 인증내역 요청이 없거나 인증 유효 시간(10분)이 지났습니다.',
-        error: 'No Verification Record',
-        statusCode: 400,
-      },
-    },
+    type: NoPhoneVerificationRecordException,
   })
   @ApiResponse({
     status: 409,
     description: '이미 인증이 완료된 전화번호입니다.',
-    schema: {
-      example: {
-        message: '이미 인증이 완료된 전화번호입니다.',
-        error: 'Already Verified',
-        statusCode: 409,
-      },
-    },
+    type: AlreadyPhoneVerifiedException,
   })
   @ApiResponse({
     status: 400,
     description: '최대 인증 시도 횟수에 도달했습니다.',
+    type: MaxCheckAttemptsException,
+  })
+  @ApiResponse({
+    status: 500,
+    description: '서버에서 오류가 발생했습니다.',
     schema: {
       example: {
-        message: '최대 인증 시도 횟수(5회)에 도달했습니다. 인증을 처음부터 다시 시도해주세요.',
-        error: 'Max Check Attempts Reached',
-        statusCode: 400,
+        message: '서버에서 오류가 발생했습니다.',
+        error: 'Internal Server Error',
+        statusCode: 500,
       },
     },
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postPhoneVerificationConfirm(@Body() verifyPhoneNumberDto: VerifyPhoneNumberDto) {
     const { phoneNumber, code } = verifyPhoneNumberDto;
     const formattedPhoneNumber = formattingPhoneNumber(phoneNumber);

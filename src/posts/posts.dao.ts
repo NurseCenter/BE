@@ -135,7 +135,7 @@ export class PostsDAO {
     // 날짜 데이터 변환
     const convertedPosts = posts.map((post) => ({
       ...post,
-      createdAt: ConversionUtil.toKST(post.createdAt),
+      createdAt: ConversionUtil.toKST(post?.createdAt),
     }));
 
     return { posts: convertedPosts, total };
@@ -165,8 +165,10 @@ export class PostsDAO {
       .getOne();
 
     // createdAt, updatedAt 변환
-    post.createdAt = ConversionUtil.toKST(post.createdAt);
-    post.updatedAt = ConversionUtil.toKST(post.updatedAt);
+    if (post) {
+      post.createdAt = ConversionUtil.toKST(post?.createdAt);
+      post.updatedAt = ConversionUtil.toKST(post?.updatedAt);
+    }
 
     return post;
   }

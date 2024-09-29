@@ -205,16 +205,29 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('해당 회원이 존재하지 않습니다.');
     }
+
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
-    const formattedPosts = scrapedPosts.items.map((scrap) => ({
-      scrapId: scrap.scrapId, // 스크랩 ID
-      postId: scrap.post.postId, // 게시물 ID
-      boardType: scrap.post.boardType, // 게시판 카테고리
-      title: scrap.post.title, // 제목
-      viewCounts: scrap.post.viewCounts, // 조회수
-      likeCounts: scrap.post.likeCounts, // 좋아요수
-      createdAt: ConversionUtil.toKST(scrap.post.createdAt), // 작성일
-    }));
+
+    console.log('서비스의 Scraped posts:', scrapedPosts);
+
+    const formattedPosts = scrapedPosts.items
+      .map((scrap) => {
+        // 스크랩된 게시물의 post가 존재하는지 확인
+        // if (!scrap.post) {
+        //   return null; // 또는 다른 처리 (예: 오류 메시지)
+        // }
+
+        return {
+          scrapId: scrap.scrapId, // 스크랩 ID
+          postId: scrap.postId, // 게시물 ID
+          boardType: scrap.boardType, // 게시판 카테고리
+          title: scrap.title, // 제목
+          viewCounts: scrap.viewCounts, // 조회수
+          likeCounts: scrap.likeCounts, // 좋아요수
+          createdAt: ConversionUtil.toKST(scrap.createdAt), // 작성일
+        };
+      })
+      .filter((post) => post !== null); // null인 항목 제거
 
     return {
       items: formattedPosts,

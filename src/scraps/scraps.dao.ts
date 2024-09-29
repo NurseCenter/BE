@@ -4,6 +4,7 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IScrapedPostResponse } from './interfaces/scraped-post-response.interface';
+// import { IScrapedPostResponse } from './interfaces/scraped-post-response.interface';
 
 @Injectable()
 export class ScrapsDAO {
@@ -35,45 +36,42 @@ export class ScrapsDAO {
     limit: number,
     sort: 'latest' | 'popular',
   ): Promise<IPaginatedResponse<any>> {
-    const skip = (page - 1) * limit;
-
-    const [items, total] = await this.scrapsRepository.findAndCount({
-      where: { userId },
-      relations: ['post'],
-      skip,
-      take: limit,
-      select: {
-        post: {
-          postId: true,
-          boardType: true,
-          title: true,
-          viewCounts: true,
-          likeCounts: true,
-          createdAt: true,
-        },
+    const [items] = await this.scrapsRepository.findAndCount({
+      where: {
+        userId,
+        deletedAt: null, // 스크랩 취소한 게시물 제외
       },
+      relations: ['post'],
     });
+
+    // null인 post를 필터링
+    const filteredItems = items.filter((item) => item.post !== null && item.post.deletedAt === null);
 
     // 정렬 처리
     if (sort === 'popular') {
-      items.sort((a, b) => b.post.likeCounts - a.post.likeCounts);
+      filteredItems.sort((a, b) => b.post.likeCounts - a.post.likeCounts);
     } else {
-      items.sort((a, b) => b.post.createdAt.getTime() - a.post.createdAt.getTime());
+      filteredItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
-    const scrapedPosts: IScrapedPostResponse[] = items.map((item) => ({
+    // 페이지네이션 처리
+    const totalItems = filteredItems.length;
+    const skip = (page - 1) * limit;
+    const paginatedItems = filteredItems.slice(skip, skip + limit);
+
+    const scrapedPosts: IScrapedPostResponse[] = paginatedItems.map((item) => ({
       postId: item.post.postId,
       boardType: item.post.boardType,
       title: item.post.title,
       viewCounts: item.post.viewCounts,
       likeCounts: item.post.likeCounts,
       createdAt: item.post.createdAt,
-    })) as IScrapedPostResponse[];
+    }));
 
     return {
       items: scrapedPosts,
-      totalItems: total,
-      totalPages: Math.ceil(total / limit),
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
       currentPage: page,
     };
   }

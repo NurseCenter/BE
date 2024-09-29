@@ -9,7 +9,7 @@ export class BaseErrorResponse {
 
   @ApiProperty({ description: 'HTTP 상태 코드' })
   statusCode: number;
-  
+
   constructor(message: string, error: string, statusCode: number) {
     this.message = message;
     this.error = error;

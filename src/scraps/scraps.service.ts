@@ -20,6 +20,10 @@ export class ScrapService {
     const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);
 
+    if (post.userId === userId) {
+      throw new ForbiddenException('자신의 글은 자신이 스크랩할 수 없습니다.');
+    }
+
     const isAlreadyScraped = await this.scrapsDAO.checkIfScraped(userId, postId);
     if (isAlreadyScraped) throw new ConflictException(`이미 ${postId}번 게시글을 스크랩했습니다.`);
 

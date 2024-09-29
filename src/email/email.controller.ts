@@ -37,7 +37,6 @@ export class EmailController {
   async sendVerificationEmail(@Body() body: { email: string }): Promise<{ message: string; email: string }> {
     const { email } = body;
     await this.emailService.sendEmailForTest(email);
-    console.log('email', email);
     return { message: '이메일 발송이 완료되었습니다.', email };
   }
 }

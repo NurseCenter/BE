@@ -67,7 +67,6 @@ export class EmailService {
 
   // 이메일 발송 테스트
   async sendEmailForTest(to: string): Promise<void> {
-    console.log('to', to);
     await this.send(to, '이메일 발송 테스트', 'test-email', to);
   }
 }

@@ -406,7 +406,10 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: '잘못된 전화번호 형식입니다. 전화번호는 01012345678과 같은 11자리 숫자로 이루어져야 합니다.' },
+        message: {
+          type: 'string',
+          example: '잘못된 전화번호 형식입니다. 전화번호는 01012345678과 같은 11자리 숫자로 이루어져야 합니다.',
+        },
         error: { type: 'string', example: 'Invalid PhoneNumber Request Type' },
         statusCode: { type: 'number', example: 400 },
       },
@@ -430,7 +433,10 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: '해당 전화번호에 대한 인증 내역이 없습니다. 인증이 없거나 유효 기간이 지났습니다.' },
+        message: {
+          type: 'string',
+          example: '해당 전화번호에 대한 인증 내역이 없습니다. 인증이 없거나 유효 기간이 지났습니다.',
+        },
         error: { type: 'string', example: 'No Verification Record' },
         statusCode: { type: 'number', example: 400 },
       },
@@ -454,7 +460,10 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: '최대 인증 시도 횟수(5회)에 도달했습니다. 인증을 처음부터 다시 시도해주세요.' },
+        message: {
+          type: 'string',
+          example: '최대 인증 시도 횟수(5회)에 도달했습니다. 인증을 처음부터 다시 시도해주세요.',
+        },
         error: { type: 'string', example: 'Max Check Attempts Reached' },
         statusCode: { type: 'number', example: 429 },
       },

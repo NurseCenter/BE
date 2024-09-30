@@ -14,7 +14,6 @@ import { ECommentType } from './enums';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserInfoResponse } from './interfaces';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
-import { ConversionUtil } from 'src/common/utils';
 
 @Injectable()
 export class UsersService {
@@ -141,7 +140,7 @@ export class UsersService {
         type: ECommentType.COMMENT,
         commentId: comment.commentId,
         content: comment.content,
-        createdAt: ConversionUtil.toKST(comment.createdAt),
+        createdAt: comment.createdAt,
         postId: comment.postId,
         boardType: post?.boardType,
         title: post?.title,
@@ -159,7 +158,7 @@ export class UsersService {
           replyId: reply.replyId,
           commentId: reply.commentId,
           content: reply.content,
-          createdAt: ConversionUtil.toKST(reply.createdAt),
+          createdAt: reply.createdAt,
           postId: originalComment?.postId,
           boardType: post?.boardType || '정보없음',
           title: post?.title || '정보없음',
@@ -216,7 +215,7 @@ export class UsersService {
         title: scrap.title, // 제목
         viewCounts: scrap.viewCounts, // 조회수
         likeCounts: scrap.likeCounts, // 좋아요수
-        createdAt: ConversionUtil.toKST(scrap.createdAt), // 작성일
+        createdAt: scrap.createdAt, // 작성일
       };
     });
 

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
-import { ConversionUtil } from 'src/common/utils/conversion.utils';
 import { ISuspendedUserInfoResponse } from '../interfaces';
 import { formatSuspensionDuration } from 'src/common/utils/format-suspension-duration.utils';
 
@@ -49,14 +48,13 @@ export class SuspendedUsersDAO {
       return null;
     }
 
-    const { toKST } = ConversionUtil;
     const { suspensionDuration, suspensionEndDate, suspensionReason } = suspendedUser;
     const formattedDuration = formatSuspensionDuration(suspensionDuration);
 
     return {
       userId,
       suspensionDuration: formattedDuration,
-      suspensionEndDate: toKST(suspensionEndDate),
+      suspensionEndDate: suspensionEndDate,
       suspensionReason,
     };
   }

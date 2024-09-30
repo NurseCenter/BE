@@ -6,7 +6,6 @@ import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { ESortType, ESortOrder } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
-import { ConversionUtil } from 'src/common/utils';
 
 @Injectable()
 export class PostsDAO {
@@ -20,9 +19,9 @@ export class PostsDAO {
     const posts = await this.postsRepository.findBy({ postId: In(postIds) });
     return posts.map((post) => ({
       ...post,
-      createdAt: ConversionUtil.toKST(post.createdAt),
-      updatedAt: ConversionUtil.toKST(post.updatedAt),
-      deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      deletedAt: post.deletedAt ? post.deletedAt : null,
     }));
   }
 
@@ -33,9 +32,9 @@ export class PostsDAO {
     if (post) {
       return {
         ...post,
-        createdAt: ConversionUtil.toKST(post.createdAt),
-        updatedAt: ConversionUtil.toKST(post.updatedAt),
-        deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        deletedAt: post.deletedAt ? post.deletedAt : null,
       };
     }
 
@@ -48,9 +47,9 @@ export class PostsDAO {
 
     return posts.map((post) => ({
       ...post,
-      createdAt: ConversionUtil.toKST(post.createdAt),
-      updatedAt: ConversionUtil.toKST(post.updatedAt),
-      deletedAt: post.deletedAt ? ConversionUtil.toKST(post.deletedAt) : null,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      deletedAt: post.deletedAt ? post.deletedAt : null,
     }));
   }
 
@@ -135,7 +134,7 @@ export class PostsDAO {
     // 날짜 데이터 변환
     const convertedPosts = posts.map((post) => ({
       ...post,
-      createdAt: ConversionUtil.toKST(post?.createdAt),
+      createdAt: post?.createdAt,
     }));
 
     return { posts: convertedPosts, total };
@@ -166,8 +165,8 @@ export class PostsDAO {
 
     // createdAt, updatedAt 변환
     if (post) {
-      post.createdAt = ConversionUtil.toKST(post?.createdAt);
-      post.updatedAt = ConversionUtil.toKST(post?.updatedAt);
+      post.createdAt = post?.createdAt;
+      post.updatedAt = post?.updatedAt;
     }
 
     return post;
@@ -222,7 +221,7 @@ export class PostsDAO {
     // 날짜 데이터 변환
     const convertedItems = items.map((item) => ({
       ...item,
-      createdAt: ConversionUtil.toKST(item.createdAt),
+      createdAt: item.createdAt,
     }));
 
     return {

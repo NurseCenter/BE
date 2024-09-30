@@ -218,8 +218,8 @@ export class UsersService {
         likeCounts: scrap.likeCounts, // 좋아요수
         createdAt: ConversionUtil.toKST(scrap.createdAt), // 작성일
       };
-    })
-    
+    });
+
     return {
       items: formattedPosts,
       totalItems: scrapedPosts.totalItems,

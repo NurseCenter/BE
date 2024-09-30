@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { join } from 'path';
 import * as ejs from 'ejs';
@@ -9,6 +9,7 @@ import { ConversionUtil } from 'src/common/utils';
 export class EmailService {
   private transpoter: nodemailer.Transporter;
   private readonly frontEndLoginPageUrl: string;
+  private readonly adminEmail: string;
 
   constructor() {
     this.transpoter = nodemailer.createTransport({
@@ -22,6 +23,7 @@ export class EmailService {
     });
 
     this.frontEndLoginPageUrl = process.env.FRONT_END_LOGIN_PAGE_URL || 'http://localhost:5173';
+    this.adminEmail = process.env.ADMIN_EMAIL;
   }
 
   private async renderTemplate(templateName: string, data: any): Promise<string> {
@@ -31,14 +33,14 @@ export class EmailService {
 
       return ejs.render(template, data);
     } catch (error) {
-      console.error('template rendering error', error);
-      throw new Error('Failed to render email template');
+      console.error('이메일 템플릿 렌더링 중 오류 발생: ', error);
+      throw new InternalServerErrorException('이메일 템플릿 렌더링 중 오류 발생');
     }
   }
 
   private async send(to: string, subject: string, templateName: string, data: any): Promise<void> {
     try {
-      const emailData = { ...data, frontEndLoginPageUrl: this.frontEndLoginPageUrl };
+      const emailData = { ...data, frontEndLoginPageUrl: this.frontEndLoginPageUrl, adminEmail: this.adminEmail };
       const html = await this.renderTemplate(templateName, emailData);
       const mailOptions = {
         from: process.env.EMAIL_FROM,
@@ -48,8 +50,8 @@ export class EmailService {
       };
       await this.transpoter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Email Sending Error', error);
-      throw new Error('Failed to send Email');
+      console.error('이메일 전송 중 오류 발생: ', error);
+      throw new InternalServerErrorException('이메일 전송 중 오류 발생');
     }
   }
 
@@ -66,9 +68,33 @@ export class EmailService {
   }
 
   // 정회원 승인 거절 이메일 발송
-  async sendRejectionEmail(to: string, nickname: string, rejectedReason: string): Promise<void> {
+  async sendMembershipRejectionEmail(to: string, nickname: string, rejectedReason: string): Promise<void> {
     const data = { nickname, rejectedReason };
-    await this.send(to, '중간이들 정회원 승인 거절', 'regular-member-rejection', data);
+    await this.send(to, '중간이들 정회원 승인 보류 안내', 'regular-member-rejection-email', data);
+  }
+
+  // 정회원 승인 완료 이메일 발송
+  async sendMembershipApprovalEmail(to: string, nickname: string): Promise<void> {
+    const data = { nickname };
+    await this.send(to, '중간이들 정회원 승인 완료 안내', 'regular-member-approval-email', data);
+  }
+
+  // 계정 활동 정지 이메일 발송
+  async sendAccountSuspensionEmail(
+    to: string,
+    nickname: string,
+    suspensionEndDate: string,
+    suspensionDuration: string,
+    suspensionReason: string,
+  ): Promise<void> {
+    const data = { nickname, suspensionEndDate, suspensionDuration, suspensionReason };
+    await this.send(to, '중간이들 계정 활동 정지 안내', 'member-suspension-email', data);
+  }
+
+  // 강제 탈퇴 안내 이메일 발송
+  async sendForcedWithdrawalEmail(to: string, nickname: string, deletionReason: string): Promise<void> {
+    const data = { nickname, deletionReason };
+    await this.send(to, '중간이들 회원 탈퇴 통지', 'member-deletion-email', data);
   }
 
   // 이메일 발송 테스트

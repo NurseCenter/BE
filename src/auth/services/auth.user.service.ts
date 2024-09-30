@@ -91,14 +91,6 @@ export class AuthUserService {
     await this.usersDAO.saveUser(user);
   }
 
-  // 회원 ID로 회원 상태 변경
-  async updateUserStatusByEmail(email: string, status: EMembershipStatus) {
-    const user = await this.usersDAO.findUserByEmail(email);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    user.membershipStatus = status;
-    await this.usersDAO.saveUser(user);
-  }
-
   // 회원 탈퇴
   async deleteUser(userId: number): Promise<void> {
     const user = await this.usersDAO.findUserByUserId(userId);

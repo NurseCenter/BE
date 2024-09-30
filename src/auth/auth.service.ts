@@ -184,7 +184,7 @@ export class AuthService {
     // 회원 이메일 상태를 확인
     if (user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION) {
       // 사용자 상태를 EMAIL_VERIFIED으로 변경
-      await this.authUserService.updateUserStatusByEmail(email, EMembershipStatus.EMAIL_VERIFIED);
+      await this.authUserService.updateUserStatusByUserId(user.userId, EMembershipStatus.EMAIL_VERIFIED);
     } else if (user.membershipStatus === EMembershipStatus.NON_MEMBER) {
       throw new NotFoundException('회원 가입 양식 제출 후 인증용 메일이 전송되지 않은 회원입니다.');
     } else if (user.membershipStatus === EMembershipStatus.APPROVED_MEMBER) {

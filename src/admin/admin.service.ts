@@ -8,8 +8,7 @@ import {
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { EmanagementStatus, ESuspensionDuration } from './enums';
-import * as dayjs from 'dayjs';
+import { EmanagementStatus } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto } from './dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -23,6 +22,9 @@ import { Request, Response } from 'express';
 import { RejectedUsersDAO } from './dao/rejected-users.dao';
 import { DeletedUsersDAO } from './dao/delete-users.dao';
 import { SuspendedUsersDAO } from './dao/suspended-users.dao';
+import { EmailService } from 'src/email/email.service';
+import { formatSuspensionEndDate } from 'src/common/utils/format-suspension-end-date.utils';
+import { calculateSuspensionEndDate } from 'src/common/utils/calculate-suspension-end-date.utils';
 
 @Injectable()
 export class AdminService {
@@ -30,6 +32,7 @@ export class AdminService {
     private readonly authUserService: AuthUserService,
     private readonly authSignInService: AuthSignInService,
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
     private readonly deletedUsersDAO: DeletedUsersDAO,
@@ -86,6 +89,18 @@ export class AdminService {
     await this.deletedUsersDAO.saveDeletedUser(newDeletedUser);
   }
 
+  // 강제 탈퇴 안내 이메일 발송
+  async sendForcedWithdrawalEmail(userId: number): Promise<{ message: string; email: string }> {
+    const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    const { email, nickname } = user;
+    const { deletionReason } = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
+    await this.emailService.sendForcedWithdrawalEmail(email, nickname, deletionReason);
+
+    return { message: '강제 탈퇴 안내 메일이 해당 회원에게 발송되었습니다.', email };
+  }
+
   // 회원 탈퇴 취소
   async cancelWithdrawal(userId: number): Promise<void> {
     const deletedUser = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
@@ -107,7 +122,7 @@ export class AdminService {
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
     const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
-    const suspensionEndDate = this.calculateSuspensionEndDate(suspensionDuration);
+    const suspensionEndDate = calculateSuspensionEndDate(suspensionDuration);
 
     // 1. 이미 정지처리된 회원
     if (alreadySuspendedUser && alreadySuspendedUser.deletedAt === null) {
@@ -141,6 +156,32 @@ export class AdminService {
     await this.usersDAO.saveUser(user);
 
     return { userId: user.userId, suspensionEndDate: user.suspensionEndDate };
+  }
+
+  // 계정 활동 정지 이메일 발송
+  async sendAccountSuspensionEmail(userId: number): Promise<{ message: string; email: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    const { email, nickname } = user;
+
+    const suspensionDetails = await this.suspendedUsersDAO.findSuspendedUserInfoByUserId(userId);
+    if (!suspensionDetails) {
+      throw new NotFoundException('해당 회원의 활동 정지 내역을 찾을 수 없습니다.: ' + userId);
+    }
+
+    const { suspensionDuration, suspensionReason } = suspensionDetails;
+    let { suspensionEndDate } = suspensionDetails;
+
+    const formattedSuspensionEndDate = formatSuspensionEndDate(suspensionEndDate);
+    await this.emailService.sendAccountSuspensionEmail(
+      email,
+      nickname,
+      formattedSuspensionEndDate,
+      suspensionDuration,
+      suspensionReason,
+    );
+
+    return { message: '활동 정지 안내 메일이 발송되었습니다.', email };
   }
 
   // 회원 계정 정지 취소
@@ -254,6 +295,17 @@ export class AdminService {
     }
   }
 
+  // 정회원 승인 안내 이메일 발송
+  async sendApprovalEmail(userId: number): Promise<{ message: string; email: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    const { email, nickname } = user;
+    await this.emailService.sendMembershipApprovalEmail(email, nickname);
+
+    return { message: '정회원 승인 안내 메일이 해당 회원에게 발송되었습니다.', email };
+  }
+
   // 관리자 특정 회원 정회원 거절
   async processUserReject(
     userId: number,
@@ -271,36 +323,20 @@ export class AdminService {
     return { message: '정회원 승인이 거절되었습니다.', userId, rejectedReason };
   }
 
-  async sendRejectionEmail(
-    userId: number,
-    rejectedReason: string,
-  ): Promise<{ message: string; userId: number; rejectedReason: string }> {
+  // 정회원 승인 거절 이메일 발송
+  async sendMembershipRejectionEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
 
-    
-    return { message: '정회원 승인 거절 메시지가 해당 회원에게 발송되었습니다.', userId, rejectedReason };
+    const { email, nickname } = user;
+    const { rejectedReason } = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);
+
+    await this.emailService.sendMembershipRejectionEmail(email, nickname, rejectedReason);
+
+    return { message: '정회원 승인 거절 안내 메일이 해당 회원에게 발송되었습니다.', email };
   }
 
-  // 정지 날짜 계산
-  private calculateSuspensionEndDate(duration: ESuspensionDuration): Date {
-    const now = dayjs();
-
-    switch (duration) {
-      case ESuspensionDuration.ONE_WEEK:
-        return now.add(1, 'week').toDate();
-      case ESuspensionDuration.TWO_WEEKS:
-        return now.add(2, 'week').toDate();
-      case ESuspensionDuration.THREE_WEEKS:
-        return now.add(3, 'week').toDate();
-      case ESuspensionDuration.FOUR_WEEKS:
-        return now.add(4, 'week').toDate();
-      default:
-        throw new NotFoundException('입력된 기간이 유효하지 않습니다.');
-    }
-  }
-
-  // 회원가입 승인 화면 보여주기
+  // 회원가입 후 정회원 승인 대기자 목록 조회
   async showUserApprovals(page: number, limit: number = 10): Promise<IPaginatedResponse<IApprovalUserList>> {
     try {
       const [users, total] = await this.usersDAO.findPendingAndRejectVerifications(page, limit);

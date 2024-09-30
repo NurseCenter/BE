@@ -9,6 +9,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { CommentsEntity } from 'src/comments/entities/comments.entity';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PostsEntity } from 'src/posts/entities/base-posts.entity';
     ]),
     DataAccessModule,
     AuthModule,
+    EmailModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

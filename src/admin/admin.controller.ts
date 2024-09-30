@@ -11,6 +11,7 @@ import {
   Query,
   Req,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/auth/guards';
 import { AdminService } from './admin.service';
@@ -30,6 +31,8 @@ import {
   GetOneCommentDto,
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
+import { EmailQueryDto } from './dto/email-query.dto';
+import { EEmailType } from './enums';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -378,7 +381,7 @@ export class AdminController {
   }
 
   // 관리자의 정회원 거절 처리
-  @Post('user/reject')
+  @Post('user/rejection')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 거절 처리' })
   @ApiBody({
@@ -409,36 +412,6 @@ export class AdminController {
     const { userId, rejectedReason } = rejectDto;
     return this.adminService.processUserReject(userId, rejectedReason);
   }
-
-  // 정회원 거절 이메일 발송
-  @Post('user/send-rejection-email')
-@HttpCode(HttpStatus.OK)
-@ApiOperation({ summary: '정회원 거절 이메일 발송' })
-@ApiBody({
-  description: '정회원 거절 이메일 발송을 위한 정보',
-  type: RejectUserDto,
-})
-@ApiResponse({
-  status: 200,
-  description: '이메일 발송 성공',
-  schema: {
-    example: { message: '정회원 거절 처리 내역이 이메일로 발송되었습니다.' },
-  },
-})
-@ApiResponse({
-  status: 404,
-  description: '해당 회원이 존재하지 않음',
-  schema: {
-    example: { message: '해당 회원이 존재하지 않습니다.' },
-  },
-})
-async sendRejectionEmail(
-  @Body() rejectEmailDto: RejectUserDto,
-): Promise<{ message: string }> {
-  const { userId, rejectedReason } = rejectEmailDto;
-  // 이메일 발송 로직 구현
-  return this.adminService.sendRejectionEmail(userId, rejectedReason);
-}
 
   // 관리자 게시물 전체 조회 및 검색
   @UseGuards(AdminGuard)
@@ -583,5 +556,39 @@ async sendRejectionEmail(
     const { type, commentId } = getOneCommentDto;
     await this.adminService.deleteCommentOrReplyById(type, commentId);
     return { message: '댓글이 성공적으로 삭제되었습니다.', type, commentId };
+  }
+
+  // 관리자 이메일 발송
+  @Post('email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 발송' })
+  @ApiBody({
+    description: '이메일 발송을 위한 정보',
+    type: EmailQueryDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '이메일 발송 성공',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '해당 회원이 존재하지 않음',
+  })
+  async handleEmailSending(
+    @Query('type') emailType: EEmailType,
+    @Body() { userId }: { userId: number },
+  ): Promise<{ message: string; email: string }> {
+    switch (emailType) {
+      case 'rejection':
+        return this.adminService.sendMembershipRejectionEmail(userId);
+      case 'withdrawal':
+        return this.adminService.sendForcedWithdrawalEmail(userId);
+      case 'suspension':
+        return this.adminService.sendAccountSuspensionEmail(userId);
+      case 'approval':
+        return this.adminService.sendApprovalEmail(userId);
+      default:
+        throw new NotFoundException('지원하지 않는 이메일 유형입니다.');
+    }
   }
 }

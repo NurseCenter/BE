@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SuspendedUsersEntity } from '../entities';
-import { ESuspensionDuration } from '../enums';
 import { ConversionUtil } from 'src/common/utils/conversion.utils';
 import { ISuspendedUserInfoResponse } from '../interfaces';
+import { formatSuspensionDuration } from 'src/common/utils/format-suspension-duration.utils';
 
 @Injectable()
 export class SuspendedUsersDAO {
@@ -51,7 +51,7 @@ export class SuspendedUsersDAO {
 
     const { toKST } = ConversionUtil;
     const { suspensionDuration, suspensionEndDate, suspensionReason } = suspendedUser;
-    const formattedDuration = this.formatSuspensionDuration(suspensionDuration);
+    const formattedDuration = formatSuspensionDuration(suspensionDuration);
 
     return {
       userId,
@@ -59,21 +59,5 @@ export class SuspendedUsersDAO {
       suspensionEndDate: toKST(suspensionEndDate),
       suspensionReason,
     };
-  }
-
-  // 정지 기간 클라이언트 반환시 포맷 변경
-  private formatSuspensionDuration(duration: ESuspensionDuration): string {
-    switch (duration) {
-      case ESuspensionDuration.ONE_WEEK:
-        return '1주';
-      case ESuspensionDuration.TWO_WEEKS:
-        return '2주';
-      case ESuspensionDuration.THREE_WEEKS:
-        return '3주';
-      case ESuspensionDuration.FOUR_WEEKS:
-        return '4주';
-      default:
-        return '알 수 없는 기간';
-    }
   }
 }

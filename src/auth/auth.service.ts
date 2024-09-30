@@ -108,12 +108,13 @@ export class AuthService {
       return res.status(200).json({
         message,
         user: {
-          membershipStatus: user.membershipStatus,
-          rejected: user.rejected,
-          ...(rejectedReason !== null && { rejectedReason }),
-          isTempPasswordSignIn,
-          isSuspended,
-          ...suspensionDetails,
+          nickname: user.nickname, // 닉네임
+          membershipStatus: user.membershipStatus, // 회원 상태
+          rejected: user.rejected, // 정회원 승인 거절 여부
+          ...(rejectedReason !== null && { rejectedReason }), // 정회원 승인 거절 사유
+          isTempPasswordSignIn, // 임시 비밀번호 로그인 여부
+          isSuspended, // 계정 활동 정지 여부
+          ...suspensionDetails, // 정지 사유
         },
       });
     });
@@ -206,12 +207,13 @@ export class AuthService {
     return maskEmail(user.email);
   }
 
-  // 비밀번호 찾기
-  async findPassword(findPasswordDto: FindPasswordDto): Promise<void> {
+  // 비밀번호 찾기 (임시 비밀번호 발급)
+  async findPassword(findPasswordDto: FindPasswordDto): Promise<string> {
     const { username, email } = findPasswordDto;
 
-    const user = await this.usersDAO.findUserByUsernameAndEmail(username, email);
+    const user = await this.usersDAO.findUserByEmail(email);
     if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    if (user.username !== username) throw new UnauthorizedException('비밀번호 찾기에 대한 권한이 없습니다.')
 
     const tempPassword = await this.authPasswordService.createTempPassword();
 
@@ -225,7 +227,11 @@ export class AuthService {
     user.password = await this.authPasswordService.createHashedPassword(tempPassword);
     await this.usersDAO.saveUser(user);
 
+    const maskedEmail = maskEmail(email);
+
     await this.emailService.sendTempPasswordEmail(user.email, user.nickname, tempPassword);
+
+    return maskedEmail;
   }
 
   // 휴대폰 번호 인증 메시지 보내기

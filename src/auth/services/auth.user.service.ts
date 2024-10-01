@@ -8,6 +8,7 @@ import { IUserWithoutPassword, ISignUpResponse } from '../interfaces';
 import { AuthSignInService } from './auth.signIn.service';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
+import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 
 @Injectable()
 export class AuthUserService {
@@ -86,7 +87,8 @@ export class AuthUserService {
   // 회원 ID로 회원 상태 변경
   async updateUserStatusByUserId(userId: number, status: EMembershipStatus) {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
+
     user.membershipStatus = status;
     await this.usersDAO.saveUser(user);
   }
@@ -94,7 +96,7 @@ export class AuthUserService {
   // 회원 탈퇴
   async deleteUser(userId: number): Promise<void> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     if (user.deletedAt !== null) throw new ConflictException('이미 탈퇴한 회원입니다.');
 
@@ -135,7 +137,8 @@ export class AuthUserService {
   // 회원 ID로 관리자 여부 확인
   async checkIsAdminByUserId(userId: number): Promise<boolean> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
+
     if (user.deletedAt !== null) throw new ConflictException('이미 탈퇴한 회원입니다.');
     return user.isAdmin ? true : false;
   }
@@ -143,7 +146,7 @@ export class AuthUserService {
   // 회원 상태 이메일 발송 후 Pending으로 변경
   async updateUserStatusToPending(email: string) {
     const user = await this.usersDAO.findUserByEmail(email);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, undefined, email);
 
     if (user.membershipStatus === EMembershipStatus.EMAIL_VERIFIED)
       throw new ConflictException('이미 이메일 인증이 완료된 회원입니다.');
@@ -159,9 +162,7 @@ export class AuthUserService {
   // 회원 정지 여부 확인
   async isUserSuspended(userId: number): Promise<boolean> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     const suspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
 

@@ -333,12 +333,12 @@ export class AuthController {
     schema: {
       example: {
         message: '임시 비밀번호 발급이 성공하였습니다.',
-        email: "hi*****@gmail.com"
+        email: 'hi*****@gmail.com',
       },
     },
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getPassword(@Body() findPasswordDto: FindPasswordDto): Promise<{ message: string, maskedEmail: string }> {
+  async getPassword(@Body() findPasswordDto: FindPasswordDto): Promise<{ message: string; maskedEmail: string }> {
     const maskedEmail = await this.authService.findPassword(findPasswordDto);
     return { message: '임시 비밀번호 발급이 성공하였습니다.', maskedEmail };
   }

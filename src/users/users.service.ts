@@ -14,6 +14,7 @@ import { ECommentType } from './enums';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserInfoResponse } from './interfaces';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
+import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 
 @Injectable()
 export class UsersService {
@@ -45,10 +46,7 @@ export class UsersService {
     const { newNickname } = updateNicknameDto;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     // 닉네임 중복 여부 확인
     const nicknameExists = await this.usersDAO.checkNicknameExists(newNickname);
@@ -71,10 +69,7 @@ export class UsersService {
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 
     const user = await this.usersDAO.findUserByUserId(userId);
-
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     const isOldPasswordValid = await this.authPasswordService.matchPassword(oldPassword, user.password);
 
@@ -107,9 +102,8 @@ export class UsersService {
   ): Promise<IPaginatedResponse<PostsEntity>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
+
     return this.postsDAO.findMyPosts(sessionUser.userId, page, limit, sort);
   }
 
@@ -201,9 +195,7 @@ export class UsersService {
   ): Promise<IPaginatedResponse<any>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
 
@@ -230,7 +222,7 @@ export class UsersService {
   // 회원 인증서류 URL에서 실명 추출
   async extractUserName(userId: number): Promise<string> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const certificationUrl = user.certificationDocumentUrl;
     if (!certificationUrl) throw new NotFoundException('해당 회원의 인증서류 URL을 찾을 수 없습니다.');

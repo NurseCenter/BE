@@ -28,6 +28,7 @@ import { UsersDAO } from 'src/users/users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
+import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 
 @Injectable()
 export class PostsService {
@@ -81,9 +82,7 @@ export class PostsService {
     const { userId } = sessionUser;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     if (boardType === EBoardType.NOTICE && !user.isAdmin) {
       throw new ForbiddenException(

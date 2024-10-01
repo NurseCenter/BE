@@ -25,6 +25,7 @@ import { SuspendedUsersDAO } from './dao/suspended-users.dao';
 import { EmailService } from 'src/email/email.service';
 import { formatSuspensionEndDate } from 'src/common/utils/format-suspension-end-date.utils';
 import { calculateSuspensionEndDate } from 'src/common/utils/calculate-suspension-end-date.utils';
+import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 
 @Injectable()
 export class AdminService {
@@ -59,10 +60,7 @@ export class AdminService {
   async withdrawUserByAdmin(userId: number, deletionReason: string): Promise<void> {
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);
-
-    if (!user) {
-      throw new NotFoundException('해당 회원이 존재하지 않습니다.');
-    }
+    throwIfUserNotExists(user, userId);
 
     if (user && user.deletedAt !== null) {
       throw new ConflictException('이미 탈퇴 처리된 회원입니다.');
@@ -92,7 +90,7 @@ export class AdminService {
   // 강제 탈퇴 안내 이메일 발송
   async sendForcedWithdrawalEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const { email, nickname } = user;
     const { deletionReason } = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
@@ -109,7 +107,8 @@ export class AdminService {
     await this.deletedUsersDAO.saveDeletedUser(deletedUser);
 
     const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
+
     user.deletedAt = null;
     await this.usersDAO.saveUser(user);
   }
@@ -119,7 +118,7 @@ export class AdminService {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
     const suspensionEndDate = calculateSuspensionEndDate(suspensionDuration);
@@ -161,7 +160,8 @@ export class AdminService {
   // 계정 활동 정지 이메일 발송
   async sendAccountSuspensionEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
+
     const { email, nickname } = user;
 
     const suspensionDetails = await this.suspendedUsersDAO.findSuspendedUserInfoByUserId(userId);
@@ -187,7 +187,7 @@ export class AdminService {
   // 회원 계정 정지 취소
   async cancelSuspension(userId: number): Promise<{ message: string; userId: number }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     user.suspensionEndDate = null;
     await this.usersDAO.saveUser(user);
@@ -250,7 +250,7 @@ export class AdminService {
   // 회원 정보 (닉네임, 이메일) 조회
   async fetchUserInfoByAdmin(userId: number): Promise<IUserInfo> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const returnUserInfo = { userId: user.userId, nickname: user.nickname, email: user.email };
     return returnUserInfo as IUserInfo;
@@ -262,7 +262,7 @@ export class AdminService {
   ): Promise<{ message: string; userId: number; membershipStatus: EMembershipStatus }> {
     const { userId } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const membershipStatus = user.membershipStatus;
 
@@ -298,7 +298,7 @@ export class AdminService {
   // 정회원 승인 안내 이메일 발송
   async sendApprovalEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const { email, nickname } = user;
     await this.emailService.sendMembershipApprovalEmail(email, nickname);
@@ -312,7 +312,7 @@ export class AdminService {
     rejectedReason: string,
   ): Promise<{ message: string; userId: number; rejectedReason: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     user.rejected = true;
     const rejectedUser = await this.rejectedUsersDAO.createRejectedUser(userId, rejectedReason);
@@ -326,7 +326,7 @@ export class AdminService {
   // 정회원 승인 거절 이메일 발송
   async sendMembershipRejectionEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    if (!user) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+    throwIfUserNotExists(user, userId);
 
     const { email, nickname } = user;
     const { rejectedReason } = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);

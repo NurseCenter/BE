@@ -13,6 +13,7 @@ import { OcrModule } from 'src/orc/ocr.module';
 import { UsersDAO } from './users.dao';
 import { UsersController } from './users.controller';
 import { MeController } from './me.controller';
+import { PostsModule } from 'src/posts/posts.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MeController } from './me.controller';
     AuthModule,
     DataAccessModule,
     OcrModule,
+    PostsModule,
   ],
   controllers: [UsersController, MeController],
   providers: [UsersService, UsersDAO],

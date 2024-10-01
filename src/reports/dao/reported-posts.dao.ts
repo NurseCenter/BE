@@ -106,18 +106,20 @@ export class ReportedPostsDAO {
       },
     });
 
-    const formattedItems = items.map((reportPost) => ({
-      reportId: reportPost.reportPostId, // 신고된 게시물 ID (신고 테이블에서의 ID)
-      postId: reportPost.posts.postId, // 게시물 ID (게시물 테이블에서의 ID)
-      postCategory: reportPost.posts.boardType, // 게시물 카테고리
-      postTitle: reportPost.posts.title, // 게시물 제목
-      postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
-      reportDate: reportPost.createdAt, // 신고일자
-      reporter: reportPost.reportingUser, // 신고자
-      reportReason: reportPost.reportedReason, // 신고 사유
-      otherReportedReason: reportPost.otherReportedReason, // 기타 신고 사유
-      status: reportPost.status, // 처리 상태
-    }));
+    const formattedItems = items
+      .filter((reportPost) => reportPost.posts !== null) // posts가 null이 아닌 경우만 필터링
+      .map((reportPost) => ({
+        reportId: reportPost.reportPostId, // 신고된 게시물 ID (신고 테이블에서의 ID)
+        postId: reportPost.posts.postId, // 게시물 ID (게시물 테이블에서의 ID)
+        postCategory: reportPost.posts.boardType, // 게시물 카테고리
+        postTitle: reportPost.posts.title, // 게시물 제목
+        postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
+        reportDate: reportPost.createdAt, // 신고일자
+        reporter: reportPost.reportingUser, // 신고자
+        reportReason: reportPost.reportedReason, // 신고 사유
+        otherReportedReason: reportPost.otherReportedReason, // 기타 신고 사유
+        status: reportPost.status, // 처리 상태
+      }));
 
     return {
       items: formattedItems,

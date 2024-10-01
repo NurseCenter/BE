@@ -319,6 +319,7 @@ export class MeController {
             viewCounts: 0,
             likeCounts: 9,
             createdAt: '2024-09-21T10:48:57.378Z',
+            numberOfCommentsAndReplies: 10,
           },
           {
             scrapId: 12,
@@ -328,6 +329,7 @@ export class MeController {
             viewCounts: 0,
             likeCounts: 10,
             createdAt: '2024-09-13T10:59:00.450Z',
+            numberOfCommentsAndReplies: 0,
           },
         ],
         totalItems: 14,

@@ -73,6 +73,7 @@ export class ReportsController {
             reporter: 39,
             reportReason: 'spam',
             status: 'pending',
+            numberOfCommentsAndReplies: 25
           },
         ],
         totalItems: 1,

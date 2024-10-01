@@ -6,9 +6,14 @@ import { ReportsService } from './reports.service';
 import { ReportedPostsDAO, ReportedCommentsDAO, ReportedRepliesDAO } from './dao';
 import { ReportsController } from './reports.controller';
 import { ReportRepliesEntity } from './entities/report-replies.entity';
+import { PostsModule } from 'src/posts/posts.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ReportCommentsEntity, ReportRepliesEntity, ReportPostsEntity]), DataAccessModule],
+  imports: [
+    TypeOrmModule.forFeature([ReportCommentsEntity, ReportRepliesEntity, ReportPostsEntity]),
+    DataAccessModule,
+    PostsModule,
+  ],
   controllers: [ReportsController],
   providers: [ReportsService, ReportedPostsDAO, ReportedCommentsDAO, ReportedRepliesDAO],
   exports: [ReportsService, ReportedPostsDAO, ReportedCommentsDAO, ReportedRepliesDAO],

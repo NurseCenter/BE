@@ -11,6 +11,7 @@ import { PostsDAO } from 'src/posts/posts.dao';
 import { IUpdateStatusResponse } from './interfaces/admin/update-status-response.interface';
 import { IFormattedReportedCommentResponse } from './interfaces/admin/comments/formatted-reported-comment-detail-response.interface';
 import { IFormattedReportedPostResponse, ICombinedReportResultResponse } from './interfaces/admin';
+import { PostsService } from 'src/posts/posts.service';
 
 @Injectable()
 export class ReportsService {
@@ -22,12 +23,30 @@ export class ReportsService {
     private readonly commentsDAO: CommentsDAO,
     private readonly repliesDAO: RepliesDAO,
     private readonly postsDAO: PostsDAO,
+    private readonly postsService: PostsService,
   ) {}
 
   // 신고된 게시물 전체 조회
   async getAllReportedPosts(page: number, limit: number): Promise<IPaginatedResponse<any>> {
-    const reportedPosts = await this.reportedPostsDAO.findAllReportedPosts(page, limit);
-    return reportedPosts;
+    const reportedPostsResponse = await this.reportedPostsDAO.findAllReportedPosts(page, limit);
+
+    // 각 신고된 게시물에 댓글 및 답글 수 추가
+    const reportedPostsWithCounts = await Promise.all(
+      reportedPostsResponse.items.map(async (post) => {
+        const totalCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(post.postId);
+        return {
+          ...post,
+          numberOfCommentsAndReplies: totalCommentsAndReplies, // 댓글 및 답글 수 추가
+        };
+      }),
+    );
+
+    return {
+      items: reportedPostsWithCounts,
+      totalItems: reportedPostsResponse.totalItems,
+      totalPages: reportedPostsResponse.totalPages,
+      currentPage: reportedPostsResponse.currentPage,
+    };
   }
 
   // 신고된 특정 게시물 조회

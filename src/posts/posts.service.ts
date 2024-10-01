@@ -292,9 +292,8 @@ export class PostsService {
   }
 
   // 한 게시물에 달린 댓글과 답글 수 구하기
-  private async getNumberOfCommentsAndReplies(postId: number): Promise<number> {
+  async getNumberOfCommentsAndReplies(postId: number): Promise<number> {
     const numberOfComments = (await this.commentsDAO.countAllCommentsByPostId(postId)) || 0;
-
     const numberOfReplies = (await this.repliesDAO.countAllrepliesByPostId(postId)) || 0;
 
     const total = numberOfComments + numberOfReplies;

@@ -15,6 +15,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserInfoResponse } from './interfaces';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
+import { PostsService } from 'src/posts/posts.service';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +29,7 @@ export class UsersService {
     private readonly ocrService: OcrService,
     private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
+    private readonly postsService: PostsService,
   ) {}
 
   // 나의 정보 조회
@@ -101,10 +103,29 @@ export class UsersService {
     sort: 'latest' | 'popular',
   ): Promise<IPaginatedResponse<PostsEntity>> {
     const { userId } = sessionUser;
+
+    // 사용자 존재 확인
     const user = await this.usersDAO.findUserByUserId(userId);
     throwIfUserNotExists(user, userId);
 
-    return this.postsDAO.findMyPosts(sessionUser.userId, page, limit, sort);
+    // 본인 작성 게시물 조회
+    const postsResponse = await this.postsDAO.findMyPosts(userId, page, limit, sort);
+
+    // 각 게시물에 댓글 및 답글 수 추가
+    const myPostsWithCounts = await Promise.all(
+      postsResponse.items.map(async (post) => {
+        const total = await this.postsService.getNumberOfCommentsAndReplies(post.postId);
+        return {
+          ...post,
+          numberOfCommentsAndReplies: total,
+        };
+      }),
+    );
+
+    return {
+      ...postsResponse,
+      items: myPostsWithCounts,
+    };
   }
 
   // 나의 댓글 및 답글 조회
@@ -199,17 +220,21 @@ export class UsersService {
 
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
 
-    const formattedPosts = scrapedPosts.items.map((scrap) => {
-      return {
-        scrapId: scrap.scrapId, // 스크랩 ID
-        postId: scrap.postId, // 게시물 ID
-        boardType: scrap.boardType, // 게시판 카테고리
-        title: scrap.title, // 제목
-        viewCounts: scrap.viewCounts, // 조회수
-        likeCounts: scrap.likeCounts, // 좋아요수
-        createdAt: scrap.createdAt, // 작성일
-      };
-    });
+    const formattedPosts = await Promise.all(
+      scrapedPosts.items.map(async (scrap) => {
+        const totalCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(scrap.postId);
+        return {
+          scrapId: scrap.scrapId, // 스크랩 ID
+          postId: scrap.postId, // 게시물 ID
+          boardType: scrap.boardType, // 게시판 카테고리
+          title: scrap.title, // 제목
+          viewCounts: scrap.viewCounts, // 조회수
+          likeCounts: scrap.likeCounts, // 좋아요수
+          createdAt: scrap.createdAt, // 작성일
+          numberOfCommentsAndReplies: totalCommentsAndReplies, // 댓글 및 답글 수
+        };
+      }),
+    );
 
     return {
       items: formattedPosts,

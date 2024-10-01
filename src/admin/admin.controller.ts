@@ -433,6 +433,7 @@ export class AdminController {
             title: '게시물 제목',
             author: '홍길동',
             createdAt: '2024-01-01T00:00:00Z',
+            numberOfCommentsAndReplies: 31
           },
         ],
         totalItems: 1,

@@ -192,6 +192,7 @@ export class MeController {
               viewCounts: 100,
               likeCounts: 21,
               createdAt: '2024-09-20T05:33:35.689Z',
+              numberOfCommentsAndReplies: 249
             },
             {
               postId: 20,
@@ -200,6 +201,7 @@ export class MeController {
               viewCounts: 2213,
               likeCounts: 18,
               createdAt: '2024-09-19T11:54:41.741Z',
+              numberOfCommentsAndReplies: 21
             },
           ],
           totalItems: 2,

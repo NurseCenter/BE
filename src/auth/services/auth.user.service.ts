@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { EMembershipStatus } from 'src/users/enums';
 import { ConversionUtil } from 'src/common/utils/conversion.utils';
 import { UsersDAO } from 'src/users/users.dao';

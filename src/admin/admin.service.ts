@@ -385,31 +385,31 @@ export class AdminService {
   // }
 
   // 게시물 관리 페이지 데이터 조회
-async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-  const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
+  async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
+    const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
 
-  const items = await Promise.all(
-    posts.map(async (post) => {
-      const numberOfCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(post.postId); // 댓글 및 답글 수 계산
+    const items = await Promise.all(
+      posts.map(async (post) => {
+        const numberOfCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(post.postId); // 댓글 및 답글 수 계산
 
-      return {
-        postId: post.postId, // 게시물 ID
-        boardType: post.boardType, // 카테고리
-        title: post.title, // 제목
-        author: post.user.nickname, // 작성자
-        createdAt: post.createdAt, // 작성일
-        numberOfCommentsAndReplies, // 댓글 및 답글 수
-      };
-    })
-  );
+        return {
+          postId: post.postId, // 게시물 ID
+          boardType: post.boardType, // 카테고리
+          title: post.title, // 제목
+          author: post.user.nickname, // 작성자
+          createdAt: post.createdAt, // 작성일
+          numberOfCommentsAndReplies, // 댓글 및 답글 수
+        };
+      }),
+    );
 
-  return {
-    items,
-    totalItems: total,
-    totalPages: Math.ceil(total / limit),
-    currentPage: page,
-  };
-}
+    return {
+      items,
+      totalItems: total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    };
+  }
 
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<void> {

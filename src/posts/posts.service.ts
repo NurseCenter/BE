@@ -17,7 +17,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { PostsDAO } from './posts.dao';
 import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { LikesDAO } from 'src/likes/likes.dao';
-import { FileUploader } from '../images/file-uploader';
+import { FileUploader } from '../files/file-uploader';
 import { ReportedPostsDAO } from 'src/reports/dao';
 import { ReportDto } from './dto/report.dto';
 import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
@@ -93,8 +93,8 @@ export class PostsService {
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
-    const imageEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
-    createdPost.images = imageEntities;
+    const fileEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
+    createdPost.files = fileEntities;
 
     const summaryContent = summarizeContent(content);
 
@@ -105,7 +105,7 @@ export class PostsService {
       content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
-      presignedPostData: imageEntities.map((img) => img.url), // presigned URL
+      presignedPostData: fileEntities.map((file) => file.url), // presigned URL
     };
   }
 
@@ -174,8 +174,8 @@ export class PostsService {
       post.content = content;
     }
 
-    const imageEntities = await this.fileUploader.handleFiles(imageTypes, post);
-    post.images = imageEntities;
+    const fileEntities = await this.fileUploader.handleFiles(imageTypes, post);
+    post.files = fileEntities;
 
     const updatedPost = await this.postsDAO.savePost(post);
 
@@ -189,7 +189,7 @@ export class PostsService {
       hospitalNames: updatedPost.hospitalNames, // 병원 이름
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일
-      presignedPostData: imageEntities.map((img) => img.url), // presignedURL
+      presignedPostData: fileEntities.map((file) => file.url), // presignedURL
     };
   }
 

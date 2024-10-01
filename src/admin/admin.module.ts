@@ -26,7 +26,7 @@ import { PostsModule } from 'src/posts/posts.module';
     DataAccessModule,
     AuthModule,
     EmailModule,
-    PostsModule
+    PostsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

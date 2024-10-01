@@ -19,6 +19,8 @@ import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { DeletedUsersDAO } from 'src/admin/dao/delete-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
+import { FilesDAO } from 'src/files/files.dao';
+import { FilesEntity } from 'src/files/entities/files.entity';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
       LikesEntity,
       ReportPostsEntity,
       ReportCommentsEntity,
+      FilesEntity,
     ]),
   ],
   providers: [
@@ -49,6 +52,7 @@ import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
     LikesDAO,
     ReportedPostsDAO,
     ReportedCommentsDAO,
+    FilesDAO,
   ],
   exports: [
     UsersDAO,

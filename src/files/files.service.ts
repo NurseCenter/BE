@@ -4,15 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import * as dayjs from 'dayjs';
 import { CreatePresignedUrlDto, PresignedUrlResponseDto } from './dto';
-import { ImagesDAO } from './images.dao';
 import { getExtensionFromMime } from 'src/common/utils';
-import { ImagesEntity } from './entities/image.entity';
+import { FilesDAO } from './files.dao';
+import { FilesEntity } from './entities/files.entity';
 
 @Injectable()
-export class ImagesService {
+export class FilesService {
   private s3Client: S3Client;
 
-  constructor(private imagesDAO: ImagesDAO) {
+  constructor(private filesDAO: FilesDAO) {
     this.s3Client = new S3Client({
       region: process.env.AWS_REGION,
       credentials: {
@@ -72,9 +72,9 @@ export class ImagesService {
     }
   }
 
-  async createImage(imageData: Partial<ImagesEntity>): Promise<ImagesEntity> {
-    const imageEntity = this.imagesDAO.createImage(imageData);
-    const savedImage = await this.imagesDAO.saveImage([imageEntity]);
-    return savedImage[0];
+  async createFile(fileData: Partial<FilesEntity>): Promise<FilesEntity> {
+    const fileEntity = this.filesDAO.createFile(fileData);
+    const savedFile = await this.filesDAO.saveFile([fileEntity]);
+    return savedFile[0];
   }
 }

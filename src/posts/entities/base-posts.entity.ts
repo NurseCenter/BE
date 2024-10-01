@@ -16,7 +16,7 @@ import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
 import { EBoardType } from '../enum/board-type.enum';
 import { ReportPostsEntity } from 'src/reports/entities';
 import { LikesEntity } from 'src/likes/entities/likes.entity';
-import { ImagesEntity } from 'src/images/entities/image.entity';
+import { FilesEntity } from 'src/files/entities/files.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -28,7 +28,6 @@ import { ImagesEntity } from 'src/images/entities/image.entity';
 [공지사항] notice.entity.ts -> NoticeEntity
 */
 
-// @Index('IDX_BOARD_TYPE_POST_ID', ['boardType', 'postId'])
 @Entity('posts')
 @Index('IDX_POST_ID_BOARD_TYPE', ['postId', 'boardType'])
 export class PostsEntity {
@@ -119,8 +118,8 @@ export class PostsEntity {
   @OneToMany(() => ReportPostsEntity, (reportPost) => reportPost.posts)
   reportPosts: ReportPostsEntity[];
 
-  // 이미지와의 관계 설정
-  // 하나의 게시글에 여러 개의 이미지가 첨부될 수 있음
-  @OneToMany(() => ImagesEntity, (image) => image.post)
-  images: ImagesEntity[];
+  // 파일과의 관계 설정
+  // 하나의 게시글에 여러 개의 파일이 첨부될 수 있음
+  @OneToMany(() => FilesEntity, (file) => file.post)
+  files: FilesEntity[];
 }

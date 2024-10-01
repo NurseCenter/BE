@@ -244,6 +244,20 @@ export class UsersService {
     };
   }
 
+  // 회원의 인증서 이미지 URL 정보를 업데이트
+  async updateUserCertificationUrl(userId: number, imageUrl: string) {
+    const updateduser = await this.usersDAO.findUserByUserId(userId);
+    if (!updateduser) throw new NotFoundException('해당 회원이 존재하지 않습니다.');
+
+    updateduser.certificationDocumentUrl = imageUrl;
+    await this.usersDAO.saveUser(updateduser);
+    if (updateduser.certificationDocumentUrl !== imageUrl) {
+      throw new BadRequestException('인증서 URL 업데이트에 실패했습니다.');
+    }
+
+    return updateduser.certificationDocumentUrl;
+  }
+
   // 회원 인증서류 URL에서 실명 추출
   async extractUserName(userId: number): Promise<string> {
     const user = await this.usersDAO.findUserByUserId(userId);

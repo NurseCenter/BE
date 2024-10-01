@@ -17,13 +17,12 @@ import { HealthCheckModule } from './health-check/health-check.module';
 import { SessionConfigService } from './config/session.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { ImagesModule } from './images/images.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OcrModule } from './orc/ocr.module';
-import { CertificatesService } from './certificates/certificates.service';
-import { CertificatesController } from './certificates/certificates.controller';
-import { CertificatesModule } from './certificates/certificates.module';
 import { ReportsModule } from './reports/reports.module';
+import { FilesController } from './files/files.controller';
+import { FilesService } from './files/files.service';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -48,12 +47,11 @@ import { ReportsModule } from './reports/reports.module';
     RepliesModule,
     RedisModule,
     HealthCheckModule,
-    ImagesModule,
+    FilesModule,
     OcrModule,
-    CertificatesModule,
     ReportsModule,
   ],
-  controllers: [AppController, CertificatesController],
-  providers: [AppService, SessionConfigService, CertificatesService],
+  controllers: [AppController, FilesController],
+  providers: [AppService, SessionConfigService, FilesService],
 })
 export class AppModule {}

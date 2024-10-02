@@ -51,7 +51,7 @@ export class ScrapsDAO {
     if (sort === 'popular') {
       filteredItems.sort((a, b) => b.post.likeCounts - a.post.likeCounts);
     } else {
-      filteredItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      filteredItems.sort((a, b) => b.post.createdAt.getTime() - a.post.createdAt.getTime());
     }
 
     // 페이지네이션 처리
@@ -60,12 +60,12 @@ export class ScrapsDAO {
     const paginatedItems = filteredItems.slice(skip, skip + limit);
 
     const scrapedPosts: IScrapedPostResponse[] = paginatedItems.map((item) => ({
-      postId: item.post.postId,
-      boardType: item.post.boardType,
-      title: item.post.title,
-      viewCounts: item.post.viewCounts,
-      likeCounts: item.post.likeCounts,
-      createdAt: item.post.createdAt,
+      postId: item.post.postId, // 게시물 ID
+      boardType: item.post.boardType, // 게시물 카테고리
+      title: item.post.title, // 제목
+      viewCounts: item.post.viewCounts, // 조회수
+      likeCounts: item.post.likeCounts, // 좋아요수
+      createdAt: item.post.createdAt, // 게시물 작성일
     }));
 
     return {

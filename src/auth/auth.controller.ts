@@ -157,7 +157,6 @@ export class AuthController {
               message: '로그인이 완료되었습니다.',
               user: {
                 userId: 35,
-                email: 'happyday@example.com',
                 nickname: '명란젓코난',
                 rejected: false,
                 isTempPasswordSignIn: false,
@@ -171,7 +170,6 @@ export class AuthController {
               message: '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.',
               user: {
                 userId: 35,
-                email: 'tempPassword@example.com',
                 nickname: '명란젓코난',
                 rejected: false,
                 isTempPasswordSignIn: true,

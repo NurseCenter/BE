@@ -109,6 +109,7 @@ export class AuthService {
       return res.status(200).json({
         message,
         user: {
+          userId: user.userId, // 회원 ID
           nickname: user.nickname, // 닉네임
           membershipStatus: user.membershipStatus, // 회원 상태
           rejected: user.rejected, // 정회원 승인 거절 여부

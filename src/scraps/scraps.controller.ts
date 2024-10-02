@@ -45,7 +45,7 @@ export class ScrapController {
   @Delete(':postId')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 게시물 스크랩 취소' })
-  @ApiParam({ name: 'scrapId', type: 'number', description: '스크랩 ID' })
+  @ApiParam({ name: 'postId', type: 'number', description: '게시물 ID' })
   @ApiResponse({
     status: 200,
     description: '특정 게시물 스크랩 취소 완료',

@@ -80,10 +80,10 @@ export class CommentsService {
     const result = await this.commentsDAO.findCommentsInOnePost(boardType, postId, page, limit);
 
     return {
-      items: result.comments,
-      totalItems: result.total,
-      totalPages: Math.ceil(result.total / limit),
-      currentPage: page,
+      items: result.items,
+      totalItems: result.totalItems, // totalItems로 변경
+      totalPages: result.totalPages, // totalPages로 변경
+      currentPage: result.currentPage, // currentPage로 변경
     };
   }
 
@@ -108,7 +108,7 @@ export class CommentsService {
     if (contentChanged) {
       comment.updatedAt = new Date();
     }
-    
+
     await this.commentsDAO.updateComment(commentId, updateCommentDto);
 
     const updatedComment = await this.commentsDAO.findCommentById(commentId);

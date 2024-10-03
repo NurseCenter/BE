@@ -8,7 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';

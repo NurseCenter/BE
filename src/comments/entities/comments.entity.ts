@@ -7,7 +7,7 @@ import {
   OneToMany,
   CreateDateColumn,
   JoinColumn,
-  DeleteDateColumn
+  DeleteDateColumn,
 } from 'typeorm';
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { EBoardType } from '../../posts/enum/board-type.enum';

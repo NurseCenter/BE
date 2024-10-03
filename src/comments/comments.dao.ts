@@ -72,15 +72,87 @@ export class CommentsDAO {
     });
   }
 
-  // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
-  async findCommentsWithReplies(
-    postId: number,
-    page: number,
-    limit: number,
-  ): Promise<{ comments: CommentWithRepliesDto[]; total: number }> {
-    const skip = (page - 1) * limit;
+  // // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
+  // async findCommentsWithReplies(
+  //   postId: number,
+  //   page: number,
+  //   limit: number,
+  // ): Promise<{ comments: CommentWithRepliesDto[]; total: number }> {
+  //   const skip = (page - 1) * limit;
 
-    // 댓글 조회
+  //   // 댓글 조회
+  //   const comments = await this.commentsRepository
+  //     .createQueryBuilder('comment')
+  //     .leftJoinAndSelect('comment.user', 'user')
+  //     .where('comment.postId = :postId AND comment.deletedAt IS NULL', { postId })
+  //     .select([
+  //       'comment.commentId AS commentId',
+  //       'comment.content AS content',
+  //       'comment.postId AS postId',
+  //       'comment.boardType AS boardType',
+  //       'comment.createdAt AS createdAt',
+  //       'comment.updatedAt AS updatedAt',
+  //       'user.userId AS userId',
+  //       'user.nickname AS nickname',
+  //     ])
+  //     .orderBy('comment.createdAt', 'ASC')
+  //     .skip(skip)
+  //     .take(limit)
+  //     .getRawMany();
+
+  //   // 총 댓글 수 조회
+  //   const total = await this.commentsRepository.count({
+  //     where: {
+  //       postId,
+  //       deletedAt: null,
+  //     },
+  //   });
+
+  //   // 댓글과 각 댓글에 대한 답글 조회
+  //   const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(
+  //     comments.map(async (comment) => {
+  //       const replies = await this.repliesRepository
+  //         .createQueryBuilder('reply')
+  //         .leftJoinAndSelect('reply.user', 'user')
+  //         .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId: comment.commentId })
+  //         .select([
+  //           'reply.replyId AS replyId',
+  //           'reply.content AS content',
+  //           'reply.createdAt AS createdAt',
+  //           'reply.updatedAt AS updatedAt',
+  //           'user.userId AS userId',
+  //           'user.nickname AS nickname',
+  //         ])
+  //         .orderBy('reply.createdAt', 'ASC')
+  //         .getRawMany();
+
+  //       return {
+  //         commentId: comment.commentId,
+  //         content: comment.content,
+  //         postId: comment.postId,
+  //         boardType: comment.boardType,
+  //         createdAt: comment.createdAt,
+  //         updatedAt: comment.updatedAt,
+  //         userId: comment.userId,
+  //         nickname: comment.nickname,
+  //         replies: replies.map((reply) => ({
+  //           replyId: reply.replyId,
+  //           content: reply.content,
+  //           createdAt: reply.createdAt,
+  //           updatedAt: reply.updatedAt,
+  //           userId: reply.userId,
+  //           nickname: reply.nickname,
+  //         })),
+  //       };
+  //     }),
+  //   );
+
+  //   return { comments: commentsWithReplies, total };
+  // }
+
+  // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
+  async findCommentsWithReplies(postId: number, page: number, limit: number) {
+    // 모든 댓글 조회
     const comments = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
@@ -96,21 +168,18 @@ export class CommentsDAO {
         'user.nickname AS nickname',
       ])
       .orderBy('comment.createdAt', 'ASC')
-      .skip(skip)
-      .take(limit)
       .getRawMany();
 
-    // 총 댓글 수 조회
-    const total = await this.commentsRepository.count({
-      where: {
-        postId,
-        deletedAt: null,
-      },
-    });
+    // 전체 댓글 수
+    const total = comments.length;
+
+    // 페이지네이션 적용
+    const skip = (page - 1) * limit;
+    const paginatedComments = comments.slice(skip, skip + limit);
 
     // 댓글과 각 댓글에 대한 답글 조회
     const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(
-      comments.map(async (comment) => {
+      paginatedComments.map(async (comment) => {
         const replies = await this.repliesRepository
           .createQueryBuilder('reply')
           .leftJoinAndSelect('reply.user', 'user')
@@ -147,7 +216,15 @@ export class CommentsDAO {
       }),
     );
 
-    return { comments: commentsWithReplies, total };
+    // 총 페이지 수 계산
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      comments: commentsWithReplies,
+      total,
+      totalPages,
+      currentPage: page,
+    };
   }
 
   // 특정 게시물의 모든 댓글 조회
@@ -156,10 +233,14 @@ export class CommentsDAO {
     postId: number,
     page: number,
     limit: number,
-  ): Promise<{ comments: CommentsEntity[]; total: number }> {
-    const skip = (page - 1) * limit;
-
-    const comments = await this.commentsRepository
+  ): Promise<{
+    items: CommentsEntity[];
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+  }> {
+    // 모든 댓글 조회
+    const allComments = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
       .select([
@@ -176,19 +257,23 @@ export class CommentsDAO {
       .andWhere('comment.boardType = :boardType', { boardType })
       .andWhere('comment.deletedAt IS NULL')
       .orderBy('comment.createdAt', 'ASC')
-      .skip(skip)
-      .take(limit)
       .getRawMany();
 
-    const total = await this.commentsRepository.count({
-      where: {
-        postId,
-        boardType,
-        deletedAt: null,
-      },
-    });
+    // 전체 댓글 수
+    const total = allComments.length;
 
-    return { comments, total };
+    // 페이지네이션 적용
+    const skip = (page - 1) * limit;
+    const paginatedComments = allComments.slice(skip, skip + limit);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: paginatedComments,
+      totalItems: total,
+      totalPages,
+      currentPage: page,
+    };
   }
 
   // 댓글 삭제

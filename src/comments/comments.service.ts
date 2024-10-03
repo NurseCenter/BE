@@ -101,7 +101,16 @@ export class CommentsService {
       throw new ForbiddenException(`댓글을 수정할 권한이 없습니다.`);
     }
 
+    // 댓글 내용 변경 여부 확인
+    const contentChanged = comment.content !== updateCommentDto.content;
+
     await this.commentsDAO.updateComment(commentId, updateCommentDto);
+
+    // 'updatedAt'에 현재 날짜를 넣어주기
+    if (contentChanged) {
+      comment.updatedAt = new Date();
+    }
+
     const updatedComment = await this.commentsDAO.findCommentById(commentId);
 
     const content = updatedComment.content;

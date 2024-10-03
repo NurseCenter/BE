@@ -7,8 +7,7 @@ import {
   OneToMany,
   CreateDateColumn,
   JoinColumn,
-  DeleteDateColumn,
-  UpdateDateColumn,
+  DeleteDateColumn
 } from 'typeorm';
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { EBoardType } from '../../posts/enum/board-type.enum';
@@ -49,7 +48,7 @@ export class CommentsEntity {
   // 댓글 수정일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @UpdateDateColumn()
+  @Column({ type: 'timestamp', nullable: true })
   updatedAt: Date;
 
   // 댓글 삭제일

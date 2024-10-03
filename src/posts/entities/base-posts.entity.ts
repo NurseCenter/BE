@@ -8,8 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { ScrapsEntity } from '../../scraps/entities/scraps.entity';
@@ -79,8 +78,10 @@ export class PostsEntity {
   // 게시물 수정일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @UpdateDateColumn()
-  updatedAt: Date;
+  // @UpdateDateColumn()을 쓰면 좋아요수, 조회수 등이 변경되어도 자동으로 날짜가 바뀜.
+  // → 수동 업데이트로 구현하기로 함.
+  @Column({ type: 'timestamp', nullable: true })
+  updatedAt: Date | null;
 
   // 게시물 삭제일
   // 기본 상태는 null, 삭제하면 날짜

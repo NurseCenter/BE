@@ -62,7 +62,7 @@ export class FilesService {
           ['content-length-range', 0, 20971520], // 최대 20MB
           ['starts-with', '$Content-Type', fileType],
         ],
-        Expires: 3600,
+        Expires: 60, // 1분
       });
 
       return { url, fields, key } as PresignedUrlResponseDto;

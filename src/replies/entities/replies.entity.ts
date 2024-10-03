@@ -5,7 +5,6 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
@@ -47,7 +46,7 @@ export class RepliesEntity {
   // 답글 수정일
   // 기본 상태는 null, 수정하면 날짜
   // 수정 여부를 렌더링하기 위함.
-  @UpdateDateColumn({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   updatedAt: Date | null;
 
   // 답글 삭제일

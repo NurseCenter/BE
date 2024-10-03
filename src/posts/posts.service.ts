@@ -165,17 +165,27 @@ export class PostsService {
     }
 
     const { title, content, imageTypes } = updatePostDto;
+    let contentChanged = false; // 변경 플래그
 
     if (title !== null && title !== undefined) {
       post.title = title;
+      contentChanged = true; // 제목이 변경된 경우
     }
 
     if (content !== null && content !== undefined) {
       post.content = content;
+      contentChanged = true; // 내용이 변경된 경우
     }
 
+    // 파일 업로드 처리 
+    // 추후에 불필요하면 삭제할 예정
     const fileEntities = await this.fileUploader.handleFiles(imageTypes, post);
     post.files = fileEntities;
+
+    // 내용이 변경된 경우에만 updatedAt에 현재 날짜 넣어주기
+    if (contentChanged) {
+      post.updatedAt = new Date(); 
+    }
 
     const updatedPost = await this.postsDAO.savePost(post);
 

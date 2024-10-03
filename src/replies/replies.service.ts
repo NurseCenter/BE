@@ -81,17 +81,19 @@ export class RepliesService {
     // 답글 내용 변경 여부 체크
     const contentChanged = reply.content !== createReplyDto.content;
 
-    await this.repliesDAO.updateReply(replyId, createReplyDto);
-
     // updatedAt 필드에 현재 날짜 넣어주기
     if (contentChanged) {
       reply.updatedAt = new Date(); 
     }
 
+    await this.repliesDAO.updateReply(replyId, createReplyDto);
+
     const updatedReply = await this.repliesDAO.findReplyById(replyId);
 
     const content = updatedReply.content;
     const summaryContent = summarizeContent(content);
+
+    await this.repliesDAO.saveReply(reply);
 
     return {
       ...updatedReply,

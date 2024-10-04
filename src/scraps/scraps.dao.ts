@@ -88,6 +88,6 @@ export class ScrapsDAO {
 
   // 스크랩 삭제
   async deleteScrap(scrapId: number): Promise<DeleteResult> {
-    return await this.scrapsRepository.delete({ scrapId });
+    return await this.scrapsRepository.softDelete({ scrapId });
   }
 }

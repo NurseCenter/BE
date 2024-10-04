@@ -23,6 +23,7 @@ import { ReportsModule } from './reports/reports.module';
 import { FilesController } from './files/files.controller';
 import { FilesService } from './files/files.service';
 import { FilesModule } from './files/files.module';
+import { KakaoMessageModule } from './kakao-message/kakao-message.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { FilesModule } from './files/files.module';
     FilesModule,
     OcrModule,
     ReportsModule,
+    KakaoMessageModule,
   ],
   controllers: [AppController, FilesController],
   providers: [AppService, SessionConfigService, FilesService],

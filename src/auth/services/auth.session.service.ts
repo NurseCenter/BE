@@ -55,8 +55,7 @@ export class AuthSessionService {
       req.session.passport.user.userId === userId
     ) {
       req.session.passport.user = {
-        ...req.session.passport.user,
-        nickname: updatedUser.nickname,
+        ...updatedUser,
       };
     }
 

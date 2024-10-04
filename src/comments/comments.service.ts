@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ReportDto } from '../posts/dto/report.dto';
 import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { PostsDAO } from 'src/posts/posts.dao';
@@ -19,6 +18,7 @@ import { ReportedCommentDto } from 'src/reports/dto/reported-comment.dto';
 import { PaginationQueryDto } from 'src/common/dto';
 import { IReportedCommentResponse } from 'src/reports/interfaces/users';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
+import { IUser } from 'src/auth/interfaces';
 
 @Injectable()
 export class CommentsService {
@@ -32,7 +32,7 @@ export class CommentsService {
   async createComment(
     boardType: EBoardType,
     postId: number,
-    sessionUser: IUserWithoutPassword,
+    sessionUser: IUser,
     createCommentDto: CreateCommentDto,
   ): Promise<CommentsEntity> {
     const { userId } = sessionUser;
@@ -91,7 +91,7 @@ export class CommentsService {
   async updateComment(
     commentId: number,
     updateCommentDto: CreateCommentDto,
-    sessionUser: IUserWithoutPassword,
+    sessionUser: IUser,
   ): Promise<CommentsEntity> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
@@ -125,7 +125,7 @@ export class CommentsService {
   }
 
   // 댓글 삭제
-  async deleteComment(commentId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+  async deleteComment(commentId: number, sessionUser: IUser): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);
@@ -143,11 +143,7 @@ export class CommentsService {
   }
 
   // 특정 댓글 신고
-  async reportComment(
-    commentId: number,
-    sessionUser: IUserWithoutPassword,
-    reportDto: ReportDto,
-  ): Promise<IReportedCommentResponse> {
+  async reportComment(commentId: number, sessionUser: IUser, reportDto: ReportDto): Promise<IReportedCommentResponse> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) throw new NotFoundException(`${commentId}번 댓글을 찾을 수 없습니다.`);

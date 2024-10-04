@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateReplyDto } from './dto/create-reply.dto';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { RepliesDAO } from './replies.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesEntity } from './entities/replies.entity';
@@ -15,6 +14,7 @@ import { ReportDto } from 'src/posts/dto';
 import { ReportedRepliesDAO } from 'src/reports/dao';
 import { IReportedReplyResponse } from 'src/reports/interfaces/users';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
+import { IUser } from 'src/auth/interfaces';
 
 @Injectable()
 export class RepliesService {
@@ -25,11 +25,7 @@ export class RepliesService {
   ) {}
 
   // 답글 작성
-  async createReply(
-    commentId: number,
-    sessionUser: IUserWithoutPassword,
-    createReplyDto: CreateReplyDto,
-  ): Promise<RepliesEntity> {
+  async createReply(commentId: number, sessionUser: IUser, createReplyDto: CreateReplyDto): Promise<RepliesEntity> {
     const { userId } = sessionUser;
     const comment = await this.commentsDAO.findCommentById(commentId);
     if (!comment) {
@@ -65,11 +61,7 @@ export class RepliesService {
   }
 
   // 답글 수정
-  async updateReply(
-    replyId: number,
-    sessionUser: IUserWithoutPassword,
-    createReplyDto: CreateReplyDto,
-  ): Promise<RepliesEntity> {
+  async updateReply(replyId: number, sessionUser: IUser, createReplyDto: CreateReplyDto): Promise<RepliesEntity> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
@@ -102,7 +94,7 @@ export class RepliesService {
   }
 
   // 답글 삭제
-  async deleteReply(replyId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+  async deleteReply(replyId: number, sessionUser: IUser): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);
@@ -120,11 +112,7 @@ export class RepliesService {
   }
 
   // 답글 신고
-  async reportReply(
-    replyId: number,
-    sessionUser: IUserWithoutPassword,
-    reportDto: ReportDto,
-  ): Promise<IReportedReplyResponse> {
+  async reportReply(replyId: number, sessionUser: IUser, reportDto: ReportDto): Promise<IReportedReplyResponse> {
     const { userId } = sessionUser;
     const reply = await this.repliesDAO.findReplyById(replyId);
     if (!reply) throw new NotFoundException(`${replyId}번 답글을 찾을 수 없습니다.`);

@@ -11,11 +11,11 @@ import {
   VerifyPhoneNumberDto,
 } from './dto';
 import { SessionUser } from './decorators/get-user.decorator';
-import { IUserWithoutPassword } from './interfaces';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 import { InvalidPhoneVerificationCodeException } from 'src/common/exceptions/twilio-sms.exceptions';
 import { handlePostPhoneVerificationConfirmError } from './error-handler/handle-post-phone-verification-confirm-error';
+import { IUser } from './interfaces';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -113,11 +113,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   @ApiResponse({ status: 401, description: '권한이 없음' })
-  async deleteWithdrawal(
-    @SessionUser() sessionUser: IUserWithoutPassword,
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<void> {
+  async deleteWithdrawal(@SessionUser() sessionUser: IUser, @Req() req: Request, @Res() res: Response): Promise<void> {
     try {
       const { userId } = sessionUser;
       await this.authService.withDraw(userId, req, res);
@@ -539,7 +535,7 @@ export class AuthController {
       },
     },
   })
-  async getUserStatus(@SessionUser() sessionUser: IUserWithoutPassword) {
+  async getUserStatus(@SessionUser() sessionUser: IUser) {
     const { userId } = sessionUser;
     return this.authService.sendUserStatus(userId);
   }

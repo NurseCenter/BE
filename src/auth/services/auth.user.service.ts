@@ -4,7 +4,7 @@ import { ConversionUtil } from 'src/common/utils/conversion.utils';
 import { UsersDAO } from 'src/users/users.dao';
 import { CreateUserDto, SignInUserDto } from '../dto';
 import { AuthPasswordService } from './auth.password.service';
-import { IUserWithoutPassword, ISignUpResponse } from '../interfaces';
+import { ISignUpResponse, IUser } from '../interfaces';
 import { AuthSignInService } from './auth.signIn.service';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
@@ -58,7 +58,7 @@ export class AuthUserService {
   }
 
   // 입력받은 회원정보가 유효한지 확인
-  async validateUser(signInUserDto: SignInUserDto): Promise<IUserWithoutPassword | null> {
+  async validateUser(signInUserDto: SignInUserDto): Promise<IUser | null> {
     // 이메일로 회원 찾기
     const user = await this.usersDAO.findUserByEmail(signInUserDto.email);
     if (!user) return null;

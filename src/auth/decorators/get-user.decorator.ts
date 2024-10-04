@@ -5,7 +5,7 @@ import { IUser } from '../interfaces';
 declare module 'express-session' {
   interface SessionData {
     passport: {
-      user: IUser;
+      user: IUser; // userId와 email만 존재
     };
   }
 }
@@ -18,12 +18,10 @@ export const SessionUser = createParamDecorator((data: string, ctx: ExecutionCon
     return null;
   }
 
-  // 비밀번호 필드를 제외한 새로운 객체 생성
-  const { password, ...safeUserData } = user;
-
+  // userId 또는 email만 반환
   if (data) {
-    return data === 'password' ? undefined : safeUserData[data as keyof typeof safeUserData];
+    return user[data as keyof typeof user];
   }
 
-  return safeUserData;
+  return user;
 });

@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { IUserWithoutPassword } from 'src/auth/interfaces';
+import { IUser } from 'src/auth/interfaces';
 import { UpdateNicknameDto, UpdatePasswordDto } from './dto';
-import { AuthPasswordService, AuthSessionService, AuthSignInService } from 'src/auth/services';
+import { AuthPasswordService, AuthSignInService } from 'src/auth/services';
 import { UsersDAO } from './users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
@@ -27,20 +27,22 @@ export class UsersService {
     private readonly commentsDAO: CommentsDAO,
     private readonly repliesDAO: RepliesDAO,
     private readonly ocrService: OcrService,
-    private readonly authSessionService: AuthSessionService,
     private readonly authSignInService: AuthSignInService,
     private readonly postsService: PostsService,
   ) {}
 
   // 나의 정보 조회
-  async fetchMyInfo(sessionUser: IUserWithoutPassword): Promise<IUserInfoResponse> {
-    const { nickname, email, username, phoneNumber } = sessionUser;
-    return { nickname, email, username, phoneNumber };
+  async fetchMyInfo(sessionUser: IUser): Promise<IUserInfoResponse> {
+    const { userId } = sessionUser;
+    const user = await this.usersDAO.findUserByUserId(userId);
+    throwIfUserNotExists(user, userId);
+
+    return { nickname: user.nickname, email: user.nickname, username: user.username, phoneNumber: user.phoneNumber };
   }
 
   // 나의 닉네임 수정
   async updateMyNickname(
-    sessionUser: IUserWithoutPassword,
+    sessionUser: IUser,
     updateNicknameDto: UpdateNicknameDto,
     req: Request,
   ): Promise<{ message: string; newNickname: string }> {
@@ -58,10 +60,8 @@ export class UsersService {
 
     // 닉네임 업데이트
     user.nickname = newNickname;
-    const updatedUser = await this.usersDAO.saveUser(user);
+    await this.usersDAO.saveUser(user);
 
-    // 세션 정보 업데이트
-    await this.authSessionService.updateSessionInfo(req, userId, updatedUser);
     return { message: '닉네임이 수정되었습니다.', newNickname };
   }
 
@@ -97,7 +97,7 @@ export class UsersService {
 
   // 나의 게시글 조회
   async fetchMyPosts(
-    sessionUser: IUserWithoutPassword,
+    sessionUser: IUser,
     page: number,
     limit: number,
     sort: 'latest' | 'popular',
@@ -209,7 +209,7 @@ export class UsersService {
 
   // 나의 스크랩한 게시물 조회
   async fetchMyScrapedPosts(
-    sessionUser: IUserWithoutPassword,
+    sessionUser: IUser,
     page: number,
     limit: number,
     sort: 'latest' | 'popular',

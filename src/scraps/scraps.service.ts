@@ -1,9 +1,9 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { ScrapsDAO } from './scraps.dao';
 import { ScrapsEntity } from './entities/scraps.entity';
 import { PostsMetricsService } from 'src/posts/metrics/posts-metrics.service';
+import { IUser } from 'src/auth/interfaces';
 
 @Injectable()
 export class ScrapService {
@@ -14,7 +14,7 @@ export class ScrapService {
   ) {}
 
   // 게시물 스크랩 등록
-  async scrapPost(postId: number, sessionUser: IUserWithoutPassword): Promise<ScrapsEntity> {
+  async scrapPost(postId: number, sessionUser: IUser): Promise<ScrapsEntity> {
     const { userId } = sessionUser;
 
     const post = await this.postsDAO.findOnePostByPostId(postId);
@@ -36,7 +36,7 @@ export class ScrapService {
   }
 
   // 특정 게시물 스크랩 취소
-  async deleteScrapedPost(postId: number, sessionUser: IUserWithoutPassword): Promise<{ message: string }> {
+  async deleteScrapedPost(postId: number, sessionUser: IUser): Promise<{ message: string }> {
     const { userId } = sessionUser;
     const scrapPost = await this.scrapsDAO.findScrapByUserIdAndPostId(userId, postId);
 

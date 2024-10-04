@@ -1,13 +1,13 @@
 import { Controller, Get, Patch, Body, Query, UseGuards, HttpCode, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SessionUser } from 'src/auth/decorators/get-user.decorator';
-import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { GetMyCommentsQueryDto, GetMyPostsQueryDto, UpdateNicknameDto, UpdatePasswordDto } from './dto';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard, SignInGuard } from 'src/auth/guards';
 import { Request } from 'express';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { GetMyScrapsQueryDto } from './dto/get-my-scraps-query-dto';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Me')
 @Controller('me')
@@ -41,7 +41,7 @@ export class MeController {
       },
     },
   })
-  async getMyInfo(@SessionUser() user: IUserWithoutPassword) {
+  async getMyInfo(@SessionUser() user: IUser) {
     return this.usersService.fetchMyInfo(user);
   }
 
@@ -96,11 +96,7 @@ export class MeController {
       },
     },
   })
-  async patchMyInfo(
-    @SessionUser() user: IUserWithoutPassword,
-    @Body() updateNicknameDto: UpdateNicknameDto,
-    @Req() req: Request,
-  ) {
+  async patchMyInfo(@SessionUser() user: IUser, @Body() updateNicknameDto: UpdateNicknameDto, @Req() req: Request) {
     return this.usersService.updateMyNickname(user, updateNicknameDto, req);
   }
 
@@ -158,7 +154,7 @@ export class MeController {
       },
     },
   })
-  async patchMyPassword(@SessionUser() user: IUserWithoutPassword, @Body() updatePasswordDto: UpdatePasswordDto) {
+  async patchMyPassword(@SessionUser() user: IUser, @Body() updatePasswordDto: UpdatePasswordDto) {
     const { userId } = user;
     return this.usersService.updateMyPassword(userId, updatePasswordDto);
   }
@@ -221,7 +217,7 @@ export class MeController {
       },
     },
   })
-  async getMyPosts(@SessionUser() user: IUserWithoutPassword, @Query() getMyPostsQueryDto: GetMyPostsQueryDto) {
+  async getMyPosts(@SessionUser() user: IUser, @Query() getMyPostsQueryDto: GetMyPostsQueryDto) {
     const { page, limit, sort } = getMyPostsQueryDto;
     return this.usersService.fetchMyPosts(user, page, limit, sort);
   }
@@ -293,10 +289,7 @@ export class MeController {
       },
     },
   })
-  async getMyCommentsAndReplies(
-    @SessionUser() user: IUserWithoutPassword,
-    @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto,
-  ) {
+  async getMyCommentsAndReplies(@SessionUser() user: IUser, @Query() getmyCommentsQueryDto: GetMyCommentsQueryDto) {
     const { userId } = user;
     const { page, limit, sort } = getmyCommentsQueryDto;
     return this.usersService.fetchMyCommentsAndReplies(userId, page, limit, sort);
@@ -351,7 +344,7 @@ export class MeController {
     },
   })
   async getScrapPosts(
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
     @Query() getMyScrapsQueryDto: GetMyScrapsQueryDto,
   ): Promise<IPaginatedResponse<any>> {
     const { page, limit, sort } = getMyScrapsQueryDto;

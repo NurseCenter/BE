@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { LikesEntity } from './entities/likes.entity';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ILikeActionResponse } from './interfaces/like-action-response.interface';
 import { LikesDAO } from './likes.dao';
 import { PostsMetricsService } from 'src/posts/metrics/posts-metrics.service';
 import { PostsDAO } from 'src/posts/posts.dao';
+import { IUser } from 'src/auth/interfaces';
 
 @Injectable()
 export class LikesService {
@@ -16,7 +16,7 @@ export class LikesService {
     private readonly postsMetricsService: PostsMetricsService,
   ) {}
 
-  async toggleLike(postId: number, sessionUser: IUserWithoutPassword): Promise<ILikeActionResponse> {
+  async toggleLike(postId: number, sessionUser: IUser): Promise<ILikeActionResponse> {
     const { userId } = sessionUser;
     const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) throw new NotFoundException(`${postId}번 게시글을 찾을 수 없습니다`);

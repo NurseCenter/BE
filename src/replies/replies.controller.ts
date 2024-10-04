@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, HttpCode, UseGuards, Put } from '@nestjs/common';
 import { RepliesService } from './replies.service';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -9,6 +8,7 @@ import { ReportDto } from 'src/posts/dto';
 import { RepliesEntity } from './entities/replies.entity';
 import { IReportedReplyResponse } from 'src/reports/interfaces/users';
 import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Replies')
 @Controller()
@@ -71,7 +71,7 @@ export class RepliesController {
   async createReply(
     @Param('commentId') commentId: number,
     @Body() createReplyDto: CreateReplyDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<RepliesEntity> {
     const result = await this.repliesService.createReply(commentId, sessionUser, createReplyDto);
     return result;
@@ -191,7 +191,7 @@ export class RepliesController {
   async updateReplies(
     @Param('replyId') replyId: number,
     @Body() createReplyDto: CreateReplyDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<RepliesEntity> {
     const result = await this.repliesService.updateReply(replyId, sessionUser, createReplyDto);
     return result;
@@ -244,7 +244,7 @@ export class RepliesController {
   })
   async deleteComment(
     @Param('replyId') replyId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<{ message: string }> {
     const result = await this.repliesService.deleteReply(replyId, sessionUser);
     return result;
@@ -327,7 +327,7 @@ export class RepliesController {
   })
   async reportReply(
     @Param('replyId') replyId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
     @Body() reportDto: ReportDto,
   ): Promise<IReportedReplyResponse> {
     const result = await this.repliesService.reportReply(replyId, sessionUser, reportDto);

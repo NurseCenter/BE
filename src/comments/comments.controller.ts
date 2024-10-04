@@ -3,7 +3,6 @@ import { CommentsService } from './comments.service';
 import { EBoardType } from '../posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
 import { ReportDto } from 'src/posts/dto/report.dto';
@@ -12,6 +11,7 @@ import { CommentsEntity } from './entities/comments.entity';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IReportedCommentResponse } from 'src/reports/interfaces/users';
 import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Comments')
 @Controller()
@@ -65,7 +65,7 @@ export class CommentsController {
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @Body() createCommentDto: CreateCommentDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<CommentsEntity> {
     const result = await this.commentsService.createComment(boardType, postId, sessionUser, createCommentDto);
     return result;
@@ -217,7 +217,7 @@ export class CommentsController {
   async updateComment(
     @Param('commentId') commentId: number,
     @Body() updateCommentDto: CreateCommentDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<CommentsEntity> {
     return await this.commentsService.updateComment(commentId, updateCommentDto, sessionUser);
   }
@@ -269,7 +269,7 @@ export class CommentsController {
   })
   async deleteComment(
     @Param('commentId') commentId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<{ message: string }> {
     const result = await this.commentsService.deleteComment(commentId, sessionUser);
     return result;
@@ -349,7 +349,7 @@ export class CommentsController {
   })
   async reportComment(
     @Param('commentId') commentId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
     @Body() reportDto: ReportDto,
   ): Promise<IReportedCommentResponse> {
     const result = await this.commentsService.reportComment(commentId, sessionUser, reportDto);

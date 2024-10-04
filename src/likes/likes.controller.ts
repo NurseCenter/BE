@@ -1,10 +1,10 @@
 import { Controller, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { RegularMemberGuard } from '../auth/guards';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ILikeActionResponse } from './interfaces/like-action-response.interface';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Likes')
 @Controller()
@@ -47,10 +47,7 @@ export class LikesController {
       },
     },
   })
-  async scrapPost(
-    @Param('postId') postId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
-  ): Promise<ILikeActionResponse> {
+  async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: IUser): Promise<ILikeActionResponse> {
     const result = await this.likesService.toggleLike(postId, sessionUser);
     return result;
   }

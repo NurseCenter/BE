@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGu
 import { EBoardType } from './enum/board-type.enum';
 import { PostsService } from './posts.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { IUserWithoutPassword } from '../auth/interfaces/session-decorator.interface';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -11,6 +10,7 @@ import { PostsEntity } from './entities/base-posts.entity';
 import { IPostDetailResponse, IPostResponse } from './interfaces';
 import { IReportedPostResponse } from 'src/reports/interfaces/users';
 import { SuspensionGuard } from 'src/auth/guards/suspension.guard';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -213,7 +213,7 @@ export class PostsController {
   async getPostDetails(
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<IPostDetailResponse> {
     try {
       const result = await this.postsService.getOnePost(boardType, postId, sessionUser);
@@ -325,7 +325,7 @@ export class PostsController {
   async createPost(
     @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse> {
     try {
       const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
@@ -454,7 +454,7 @@ export class PostsController {
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse> {
     try {
       const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
@@ -519,7 +519,7 @@ export class PostsController {
   async deletePost(
     @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<{ message: string }> {
     try {
       const result = await this.postsService.deletePost(boardType, postId, sessionUser);
@@ -644,7 +644,7 @@ export class PostsController {
   })
   async reportPost(
     @Param() basePostDto: BasePostDto,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
     @Body() reportDto: ReportDto,
   ): Promise<IReportedPostResponse> {
     const result = await this.postsService.reportPost(basePostDto, sessionUser, reportDto);

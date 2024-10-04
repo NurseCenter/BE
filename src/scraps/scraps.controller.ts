@@ -2,9 +2,9 @@ import { Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/co
 import { ScrapService } from './scraps.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
 import { RegularMemberGuard } from '../auth/guards';
-import { IUserWithoutPassword } from 'src/auth/interfaces';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ScrapsEntity } from './entities/scraps.entity';
+import { IUser } from 'src/auth/interfaces';
 
 @ApiTags('Scraps')
 @Controller('scraps')
@@ -33,10 +33,7 @@ export class ScrapController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
   @ApiResponse({ status: 409, description: '이미 스크랩된 게시물' })
-  async scrapPost(
-    @Param('postId') postId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
-  ): Promise<ScrapsEntity> {
+  async scrapPost(@Param('postId') postId: number, @SessionUser() sessionUser: IUser): Promise<ScrapsEntity> {
     return await this.scrapsService.scrapPost(postId, sessionUser);
   }
 
@@ -97,7 +94,7 @@ export class ScrapController {
   })
   async deleteScrapPost(
     @Param('postId') postId: number,
-    @SessionUser() sessionUser: IUserWithoutPassword,
+    @SessionUser() sessionUser: IUser,
   ): Promise<{ message: string }> {
     return await this.scrapsService.deleteScrapedPost(postId, sessionUser);
   }

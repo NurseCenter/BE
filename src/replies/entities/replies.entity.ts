@@ -11,6 +11,7 @@ import {
 import { CommentsEntity } from '../../comments/entities/comments.entity';
 import { UsersEntity } from '../../users/entities/users.entity';
 import { ReportRepliesEntity } from 'src/reports/entities/report-replies.entity';
+import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 
 @Entity('replies')
 export class RepliesEntity {
@@ -59,10 +60,10 @@ export class RepliesEntity {
   @JoinColumn({ name: 'commentId', referencedColumnName: 'commentId' })
   comments: CommentsEntity;
 
-  // // 게시물과의 관계 설정
-  // @ManyToOne(() => PostsEntity, (post) => post.replies)
-  // @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
-  // post: PostsEntity;
+  // 게시물과의 관계 설정
+  @ManyToOne(() => PostsEntity, (post) => post.replies)
+  @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
+  post: PostsEntity;
 
   // 이 답글에 대한 신고 기록들
   @OneToMany(() => ReportRepliesEntity, (report) => report.replies)

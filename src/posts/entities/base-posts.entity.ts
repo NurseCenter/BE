@@ -16,6 +16,7 @@ import { EBoardType } from '../enum/board-type.enum';
 import { ReportPostsEntity } from 'src/reports/entities';
 import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { FilesEntity } from 'src/files/entities/files.entity';
+import { RepliesEntity } from 'src/replies/entities/replies.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -99,10 +100,10 @@ export class PostsEntity {
   @OneToMany(() => CommentsEntity, (comment) => comment.post)
   comments: CommentsEntity[];
 
-  // // 답글과의 관계 설정
-  // // 하나의 게시글에 여러 개의 답글이 가능함
-  // @OneToMany(() => RepliesEntity, (reply) => reply.post)
-  // replies: RepliesEntity[];
+  // 답글과의 관계 설정
+  // 하나의 게시글에 여러 개의 답글이 가능함
+  @OneToMany(() => RepliesEntity, (reply) => reply.post)
+  replies: RepliesEntity[];
 
   // 좋아요와의 관계 설정
   // 하나의 게시글에 여러 개의 좋아요가 있을 수 있음

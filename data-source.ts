@@ -10,11 +10,21 @@ const configService = new ConfigService();
 
 const AppDataSource = new DataSource({
   type: 'mysql',
-  host: configService.get<string>('DB_HOST'),
-  port: configService.get<number>('DB_PORT'),
-  username: configService.get<string>('DB_USERNAME'),
-  password: configService.get<string>('DB_PASSWORD'),
-  database: configService.get<string>('DB_DATABASE'),
+  host: configService.get<string>(
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_HOST' : 'AWS_DB_HOST'
+  ),
+  port: configService.get<number>(
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_PORT' : 'AWS_DB_PORT'
+  ),
+  username: configService.get<string>(
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_USERNAME' : 'AWS_DB_USERNAME'
+  ),
+  password: configService.get<string>(
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_PASSWORD' : 'AWS_DB_PASSWORD'
+  ),
+  database: configService.get<string>(
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_DATABASE' : 'AWS_DB_DATABASE'
+  ),
   logging: configService.get<boolean>('TYPEORM_LOGGING'),
   synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),
   entities: [join(__dirname, 'src', '**', '*', '*.entity.{ts,js}')],

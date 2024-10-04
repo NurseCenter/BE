@@ -1,15 +1,25 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { UsersDAO } from 'src/users/users.dao';
 
-// 관리자 권한이 있는 사용자만 접근 허용
+// 관리자 권한이 있는 회원만 접근 허용
 @Injectable()
 export class AdminGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToHttp().getRequest();
+  constructor(private readonly usersDAO: UsersDAO) {} 
 
-    if (!request.user?.isAdmin) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const userId = request?.user?.userId;
+
+    if (!userId) {
+      throw new NotFoundException("회원 ID가 없습니다.")
+    }
+
+    const user = await this.usersDAO.findUserByUserId(userId);
+
+    if (!user || !user.isAdmin) {
       throw new ForbiddenException('관리자 권한이 없습니다.');
     }
+
     return true;
   }
 }

@@ -155,7 +155,8 @@ export class AuthService {
     const emailVerificationLink = `${process.env.FRONTEND_HOST_URL}/sign-up/email?token=${token}`;
 
     // Redis에 사용자 이메일과 토큰 저장
-    await this.redisClient.set(`emailVerificationToken:${token}`, user.email);
+    // 만료시간 : 1시간
+    await this.redisClient.set(`emailVerificationToken:${token}`, user.email, 'EX', 3600);
 
     // 이메일 발송 데이터 준비
     const sendEmailDto: SendEmailDto = {

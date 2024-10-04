@@ -45,6 +45,9 @@ lerna-debug.log*
 .env.production.local
 .env.local
 *.env
+env.*
+.development.env
+.production.env
 
 # Google API Key File
 google-api-key.json

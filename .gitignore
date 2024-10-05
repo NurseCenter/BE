@@ -12,6 +12,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+#html
+*.html
+
 # OS
 .DS_Store
 
@@ -41,6 +44,13 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+*.env
+env.*
+.development.env
+.production.env
+
+# Google API Key File
+google-api-key.json
 
 # temp directory
 .temp

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; text-align: center; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
+        <div style="margin: 0; padding: 0; margin-bottom: 50px;">
+            <img src="https://caugannies.s3.ap-northeast-2.amazonaws.com/logo/email-logo.png" alt="gannies_logo" style="max-width: 100%; height: auto;">
+        </div>
+        <h1 style="color: #333; text-align: center; margin-bottom: 20px;">
+            <span style="color: #333;">회원 </span>
+            <span style="color: #5080E1;">탈퇴 처리</span>
+            <span style="color: #333;">사유 안내</span>
+        </h1>
+        <p>안녕하세요. <%= nickname %>님!</p>
+        <p>중간이들 사이트 이용에 감사드립니다.</p>
+        <p>하지만 <span style="color: #5080E1;">아래와 같은 사유</span>로 인해 부득이하게 탈퇴 처리되었음을 알려드립니다.</p>
+        
+        <div style="background-color: #F8F8F8; padding: 10px; border-radius: 5px; color: #333; margin: 10px 0; display: inline-block;">
+            <%= deletionReason %>
+        </div>
+
+        <p><span style="color: #333;">문의사항이 있을 경우, </span><span style="color: #FF7F50;"><%= adminEmail %></span><span style="color: #333;">로 직접 문의</span> 해주시면 감사하겠습니다.</span></p>
+        
+        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
+            <p>회원 탈퇴 통지 메일</p>
+            <p>중간이들 관리자 이메일: <%= adminEmail %></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -13,7 +13,7 @@
     "start:watch": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=production node dist/main",
-    "pm2:prod": "npm run build && cross-env NODE_ENV=production pm2 start dist/main.js",
+    "pm2:prod": "node --max-old-space-size=4096 ./node_modules/.bin/nest build && cross-env NODE_ENV=production pm2 start dist/main.js",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource ./data-source.ts",
     "migration:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli migration:create ./src/database/migrations/Migrations",
     "migration:generate": "npm run typeorm migration:generate ./src/database/migrations/Migrations",

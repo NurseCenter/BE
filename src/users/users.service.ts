@@ -37,7 +37,7 @@ export class UsersService {
     const user = await this.usersDAO.findUserByUserId(userId);
     throwIfUserNotExists(user, userId);
 
-    return { nickname: user.nickname, email: user.nickname, username: user.username, phoneNumber: user.phoneNumber };
+    return { nickname: user.nickname, email: user.email, username: user.username, phoneNumber: user.phoneNumber };
   }
 
   // 나의 닉네임 수정

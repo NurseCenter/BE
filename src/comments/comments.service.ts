@@ -104,9 +104,10 @@ export class CommentsService {
     // 댓글 내용 변경 여부 확인
     const contentChanged = comment.content !== updateCommentDto.content;
 
-    // 'updatedAt'에 현재 날짜를 넣어주기
+    // 댓글 내용이 변경된 경우
     if (contentChanged) {
       comment.updatedAt = new Date();
+      comment.content = updateCommentDto.content;
     }
 
     await this.commentsDAO.updateComment(commentId, updateCommentDto);

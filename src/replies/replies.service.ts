@@ -76,6 +76,7 @@ export class RepliesService {
     // updatedAt 필드에 현재 날짜 넣어주기
     if (contentChanged) {
       reply.updatedAt = new Date();
+      reply.content = createReplyDto.content;;
     }
 
     await this.repliesDAO.updateReply(replyId, createReplyDto);

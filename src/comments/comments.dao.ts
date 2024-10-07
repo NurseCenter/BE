@@ -72,7 +72,6 @@ export class CommentsDAO {
     });
   }
 
-
   // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
   async findCommentsWithReplies(postId: number, page: number, limit: number) {
     // 모든 댓글 조회
@@ -87,6 +86,7 @@ export class CommentsDAO {
         'comment.boardType AS boardType',
         'comment.createdAt AS createdAt',
         'comment.updatedAt AS updatedAt',
+        'comment.deletedAt AS deletedAt',
         'user.userId AS userId',
         'user.nickname AS nickname',
       ])
@@ -118,13 +118,17 @@ export class CommentsDAO {
           .orderBy('reply.createdAt', 'ASC')
           .getRawMany();
 
+        // 댓글 삭제 여부 확인
+        const isDeleted = !!comment.deletedAt;
+
         return {
           commentId: comment.commentId,
-          content: comment.content,
+          content: isDeleted ? '삭제된 댓글입니다.' : comment.content,
           postId: comment.postId,
           boardType: comment.boardType,
           createdAt: comment.createdAt,
           updatedAt: comment.updatedAt,
+          deletedAt: comment.deletedAt, // 삭제된 경우 Date 반환
           userId: comment.userId,
           nickname: comment.nickname,
           replies: replies.map((reply) => ({
@@ -201,7 +205,10 @@ export class CommentsDAO {
 
   // 댓글 삭제
   async deleteComment(commentId: number): Promise<DeleteResult> {
-    return this.commentsRepository.softDelete(commentId);
+    const comment = await this.findCommentByIdWithDeletedComment(commentId);
+    comment.deletedAt = new Date();
+    await this.commentsRepository.save(comment);
+    return { affected: 1, raw: {} };
   }
 
   // 댓글 저장

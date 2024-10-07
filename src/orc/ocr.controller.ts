@@ -1,15 +1,28 @@
-import { Controller, Get, Body } from '@nestjs/common';
+import { Controller, Body, Post } from '@nestjs/common';
 import { OcrService } from './ocr.service';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Ocr')
 @Controller('ocr')
 export class OcrController {
   constructor(private readonly ocrService: OcrService) {}
 
-  @Get('detect-text')
-  @ApiOperation({ summary: '이미지 URI를 통해 텍스트를 추출합니다.' })
-  @ApiQuery({ name: 'imageUri', type: String, description: 'S3 버킷에 저장된 이미지의 URI' })
+  @Post('detect-text')
+  @ApiOperation({ summary: '이미지 URI를 업로드하면 해당 이미지에서 텍스트(증명서의 실명)를 추출' })
+  @ApiBody({
+    type: Object,
+    description: 'S3 버킷에 저장된 이미지의 URI',
+    schema: {
+      type: 'object',
+      properties: {
+        imageUri: { type: 'string', description: 'S3 버킷 이미지 URI' },
+      },
+      required: ['imageUri'],
+      example: {
+        imageUri: 'https://your-s3-bucket-url/image.jpg'
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: '성공적으로 이름을 추출한 경우',
@@ -41,7 +54,9 @@ export class OcrController {
       },
     },
   })
-  async detectText(@Body('imageUri') imageUri: string): Promise<string> {
-    return await this.ocrService.detextTextFromImage(imageUri);
+  async detectText(@Body() body: { imageUri: string }): Promise<{ name: string }> {
+    const { imageUri } = body;
+    const name = await this.ocrService.detextTextFromImage(imageUri);
+    return { name };
   }
 }

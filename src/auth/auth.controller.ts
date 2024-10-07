@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -16,6 +29,8 @@ import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 import { InvalidPhoneVerificationCodeException } from 'src/common/exceptions/twilio-sms.exceptions';
 import { handlePostPhoneVerificationConfirmError } from './error-handler/handle-post-phone-verification-confirm-error';
 import { IUser } from './interfaces';
+import { AdminGuard } from './guards';
+import clearCookieOptions from './cookie-options/clear-cookie-options';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -196,6 +211,69 @@ export class AuthController {
     }
   }
 
+  // 세션 강제 종료
+  @UseGuards(AdminGuard)
+  @Post('force-sign-out')
+  @ApiOperation({ summary: '세션 강제 종료' })
+  @ApiBody({
+    type: Object,
+    description: '강제 종료할 세션 ID',
+    schema: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', description: '강제 종료할 세션 ID' },
+      },
+      required: ['sessionId'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '세션 강제 종료 성공',
+    schema: {
+      example: {
+        message: '보안 위협이 감지되어 세션이 강제 종료되었습니다.',
+        sessionId: 'sess:12345',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '관리자 권한이 없는 경우',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: '관리자만 접근할 수 있습니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: '세션 삭제 중 오류 발생',
+    schema: {
+      example: {
+        error: '세션 삭제 중 오류가 발생했습니다.',
+      },
+    },
+  })
+  async forceSignOut(@Body('sessionId') sessionId: string, @Res() res: Response): Promise<void> {
+    try {
+      await this.authService.forceSignOut(sessionId);
+
+      // 쿠키 삭제
+      res.clearCookie('connect.sid', clearCookieOptions());
+
+      res.status(HttpStatus.OK).json({
+        message: '보안 위협이 감지되어 세션이 강제 종료되었습니다.',
+        sessionId: sessionId,
+      });
+    } catch (error) {
+      console.error('세션 삭제 중 오류: ', error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        error: '세션 삭제 중 오류가 발생했습니다.',
+      });
+    }
+  }
+
   // 로그아웃
   @Post('sign-out')
   @HttpCode(HttpStatus.OK)
@@ -217,6 +295,44 @@ export class AuthController {
     } catch (error) {
       if (!res.headersSent) {
         res.status(HttpStatus.BAD_REQUEST).json({ error: '로그아웃 중 오류가 발생했습니다.' });
+      }
+    }
+  }
+
+  // 모든 세션 로그아웃
+  @Post('sign-out-all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '모든 세션 로그아웃' })
+  @ApiResponse({
+    status: 200,
+    description: '모든 세션 로그아웃이 성공하였습니다.',
+    schema: {
+      example: {
+        message: '모든 세션이 종료되었습니다.',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  async postSignOutAll(@Req() req: Request, @Res() res: Response): Promise<void> {
+    const sessionId = req.sessionID;
+    const userId = req.session?.passport?.user?.userId;
+
+    if (!userId) {
+      throw new NotFoundException('회원 ID가 없습니다.');
+    }
+
+    try {
+      // 1. 해당 세션 ID로 세션 강제 종료
+      await this.authService.forceSignOut(sessionId);
+
+      // 2. 해당 userId로 모든 세션 종료
+      await this.authService.logoutAll(userId);
+
+      res.status(200).json({ message: '모든 세션이 종료되었습니다.' });
+    } catch (error) {
+      console.error('모든 세션 종료 중 오류: ', error);
+      if (!res.headersSent) {
+        res.status(HttpStatus.BAD_REQUEST).json({ error: '모든 세션 종료 중 오류가 발생했습니다.' });
       }
     }
   }

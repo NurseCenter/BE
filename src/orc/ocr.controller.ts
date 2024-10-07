@@ -19,7 +19,7 @@ export class OcrController {
       },
       required: ['imageUri'],
       example: {
-        imageUri: 'https://your-s3-bucket-url/image.jpg'
+        imageUri: 'https://your-s3-bucket-url/image.jpg',
       },
     },
   })

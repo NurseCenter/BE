@@ -1,46 +1,45 @@
 import { CookieOptions } from 'express';
 
-const commonOptions = {
+const commonAutoLoginOptions = {
   domain: process.env.COOKIE_DOMAIN,
-  maxAge: 1 * 60 * 1000, // 1분 (테스트용)
-  // maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
+  maxAge: 365 * 24 * 60 * 60 * 1000, // 1년 (자동로그인 쿠키 유효기간)
   httpOnly: true,
 };
 
-const sendCookieOptions = (): CookieOptions => {
+const sendAutoLoginCookieOptions = (): CookieOptions => {
   // 배포환경
   if (process.env.NODE_ENV === 'production') {
     return {
-      ...commonOptions,
+      ...commonAutoLoginOptions,
       secure: true,
       sameSite: 'none',
     };
-    // 개발환경
   } else {
+    // 개발환경
     return {
-      ...commonOptions,
+      ...commonAutoLoginOptions,
       secure: false,
       sameSite: 'lax',
     };
   }
 };
 
-export { sendCookieOptions };
+export { sendAutoLoginCookieOptions };
 
 /*
 개발환경
 {
   "domain": process.env.COOKIE_DOMAIN,
-  "maxAge": 86400000,
+  "maxAge": 31536000000,
   "httpOnly": true,
-    "secure": false,
+  "secure": false,
   "sameSite": "lax" 
 }
 
 배포환경
 {
   "domain": process.env.COOKIE_DOMAIN,
-  "maxAge": 86400000,
+  "maxAge": 31536000000,
   "httpOnly": true,
   "secure": true,
   "sameSite": "none" 

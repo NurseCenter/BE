@@ -17,6 +17,8 @@ import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 import { InvalidPhoneNumberException } from 'src/common/exceptions/twilio-sms.exceptions';
 import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
+import clearAutoLoginCookieOptions from './cookie-options/clear-auto-login-cookie-options';
+import { sendAutoLoginCookieOptions } from './cookie-options/auto-login-cookie-options';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +32,7 @@ export class AuthService {
     private readonly authTwilioService: AuthTwilioService,
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
-    private readonly rejectedUsersDAO: RejectedUsersDAO,
+    private readonly rejectedUsersDAO: RejectedUsersDAO
   ) {}
 
   // 회원가입
@@ -54,8 +56,13 @@ export class AuthService {
   }
 
   // 로그인
-  async signIn(signInUserDto: SignInUserDto, req: Request, res: Response) {
+  async signIn(signInUserDto: SignInUserDto, req: Request, res: Response, autoLogin: boolean) {
     const { email, password } = signInUserDto;
+
+    // 일반 로그인 요청, 자동 로그인 쿠키가 존재할 경우 삭제
+    if (!autoLogin && req?.cookies?.autoLogin) {
+      res.clearCookie('autoLogin', clearAutoLoginCookieOptions());
+    }
 
     // 1. 이메일로 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);
@@ -108,6 +115,11 @@ export class AuthService {
       const message = isTempPasswordSignIn
         ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
         : '로그인이 완료되었습니다.';
+
+      // 자동 로그인 여부 판단 후 쿠키 설정
+      if (autoLogin) {
+        res.cookie('autoLogin', sendAutoLoginCookieOptions());
+      }
 
       // 10. 응답 전송
       return res.status(200).json({

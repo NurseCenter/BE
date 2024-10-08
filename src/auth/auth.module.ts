@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from 'src/email/email.module';
 import { AuthTwilioService } from './services/auth.twilio.service';
 import { DataAccessModule } from 'src/common/data-access.module';
+import { SessionModule } from 'src/session/session.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DataAccessModule } from 'src/common/data-access.module';
     ConfigModule,
     EmailModule,
     DataAccessModule,
+    SessionModule
   ],
   controllers: [AuthController],
   providers: [

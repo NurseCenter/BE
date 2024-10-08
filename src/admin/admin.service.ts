@@ -46,7 +46,7 @@ export class AdminService {
   ) {}
 
   // 관리자 계정으로 로그인
-  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response): Promise<void> {
+  async signInByAdmin(signInUserDto: SignInUserDto, req: Request, res: Response, autoLogin: boolean): Promise<void> {
     // 1. 관리자 계정 여부 확인
     const isAdmin = await this.authSignInService.checkIfAdmin(signInUserDto.email);
 
@@ -54,7 +54,7 @@ export class AdminService {
       throw new ForbiddenException('관리자 계정이 아닙니다.');
     } else {
       // 2. 일반 로그인 처리
-      await this.authService.signIn(signInUserDto, req, res);
+      await this.authService.signIn(signInUserDto, req, res, autoLogin);
     }
   }
 

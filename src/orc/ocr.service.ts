@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { createRequest } from './ocr-request';
 
@@ -28,6 +28,7 @@ export class OcrService {
       return extractedName;
     } catch (error) {
       console.error('OCR 실행 중 에러 발생: ', error);
+      throw new InternalServerErrorException('OCR 실행 중 에러 발생');
     }
   }
 

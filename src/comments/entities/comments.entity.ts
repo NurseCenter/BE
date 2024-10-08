@@ -1,14 +1,5 @@
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-  CreateDateColumn,
-  JoinColumn,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, JoinColumn } from 'typeorm';
 import { RepliesEntity } from '../../replies/entities/replies.entity';
 import { EBoardType } from '../../posts/enum/board-type.enum';
 import { UsersEntity } from '../../users/entities/users.entity';
@@ -53,8 +44,8 @@ export class CommentsEntity {
 
   // 댓글 삭제일
   // 기본 상태는 null, 삭제하면 날짜
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @Column({ type: 'timestamp', default: null, nullable: true })
+  deletedAt: Date | null;
 
   // 이 댓글에 달린 답글들
   @OneToMany(() => RepliesEntity, (reply) => reply.comments)

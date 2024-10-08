@@ -97,6 +97,10 @@ export class AuthService {
 
       // console.log('현재 로그인 후 req.sessionID', req.sessionID);
 
+      // 세션 ID 목록을 Redis에 저장
+      const sessionId = req.sessionID;
+      await this.redisClient.rpush(`user:${user.userId}:sessions`, sessionId);
+
       // 9. MySQL에 회원 로그인 기록을 저장
       await this.authSignInService.saveLoginRecord(user.userId, req);
 
@@ -125,13 +129,21 @@ export class AuthService {
   // 로그아웃
   async signOut(req: Request, res: Response): Promise<void> {
     const sessionId = req.sessionID;
+    const userId = req.session?.passport?.user?.userId;
     const keyToDelete = `sess:${sessionId}`;
     // console.log('로그아웃 세션 ID', sessionId);
+
+    if (!userId) {
+      throw new NotFoundException('회원 ID가 없습니다.');
+    }
 
     try {
       // Redis에서 세션 삭제
       const delAsync = promisify(this.redisClient.del).bind(this.redisClient);
       await delAsync(keyToDelete);
+
+      // 사용자 세션 목록에서 현재 세션 ID 삭제
+      await this.redisClient.lrem(`user:${userId}:sessions`, 0, sessionId);
 
       // 세션 제거
       const destroyAsync = promisify(req.session.destroy).bind(req.session);
@@ -143,6 +155,33 @@ export class AuthService {
       console.error('로그아웃 처리 중 오류: ', error);
       throw error;
     }
+  }
+
+  // 특정 세션 강제 종료
+  async forceSignOut(sessionId: string): Promise<void> {
+    const keyToDelete = `sess:${sessionId}`;
+    console.log('keyToDelete', keyToDelete);
+
+    return new Promise((resolve, reject) => {
+      this.redisClient.del(keyToDelete, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  }
+
+  // 모든 세션 로그아웃
+  async logoutAll(userId: number): Promise<void> {
+    const sessions = await this.redisClient.lrange(`user:${userId}:sessions`, 0, -1);
+
+    for (const sessionId of sessions) {
+      await this.forceSignOut(sessionId);
+    }
+
+    // 세션 목록 삭제
+    await this.redisClient.del(`user:${userId}:sessions`);
   }
 
   // 회원가입 후 이메일 발송

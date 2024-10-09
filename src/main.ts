@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConversionUtil } from './common/utils';
 
 // NODE_ENV 값에 따라 .env 파일을 다르게 읽음
 dotenv.config({
@@ -83,7 +84,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = ConversionUtil.stringToNumber(process.env.PORT);
   await app.listen(PORT);
 }
 bootstrap();

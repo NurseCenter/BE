@@ -3,7 +3,6 @@ import { CookieOptions } from 'express';
 const commonAutoLoginOptions = {
   domain: process.env.COOKIE_DOMAIN,
   maxAge: 365 * 24 * 60 * 60 * 1000, // 1년 (자동로그인 쿠키 유효기간)
-  httpOnly: true,
 };
 
 const sendAutoLoginCookieOptions = (): CookieOptions => {
@@ -31,7 +30,6 @@ export { sendAutoLoginCookieOptions };
 {
   "domain": process.env.COOKIE_DOMAIN,
   "maxAge": 31536000000,
-  "httpOnly": true,
   "secure": false,
   "sameSite": "lax" 
 }
@@ -40,7 +38,6 @@ export { sendAutoLoginCookieOptions };
 {
   "domain": process.env.COOKIE_DOMAIN,
   "maxAge": 31536000000,
-  "httpOnly": true,
   "secure": true,
   "sameSite": "none" 
 }

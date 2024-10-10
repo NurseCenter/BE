@@ -118,7 +118,7 @@ export class AuthService {
 
       // 자동 로그인 여부 판단 후 쿠키 설정
       if (autoLogin) {
-        res.cookie('autoLogin', sendAutoLoginCookieOptions());
+        res.cookie('autoLogin', 'true', sendAutoLoginCookieOptions());
       }
 
       // 10. 응답 전송

@@ -1,7 +1,7 @@
 import { CookieOptions } from 'express';
 
 const commonAutoLoginOptions = {
-  domain: process.env.COOKIE_DOMAIN,
+  // domain: process.env.COOKIE_DOMAIN,
   maxAge: 365 * 24 * 60 * 60 * 1000, // 1년 (자동로그인 쿠키 유효기간)
 };
 
@@ -10,6 +10,7 @@ const sendAutoLoginCookieOptions = (): CookieOptions => {
   if (process.env.NODE_ENV === 'production') {
     return {
       ...commonAutoLoginOptions,
+      domain: '.caugannies.com',
       secure: true,
       sameSite: 'none',
     };
@@ -17,6 +18,7 @@ const sendAutoLoginCookieOptions = (): CookieOptions => {
     // 개발환경
     return {
       ...commonAutoLoginOptions,
+      domain: '.localhost',
       secure: false,
       sameSite: 'lax',
     };

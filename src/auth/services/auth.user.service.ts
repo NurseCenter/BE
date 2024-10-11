@@ -124,6 +124,7 @@ export class AuthUserService {
     const rejectedUser = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);
 
     return {
+      email: user.email, // 이메일
       nickname: user.nickname, // 닉네임
       membershipStatus: status, // 회원 상태
       rejected: user.rejected, // 정회원 승인 거절 여부

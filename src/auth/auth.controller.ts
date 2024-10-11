@@ -35,7 +35,9 @@ import clearCookieOptions from './cookie-options/clear-cookie-options';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService
+  ) {}
 
   // 회원가입
   @Post('sign-up')
@@ -198,11 +200,12 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   async postSignIn(
     @Body() signInUserDto: SignInUserDto,
+    @Query('autoLogin') autoLogin: boolean,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<{ message: string }> {
     try {
-      await this.authService.signIn(signInUserDto, req, res);
+      await this.authService.signIn(signInUserDto, req, res, autoLogin);
       return { message: '로그인이 완료되었습니다.' };
     } catch (error) {
       if (!res.headersSent) {

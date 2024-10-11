@@ -128,7 +128,8 @@ export class PostsMetricsService {
   private async syncViewCountToMySQL(postId: number): Promise<void> {
     const post = await this.postsDAO.findOnePostByPostId(postId);
     if (!post) {
-      throw new NotFoundException('해당 게시물이 존재하지 않습니다.');
+      console.warn(`게시물 ID ${postId}가 존재하지 않습니다. 조회수 동기화를 건너뜁니다.`)
+      return null; // 게시물 없으면 종료
     }
 
     const viewCountsInRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
@@ -149,6 +150,12 @@ export class PostsMetricsService {
       for (const key of keys) {
         const postId = parseInt(key.split(':')[1], 10);
         const post = await this.postsDAO.findOnePostByPostId(postId);
+
+        if (!post) {
+          this.logger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`)
+          continue;
+        }
+
         const viewCountsFromRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
 
         if (viewCountsFromRedis !== null) {

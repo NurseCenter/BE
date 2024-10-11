@@ -12,8 +12,10 @@ const sendCookieOptions = (): CookieOptions => {
   if (process.env.NODE_ENV === 'production') {
     return {
       ...commonOptions,
-      secure: true,
-      sameSite: 'none',
+      secure: false,
+      sameSite: 'lax',
+      // secure: true,
+      // sameSite: 'none',
     };
     // 개발환경
   } else {
@@ -33,7 +35,7 @@ export { sendCookieOptions };
   "domain": process.env.COOKIE_DOMAIN,
   "maxAge": 86400000,
   "httpOnly": true,
-    "secure": false,
+  "secure": false,
   "sameSite": "lax" 
 }
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, Matches } from 'class-validator';
-import { EMAIL_REGEX } from './Regex';
+import { EMAIL_REGEX } from './regex';
 import { validationMessages } from '../interfaces/validation-messages';
 
 export class FindPasswordDto {

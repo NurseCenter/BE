@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, Matches } from 'class-validator';
 import { validationMessages } from '../interfaces/validation-messages';
-import { EMAIL_REGEX } from './Regex';
+import { EMAIL_REGEX } from './regex';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VerifyEmailDto {

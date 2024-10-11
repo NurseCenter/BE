@@ -149,6 +149,12 @@ export class PostsMetricsService {
       for (const key of keys) {
         const postId = parseInt(key.split(':')[1], 10);
         const post = await this.postsDAO.findOnePostByPostId(postId);
+
+        if (!post) {
+          this.logger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`);
+          continue;
+        }
+
         const viewCountsFromRedis = await this.postsMetricsDAO.getViewCountsFromRedis(postId);
 
         if (viewCountsFromRedis !== null) {

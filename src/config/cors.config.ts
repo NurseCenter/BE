@@ -6,6 +6,7 @@ const devAllowedOrigins = [
     'http://localhost:3000',
     'https://localhost:3000',
     'http://localhost:3001',
+    'https://localhost:3001',
     'http://127.0.0.1:3001'
   ];
   

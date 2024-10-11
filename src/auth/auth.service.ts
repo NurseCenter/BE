@@ -312,7 +312,9 @@ export class AuthService {
   async sendSessionStatus(req: Request): Promise<{ expires: boolean; remainingTime?: string; userId?: number }> {
     const sessionId = req.cookies[`connect.sid`];
     const cleanedSessionId = extractSessionIdFromCookie(sessionId);
+
     const sessionData = await this.authSessionService.getSessionData(cleanedSessionId);
+
     if (!sessionData) return { expires: true };
 
     const currentTime = new Date();

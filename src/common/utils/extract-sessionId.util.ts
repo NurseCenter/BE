@@ -1,3 +1,4 @@
+
 export function extractSessionIdFromCookie(cookie: string) {
   // 쿠키가 없을 경우 null 반환
   if (!cookie) {
@@ -21,5 +22,13 @@ export function extractSessionIdFromCookie(cookie: string) {
     }
   }
 
-  return sessionId?.split('.')[0].replace(/^s:/, '') || null;
+  // s:gwfjJhtTypuHs2a38Rr일 경우
+  // → 's:' 제거 후 변환
+  if (cookie.startsWith('s:')) {
+    return cookie?.split('.')[0].replace(/^s:/, '');
+  }
+
+  const result = sessionId?.split('.')[0].replace(/^s:/, '') || null;
+
+  return result;
 }

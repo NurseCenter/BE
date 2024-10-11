@@ -83,7 +83,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT;
   await app.listen(PORT);
 }
 bootstrap();

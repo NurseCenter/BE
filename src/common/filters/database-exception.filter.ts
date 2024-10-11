@@ -25,12 +25,12 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
       }
     }
 
-    // 클라이언트한테 DB 오류 노출시키면 안됨
-    // 서버 내에서 콘솔로 찍히게 하기
     response.status(status).json({
       statusCode: status,
-      message: message,
-      reason: exception.message,
+      message: '서버 내부에 오류가 발생했습니다.',
     });
+
+     // 서버 로그에만 오류 출력
+     console.error(message, exception.message); 
   }
 }

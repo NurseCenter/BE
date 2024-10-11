@@ -1,9 +1,7 @@
 import { CookieOptions } from 'express';
 
 const commonOptions = {
-  // domain: process.env.COOKIE_DOMAIN,
-  // maxAge: 1 * 60 * 1000, // 1분 (테스트용)
-  maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
+  domain: process.env.COOKIE_DOMAIN,
   httpOnly: true,
 };
 
@@ -12,9 +10,9 @@ const sendCookieOptions = (): CookieOptions => {
   if (process.env.NODE_ENV === 'production') {
     return {
       ...commonOptions,
-      domain: 'localhost',
       secure: true,
       sameSite: 'none',
+      maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
     };
     // 개발환경
   } else {
@@ -22,6 +20,7 @@ const sendCookieOptions = (): CookieOptions => {
       ...commonOptions,
       secure: false,
       sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24시간
     };
   }
 };

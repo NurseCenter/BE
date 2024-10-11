@@ -11,13 +11,9 @@ const devAllowedOrigins = [
   ];
   
   const prodAllowedOrigins = [
-    'http://localhost:5173', // 임시
-    'http://localhost:3000', // 임시
-    'http://localhost:3000', // 임시
-    'https://localhost:3001', // 임시
-    'https://api.caugannie.com',
+    'https://api.caugannies.com',
     'https://www.caugannies.com',
-    'https://cauganies.com',
+    'https://test-login.caugannies.com',
   ];
   
   export const getAllowedOrigins = (env: string) => {

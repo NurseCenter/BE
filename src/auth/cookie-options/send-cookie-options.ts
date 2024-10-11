@@ -12,10 +12,9 @@ const sendCookieOptions = (): CookieOptions => {
   if (process.env.NODE_ENV === 'production') {
     return {
       ...commonOptions,
-      secure: false,
+      domain: 'localhost',
+      secure: true,
       sameSite: 'none',
-      // secure: true,
-      // sameSite: 'none',
     };
     // 개발환경
   } else {

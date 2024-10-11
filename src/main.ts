@@ -12,6 +12,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { getAllowedOrigins } from './config/cors.config';
+import { ConversionUtil } from './common/utils';
 
 // NODE_ENV 값에 따라 .env 파일을 다르게 읽음
 dotenv.config({
@@ -58,19 +60,7 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
   app.setViewEngine('ejs');
 
-  const devAllowedOrigins = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:3000',
-    'https://localhost:3000',
-    'http://localhost:3001',
-  ];
-
-  const prodAllowedOrigins = ['https://api.caugannie.com', 'https://www.caugannies.com', 'https://cauganies.com'];
-
-  const allowedOrigins = process.env.NODE_ENV === 'development' ? devAllowedOrigins : prodAllowedOrigins;
+  const allowedOrigins = getAllowedOrigins(process.env.NODE_ENV);
 
   app.enableCors({
     origin: (origin, cb) => {
@@ -83,7 +73,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const PORT = process.env.PORT;
+  const PORT = ConversionUtil.stringToNumber(process.env.PORT);
+  
+  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`)
+ 
   await app.listen(PORT);
 }
 bootstrap();

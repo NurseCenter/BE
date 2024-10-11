@@ -98,8 +98,8 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response): Promise<void> {
-    return await this.adminService.signInByAdmin(signInUserDto, req, res);
+  async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response, autoLogin: boolean): Promise<void> {
+    return await this.adminService.signInByAdmin(signInUserDto, req, res, autoLogin);
   }
 
   // 관리자 회원 탈퇴 처리

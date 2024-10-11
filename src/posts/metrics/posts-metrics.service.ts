@@ -152,7 +152,7 @@ export class PostsMetricsService {
         const post = await this.postsDAO.findOnePostByPostId(postId);
 
         if (!post) {
-          this.logger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`)
+          this.logger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`);
           continue;
         }
 

@@ -13,7 +13,7 @@ const sendCookieOptions = (): CookieOptions => {
     return {
       ...commonOptions,
       secure: false,
-      sameSite: 'lax',
+      sameSite: 'none',
       // secure: true,
       // sameSite: 'none',
     };

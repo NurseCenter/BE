@@ -2,7 +2,7 @@ import { CookieOptions } from 'express';
 
 const commonOptions = {
   domain: process.env.COOKIE_DOMAIN,
-  httpOnly: true,
+  // httpOnly: true,
 };
 
 const sendCookieOptions = (): CookieOptions => {
@@ -11,6 +11,7 @@ const sendCookieOptions = (): CookieOptions => {
     return {
       ...commonOptions,
       secure: true,
+      httpOnly: false,
       sameSite: 'none',
       maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
     };

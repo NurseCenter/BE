@@ -24,8 +24,18 @@ export class ScrapService {
       throw new ForbiddenException('자신의 글은 자신이 스크랩할 수 없습니다.');
     }
 
-    const isAlreadyScraped = await this.scrapsDAO.checkIfScraped(userId, postId);
-    if (isAlreadyScraped) throw new ConflictException(`이미 ${postId}번 게시글을 스크랩했습니다.`);
+    // 이미 스크랩한 기록이 있는지 확인
+    const existingScrap = await this.scrapsDAO.findScrapByUserIdAndPostId(userId, postId);
+
+    if (existingScrap) {
+      if (existingScrap.deletedAt) {
+        existingScrap.deletedAt = null;
+        await this.scrapsDAO.saveScrap(existingScrap);
+        return existingScrap;
+      } else {
+        throw new ConflictException(`이미 ${postId}번 게시글을 스크랩했습니다.`);
+      }
+    }
 
     const createdScrap = await this.scrapsDAO.createScrap(userId, postId);
     await this.scrapsDAO.saveScrap(createdScrap);

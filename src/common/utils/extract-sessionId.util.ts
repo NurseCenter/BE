@@ -8,9 +8,9 @@ export function extractSessionIdFromCookie(cookie: string) {
 
   // 쿠키가 여러 개 있을 때
   if (cookie.includes(';')) {
-    const cookieArray = cookie.split('; ').map(c => c.trim());
-    
-    const connectSidCookie = cookieArray.find(c => c.startsWith('connect.sid='));
+    const cookieArray = cookie.split('; ').map((c) => c.trim());
+
+    const connectSidCookie = cookieArray.find((c) => c.startsWith('connect.sid='));
     if (connectSidCookie) {
       sessionId = connectSidCookie.split('=')[1];
     }

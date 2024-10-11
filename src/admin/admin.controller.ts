@@ -98,7 +98,12 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async postSignIn(@Body() signInUserDto: SignInUserDto, @Req() req: Request, @Res() res: Response, autoLogin: boolean): Promise<void> {
+  async postSignIn(
+    @Body() signInUserDto: SignInUserDto,
+    @Req() req: Request,
+    @Res() res: Response,
+    autoLogin: boolean,
+  ): Promise<void> {
     return await this.adminService.signInByAdmin(signInUserDto, req, res, autoLogin);
   }
 

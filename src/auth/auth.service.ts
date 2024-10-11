@@ -32,7 +32,7 @@ export class AuthService {
     private readonly authTwilioService: AuthTwilioService,
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
-    private readonly rejectedUsersDAO: RejectedUsersDAO
+    private readonly rejectedUsersDAO: RejectedUsersDAO,
   ) {}
 
   // 회원가입

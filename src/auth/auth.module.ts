@@ -21,7 +21,7 @@ import { SessionModule } from 'src/session/session.module';
     ConfigModule,
     EmailModule,
     DataAccessModule,
-    SessionModule
+    SessionModule,
   ],
   controllers: [AuthController],
   providers: [

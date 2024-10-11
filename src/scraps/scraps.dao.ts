@@ -83,7 +83,7 @@ export class ScrapsDAO {
 
   // 게시물 ID와 회원 ID로 특정 스크랩 조회
   async findScrapByUserIdAndPostId(userId: number, postId: number): Promise<ScrapsEntity | null> {
-    return await this.scrapsRepository.findOne({ where: { userId, postId } });
+    return await this.scrapsRepository.findOne({ where: { userId, postId }, withDeleted: true });
   }
 
   // 스크랩 삭제

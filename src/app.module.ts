@@ -53,7 +53,7 @@ import { SessionModule } from './session/session.module';
     OcrModule,
     ReportsModule,
     KakaoMessageModule,
-    SessionModule
+    SessionModule,
   ],
   controllers: [AppController, FilesController],
   providers: [AppService, SessionConfigService, FilesService],

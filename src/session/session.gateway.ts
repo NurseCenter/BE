@@ -17,17 +17,17 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
   constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
 
   handleConnection(client: Socket) {
-    console.log("소켓 연결됨", client.id);
-    console.log("Handshake Headers: ", client.handshake.headers);
-    
+    console.log('소켓 연결됨', client.id);
+    console.log('Handshake Headers: ', client.handshake.headers);
+
     // 쿠키에서 세션 ID 추출
     const cookies = client.handshake.headers?.cookie;
     const sessionId = extractSessionIdFromCookie(cookies);
-    
-    console.log("소켓의 쿠키 sessionId", sessionId);
-    
+
+    console.log('소켓의 쿠키 sessionId', sessionId);
+
     client.join(sessionId);
-  
+
     // Redis에 세션 ID를 저장
     this.redisClient.set(`socket:${sessionId}`, client.id, 'EX', 7200);
   }
@@ -45,9 +45,11 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
         console.error('Redis에서 소켓 ID를 가져오는 중 오류 발생:', err);
         return;
       }
-  
+
       if (socketId) {
-        this.server.to(socketId).emit('sessionExpiryWarning', { message: '세션이 10초 후 만료됩니다. 연장하시겠습니까?' });
+        this.server
+          .to(socketId)
+          .emit('sessionExpiryWarning', { message: '세션이 10초 후 만료됩니다. 연장하시겠습니까?' });
       } else {
         console.log(`세션 ${sessionId}에 연결된 클라이언트가 없습니다.`);
       }

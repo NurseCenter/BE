@@ -2,8 +2,8 @@ import { CookieOptions } from 'express';
 
 const commonOptions = {
   domain: process.env.COOKIE_DOMAIN,
-  maxAge: 1 * 60 * 1000, // 1분 (테스트용)
-  // maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
+  // maxAge: 1 * 60 * 1000, // 1분 (테스트용)
+  maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
   httpOnly: true,
 };
 

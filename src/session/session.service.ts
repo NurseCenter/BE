@@ -35,7 +35,7 @@ export class SessionService {
       throw new InternalServerErrorException('세션 모니터링에 실패했습니다.');
     }
   }
-  
+
   // 세션 연장
   async extendSession(req: Request): Promise<void> {
     const sessionId = req.sessionID;

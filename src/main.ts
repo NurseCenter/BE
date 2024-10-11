@@ -74,9 +74,9 @@ async function bootstrap() {
   });
 
   const PORT = ConversionUtil.stringToNumber(process.env.PORT);
-  
-  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`)
- 
+
+  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
+
   await app.listen(PORT);
 }
 bootstrap();

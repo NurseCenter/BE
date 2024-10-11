@@ -2,8 +2,6 @@ import { CookieOptions } from 'express';
 
 const commonOptions = {
   domain: process.env.COOKIE_DOMAIN,
-  // maxAge: 1 * 60 * 1000, // 1분 (테스트용)
-  maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
   httpOnly: true,
 };
 
@@ -14,6 +12,7 @@ const sendCookieOptions = (): CookieOptions => {
       ...commonOptions,
       secure: true,
       sameSite: 'none',
+      maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
     };
     // 개발환경
   } else {
@@ -21,6 +20,7 @@ const sendCookieOptions = (): CookieOptions => {
       ...commonOptions,
       secure: false,
       sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24시간
     };
   }
 };
@@ -33,7 +33,7 @@ export { sendCookieOptions };
   "domain": process.env.COOKIE_DOMAIN,
   "maxAge": 86400000,
   "httpOnly": true,
-    "secure": false,
+  "secure": false,
   "sameSite": "lax" 
 }
 

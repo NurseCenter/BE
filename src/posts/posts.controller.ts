@@ -250,7 +250,7 @@ export class PostsController {
           },
           example: ['image/jpeg'],
         },
-        hospitalName: {
+        hospitalNames: {
           type: 'string',
           example: '서울대학교병원',
         },
@@ -263,7 +263,7 @@ export class PostsController {
         value: {
           title: '새 게시글 제목',
           content: '새 게시글 내용입니다. 텍스트만 있습니다.',
-          hospitalName: '서울대학교병원',
+          hospitalNames: '서울대학교병원',
         },
       },
       '첨부파일 포함': {
@@ -272,7 +272,7 @@ export class PostsController {
           title: '새 게시글 제목',
           content: '새 게시글 내용입니다. 첨부파일을 함께 등록하면 imageTypes에 파일의 타입이 들어갑니다.',
           imageTypes: ['image/jpeg'],
-          hospitalName: '서울대학교병원',
+          hospitalNames: '서울대학교병원',
         },
       },
     },

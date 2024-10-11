@@ -2,7 +2,9 @@ import * as moment from 'moment-timezone';
 
 export class ConversionUtil {
   static stringToNumber(value: string): number {
-    return isNaN(Number(value)) ? NaN : Number(value);
+    const num = Number(value);
+    console.log("num", num)
+    return isNaN(num) ? 0 : num;
   }
 
   static stringToBoolean(value: string): boolean {

@@ -13,6 +13,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { getAllowedOrigins } from './config/cors.config';
+import { ConversionUtil } from './common/utils';
 
 // NODE_ENV 값에 따라 .env 파일을 다르게 읽음
 dotenv.config({
@@ -72,9 +73,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const PORT = process.env.PORT || 3000;
-
-  console.log(`${PORT}번 포트에서 실행중입니다.`)
+  const PORT = ConversionUtil.stringToNumber(process.env.PORT);
+  
+  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`)
+  
   await app.listen(PORT);
 }
 bootstrap();

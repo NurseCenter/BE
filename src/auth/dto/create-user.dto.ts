@@ -14,6 +14,13 @@ export class CreateUserDto {
   readonly nickname: string;
 
   @ApiProperty({
+    description: '이름 - 졸업증명서 및 재학증명서에서 추출한 회원의 실명',
+    example: '김개똥',
+  })
+  @IsString()
+  readonly username: string;
+
+  @ApiProperty({
     description: '이메일 - 이메일 정규식',
     example: 'john.doe@example.com',
   })

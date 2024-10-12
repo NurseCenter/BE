@@ -48,7 +48,8 @@ export class AuthController {
       'example-1': {
         summary: '회원가입 예시 1 (재학생)',
         value: {
-          nickname: 'gildongGo',
+          nickname: '달려라뭐하니',
+          username: '황서연',
           email: 'gildongtest1@example.com',
           phoneNumber: '01012341234',
           password: 'Password1!',
@@ -60,6 +61,7 @@ export class AuthController {
         summary: '회원가입 예시 2 (졸업생)',
         value: {
           nickname: 'dooly123',
+          username: '구서진',
           email: 'gildongtest1@example.com',
           phoneNumber: '01012341234',
           password: 'Password1!',
@@ -76,6 +78,8 @@ export class AuthController {
       example: {
         message: '회원가입이 성공적으로 완료되었습니다.',
         userId: 41,
+        email: 'dongdong@example.com',
+        username: '최동동',
         nickname: '간호꿈동이',
       },
     },

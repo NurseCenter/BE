@@ -59,7 +59,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const allowedOrigins = getAllowedOrigins(process.env.NODE_ENV);
-  
+
   app.enableCors({
     origin: (origin, cb) => {
       if (allowedOrigins.includes(origin) || !origin) {
@@ -79,8 +79,8 @@ async function bootstrap() {
   app.setViewEngine('ejs');
 
   const PORT = ConversionUtil.stringToNumber(process.env.PORT);
-  
-  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`)
+
+  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
 
   await app.listen(PORT);
 }

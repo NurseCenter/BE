@@ -1,4 +1,3 @@
-
 export function extractSessionIdFromCookie(cookie: string) {
   // 쿠키가 없을 경우 null 반환
   if (!cookie) {

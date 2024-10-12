@@ -30,7 +30,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
       message: '서버 내부에 오류가 발생했습니다.',
     });
 
-     // 서버 로그에만 오류 출력
-     console.error(message, exception.message); 
+    // 서버 로그에만 오류 출력
+    console.error(message, exception.message);
   }
 }

@@ -7,7 +7,7 @@ import {
   Column,
   JoinColumn,
   Unique,
-  DeleteDateColumn
+  DeleteDateColumn,
 } from 'typeorm';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 

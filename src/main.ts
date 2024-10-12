@@ -27,6 +27,10 @@ dotenv.config({
 async function bootstrap() {
   ConfigModule.forRoot({ isGlobal: true });
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // 리버스 프록시를 신뢰하도록 설정
+  app.set('trust proxy', 1);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

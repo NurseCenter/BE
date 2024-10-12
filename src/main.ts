@@ -53,15 +53,9 @@ async function bootstrap() {
   const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(cookieParser());
-  app.use(session(sessionOptions));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
-  app.setViewEngine('ejs');
 
   const allowedOrigins = getAllowedOrigins(process.env.NODE_ENV);
-
+  
   app.enableCors({
     origin: (origin, cb) => {
       if (allowedOrigins.includes(origin) || !origin) {
@@ -72,6 +66,13 @@ async function bootstrap() {
     },
     credentials: true,
   });
+
+  app.use(session(sessionOptions));
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
+  app.setViewEngine('ejs');
 
   const PORT = ConversionUtil.stringToNumber(process.env.PORT);
   

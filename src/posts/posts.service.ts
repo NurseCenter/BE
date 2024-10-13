@@ -29,6 +29,7 @@ import { summarizeContent } from 'src/common/utils/summarize.utils';
 import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import { IUser } from 'src/auth/interfaces';
 import { FilesService } from 'src/files/files.service';
+import { FilesDAO } from 'src/files/files.dao';
 
 @Injectable()
 export class PostsService {
@@ -41,7 +42,8 @@ export class PostsService {
     private readonly usersDAO: UsersDAO,
     private readonly commentsDAO: CommentsDAO,
     private readonly repliesDAO: RepliesDAO,
-    private readonly filesService: FilesService
+    private readonly filesService: FilesService,
+    private readonly filesDAO: FilesDAO,
   ) {}
 
   // 모든 게시글 조회
@@ -119,6 +121,8 @@ export class PostsService {
     const isLiked = await this.likesDAO.checkIfLiked(userId, postId);
     const isScraped = await this.scrapsDAO.checkIfScraped(userId, postId);
 
+    const urlArray = await this.filesDAO.getFileUrlsInOnePost(postId);
+
     return {
       postId: post.postId, // 게시물 ID
       category: post.boardType, // 게시판 카테고리
@@ -133,6 +137,7 @@ export class PostsService {
       isScraped, // 스크랩 여부
       user: post.user, // 작성자 정보
       numberOfComments: numberOfCommentsAndReplies, // 댓글과 답글 수
+      fileUrls: urlArray, // 게시글에 첨부된 파일 URL들
     };
   }
 
@@ -156,37 +161,37 @@ export class PostsService {
     }
 
     // 변경 플래그
-    let contentChanged = false; 
+    let contentChanged = false;
     let boardTypeChanged = false;
     let filesChanged = false;
 
     // 제목 변경
     if (title !== null && title !== undefined && post.title !== title) {
       post.title = title;
-      contentChanged = true; 
+      contentChanged = true;
     }
 
     // 본문 내용 변경
     if (content !== null && content !== undefined && post.content !== content) {
       post.content = content;
-      contentChanged = true; 
+      contentChanged = true;
     }
 
     // 카테고리 변경
     if (boardType !== null && boardType !== undefined && post.boardType !== boardType) {
       post.boardType = boardType;
-      boardTypeChanged = true; 
+      boardTypeChanged = true;
     }
 
     // 업로드한 파일 URL 배열 변경
     if (fileUrls !== undefined) {
       if (fileUrls.length > 0) {
         const fileEntities = await this.filesService.uploadFiles(fileUrls, postId);
-        post.files = fileEntities; 
+        post.files = fileEntities;
         filesChanged = true;
       } else {
-        post.files = []; 
-        filesChanged = true; 
+        post.files = [];
+        filesChanged = true;
       }
     }
 

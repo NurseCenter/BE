@@ -2,7 +2,7 @@ import { IsArray, IsOptional, IsString, Length } from 'class-validator';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { BasePostDto } from './base-post.dto';
 
-export class UpdatePostDto extends OmitType(BasePostDto, ['postId'] as const) {  
+export class UpdatePostDto extends OmitType(BasePostDto, ['postId'] as const) {
   @IsOptional()
   @Length(1, 50)
   @IsString()

@@ -164,15 +164,10 @@ export class PostsController {
           nickname: '닉넴뭐하지',
         },
         numberOfComments: 25,
-        images: [
-          {
-            imageId: 1,
-            imageUrl: 'https://example.com/image1.jpg',
-          },
-          {
-            imageId: 2,
-            imageUrl: 'https://example.com/image2.jpg',
-          },
+        fileUrls: [
+          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png',
+          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample2.png',
+          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample3.png',
         ],
       },
     },
@@ -264,7 +259,7 @@ export class PostsController {
         summary: '제목과 내용만 포함된 게시글',
         value: {
           title: '새 게시글 제목',
-          content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>'
+          content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         },
       },
       '제목, 내용, 병원명 포함': {
@@ -323,12 +318,9 @@ export class PostsController {
       },
     },
   })
-  async createPost(
-    @Body() createPostDto: CreatePostDto,
-    @SessionUser() sessionUser: IUser,
-  ): Promise<IPostResponse> {
+  async createPost(@Body() createPostDto: CreatePostDto, @SessionUser() sessionUser: IUser): Promise<IPostResponse> {
     try {
-      const result = await this.postsService.createPost( createPostDto, sessionUser);
+      const result = await this.postsService.createPost(createPostDto, sessionUser);
       return result;
     } catch (err) {
       throw err;
@@ -369,14 +361,14 @@ export class PostsController {
             example: '서울대학교병원',
           },
         },
-      }
+      },
     },
     examples: {
       '제목과 내용만 존재': {
         summary: '제목과 내용만 포함된 게시글',
         value: {
           title: '수정된 게시글 제목',
-          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>'
+          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         },
       },
       '제목, 내용, 병원명 포함': {

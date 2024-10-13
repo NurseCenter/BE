@@ -24,4 +24,10 @@ export class FilesDAO {
   async deleteFile(files: FilesEntity): Promise<DeleteResult> {
     return await this.filesRepository.softDelete(files);
   }
+
+  // 특정 게시글에 저장된 파일 URL들 불러오기
+  async getFileUrlsInOnePost(postId: number): Promise<string[]> {
+    const fileEntities = await this.filesRepository.find({ where: { postId } });
+    return fileEntities.map((fileEntity) => fileEntity.url);
+  }
 }

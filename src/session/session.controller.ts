@@ -11,9 +11,21 @@ export class SessionController {
 
   @Post('monitor')
   @ApiOperation({ summary: '세션 만료 알림 발송을 위한 모니터링 시작 (Request 헤더의 쿠키에서 세션 ID를 추출함)' })
-  @ApiResponse({ status: 200, description: '세션 모니터링이 시작되었습니다.', schema: { example: { message: '세션 모니터링이 시작되었습니다.' } } })
-  @ApiResponse({ status: 400, description: '세션 ID를 찾을 수 없습니다.', schema: { example: { error: '세션 ID를 찾을 수 없습니다.' } } })
-  @ApiResponse({ status: 500, description: '세션 모니터링 중 오류가 발생했습니다.', schema: { example: { error: '세션 모니터링 중 오류가 발생했습니다.' } } })
+  @ApiResponse({
+    status: 200,
+    description: '세션 모니터링이 시작되었습니다.',
+    schema: { example: { message: '세션 모니터링이 시작되었습니다.' } },
+  })
+  @ApiResponse({
+    status: 400,
+    description: '세션 ID를 찾을 수 없습니다.',
+    schema: { example: { error: '세션 ID를 찾을 수 없습니다.' } },
+  })
+  @ApiResponse({
+    status: 500,
+    description: '세션 모니터링 중 오류가 발생했습니다.',
+    schema: { example: { error: '세션 모니터링 중 오류가 발생했습니다.' } },
+  })
   @Post('monitor')
   async monitorSession(@Req() req: Request, @Res() res: Response): Promise<void> {
     try {
@@ -44,8 +56,16 @@ export class SessionController {
 
   @Post('extend')
   @ApiOperation({ summary: '세션 연장 (Request 헤더의 쿠키에서 세션 ID를 추출함)' })
-  @ApiResponse({ status: 200, description: '세션이 갱신되었습니다.', schema: { example: { message: '세션이 갱신되었습니다.' } } })
-  @ApiResponse({ status: 500, description: '세션 갱신 중 오류가 발생했습니다.', schema: { example: { error: '세션 갱신 중 오류가 발생했습니다.' } } })
+  @ApiResponse({
+    status: 200,
+    description: '세션이 갱신되었습니다.',
+    schema: { example: { message: '세션이 갱신되었습니다.' } },
+  })
+  @ApiResponse({
+    status: 500,
+    description: '세션 갱신 중 오류가 발생했습니다.',
+    schema: { example: { error: '세션 갱신 중 오류가 발생했습니다.' } },
+  })
   async extendSession(@Req() req: Request, @Res() res: Response): Promise<void> {
     try {
       await this.sessionService.extendSession(req);

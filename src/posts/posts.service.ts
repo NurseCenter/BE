@@ -16,7 +16,6 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { PostsDAO } from './posts.dao';
 import { ScrapsDAO } from 'src/scraps/scraps.dao';
 import { LikesDAO } from 'src/likes/likes.dao';
-import { FileUploader } from '../files/file-uploader';
 import { ReportedPostsDAO } from 'src/reports/dao';
 import { ReportDto } from './dto/report.dto';
 import { ReportedPostDto } from 'src/reports/dto/reported-post.dto';
@@ -29,6 +28,7 @@ import { RepliesDAO } from 'src/replies/replies.dao';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
 import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import { IUser } from 'src/auth/interfaces';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class PostsService {
@@ -36,12 +36,12 @@ export class PostsService {
     private readonly postsDAO: PostsDAO,
     private readonly postsMetricsDAO: PostsMetricsDAO,
     private readonly scrapsDAO: ScrapsDAO,
-    private readonly fileUploader: FileUploader,
     private readonly reportedPostsDAO: ReportedPostsDAO,
     private readonly likesDAO: LikesDAO,
     private readonly usersDAO: UsersDAO,
     private readonly commentsDAO: CommentsDAO,
     private readonly repliesDAO: RepliesDAO,
+    private readonly filesService: FilesService
   ) {}
 
   // 모든 게시글 조회
@@ -73,8 +73,8 @@ export class PostsService {
   }
 
   // 게시물 생성
-  async createPost(boardType: EBoardType, createPostDto: CreatePostDto, sessionUser: IUser): Promise<IPostResponse> {
-    const { title, content, imageTypes, hospitalNames } = createPostDto;
+  async createPost(createPostDto: CreatePostDto, sessionUser: IUser): Promise<IPostResponse> {
+    const { title, content, boardType, fileUrls, hospitalNames } = createPostDto;
     const { userId } = sessionUser;
 
     const user = await this.usersDAO.findUserByUserId(userId);
@@ -89,8 +89,7 @@ export class PostsService {
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
-    const fileEntities = await this.fileUploader.handleFiles(imageTypes, createdPost);
-    createdPost.files = fileEntities;
+    await this.filesService.uploadFiles(fileUrls, createdPost.postId);
 
     const summaryContent = summarizeContent(content);
 
@@ -101,7 +100,6 @@ export class PostsService {
       content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
-      presignedPostData: fileEntities.map((file) => file.url), // presigned URL
     };
   }
 
@@ -140,12 +138,13 @@ export class PostsService {
 
   // 게시글 수정
   async updatePost(
-    boardType: EBoardType,
     postId: number,
     updatePostDto: UpdatePostDto,
     sessionUser: IUser,
-  ): Promise<IPostResponse> {
+  ): Promise<IPostResponse | { message: string }> {
     const { userId } = sessionUser;
+    const { title, content, boardType, fileUrls } = updatePostDto;
+
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
@@ -156,31 +155,52 @@ export class PostsService {
       throw new ForbiddenException('이 게시물을 수정할 권한이 없습니다.');
     }
 
-    const { title, content, imageTypes } = updatePostDto;
-    let contentChanged = false; // 변경 플래그
+    // 변경 플래그
+    let contentChanged = false; 
+    let boardTypeChanged = false;
+    let filesChanged = false;
 
-    if (title !== null && title !== undefined) {
+    // 제목 변경
+    if (title !== null && title !== undefined && post.title !== title) {
       post.title = title;
-      contentChanged = true; // 제목이 변경된 경우
+      contentChanged = true; 
     }
 
-    if (content !== null && content !== undefined) {
+    // 본문 내용 변경
+    if (content !== null && content !== undefined && post.content !== content) {
       post.content = content;
-      contentChanged = true; // 내용이 변경된 경우
+      contentChanged = true; 
     }
 
-    // 파일 업로드 처리
-    // 추후에 불필요하면 삭제할 예정
-    const fileEntities = await this.fileUploader.handleFiles(imageTypes, post);
-    post.files = fileEntities;
+    // 카테고리 변경
+    if (boardType !== null && boardType !== undefined && post.boardType !== boardType) {
+      post.boardType = boardType;
+      boardTypeChanged = true; 
+    }
 
-    // 내용이 변경된 경우에만 updatedAt에 현재 날짜 넣어주기
-    if (contentChanged) {
+    // 업로드한 파일 URL 배열 변경
+    if (fileUrls !== undefined) {
+      if (fileUrls.length > 0) {
+        const fileEntities = await this.filesService.uploadFiles(fileUrls, postId);
+        post.files = fileEntities; 
+        filesChanged = true;
+      } else {
+        post.files = []; 
+        filesChanged = true; 
+      }
+    }
+
+    // 아무 것도 수정되지 않은 경우
+    if (!contentChanged && !boardTypeChanged && !filesChanged) {
+      return { message: '수정된 내용이 없습니다.' };
+    }
+
+    // 변경된 경우에만 updatedAt에 현재 날짜 넣어주기
+    if (contentChanged || boardTypeChanged || filesChanged) {
       post.updatedAt = new Date();
     }
 
     const updatedPost = await this.postsDAO.savePost(post);
-
     const summaryContent = summarizeContent(updatedPost.content);
 
     return {
@@ -191,7 +211,6 @@ export class PostsService {
       hospitalNames: updatedPost.hospitalNames, // 병원 이름
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일
-      presignedPostData: fileEntities.map((file) => file.url), // presignedURL
     };
   }
 

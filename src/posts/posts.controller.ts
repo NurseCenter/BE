@@ -240,39 +240,51 @@ export class PostsController {
         },
         content: {
           type: 'string',
-          example: '새 게시글 내용',
+          example: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         },
-        imageTypes: {
+        fileUrls: {
           type: 'array',
           items: {
             type: 'string',
-            example: 'image/jpeg',
+            example: 'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png',
           },
-          example: ['image/jpeg'],
         },
         hospitalNames: {
-          type: 'string',
-          example: '서울대학교병원',
+          type: 'array',
+          items: {
+            type: 'string',
+            example: '서울대학교병원',
+          },
         },
       },
       required: ['title', 'content'],
     },
     examples: {
-      텍스트만: {
-        summary: '첨부파일 없이 텍스트만 포함된 게시글',
+      '제목과 내용만 존재': {
+        summary: '제목과 내용만 포함된 게시글',
         value: {
           title: '새 게시글 제목',
-          content: '새 게시글 내용입니다. 텍스트만 있습니다.',
-          hospitalNames: '서울대학교병원',
+          content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>'
         },
       },
-      '첨부파일 포함': {
+      '제목, 내용, 병원명 포함': {
+        summary: '제목, 내용, 병원명이 포함된 게시글',
+        value: {
+          title: '새 게시글 제목',
+          content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
+          hospitalNames: ['서울대학교병원', '아주대학교병원', '연세의료원'],
+        },
+      },
+      '제목, 내용, 첨부파일, 병원명 포함': {
         summary: '첨부파일을 포함한 게시글',
         value: {
           title: '새 게시글 제목',
-          content: '새 게시글 내용입니다. 첨부파일을 함께 등록하면 imageTypes에 파일의 타입이 들어갑니다.',
-          imageTypes: ['image/jpeg'],
-          hospitalNames: '서울대학교병원',
+          content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
+          fileUrls: [
+            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2psdlksg.png',
+            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2ps20395230961ksg.png',
+          ],
+          hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
       },
     },
@@ -285,20 +297,9 @@ export class PostsController {
         postId: 2,
         userId: 1,
         title: '새 게시글 제목',
-        content: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
-        presignedPostData: [
-          {
-            url: 'https://example.com/upload',
-            fields: {
-              key: 'image-key',
-              policy: 'policy',
-              signature: 'signature',
-            },
-            key: 'image-key',
-          },
-        ],
       },
     },
   })
@@ -323,12 +324,11 @@ export class PostsController {
     },
   })
   async createPost(
-    @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse> {
     try {
-      const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
+      const result = await this.postsService.createPost( createPostDto, sessionUser);
       return result;
     } catch (err) {
       throw err;
@@ -353,34 +353,50 @@ export class PostsController {
         },
         content: {
           type: 'string',
-          example: '수정된 게시글 내용',
+          example: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         },
-        imageTypes: {
+        fileUrls: {
           type: 'array',
           items: {
             type: 'string',
-            example: 'image/jpeg',
+            example: 'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png',
           },
-          example: ['image/jpeg'],
         },
-      },
-      required: ['title', 'content'],
+        hospitalNames: {
+          type: 'array',
+          items: {
+            type: 'string',
+            example: '서울대학교병원',
+          },
+        },
+      }
     },
     examples: {
-      텍스트만: {
-        summary: '이미지 없이 텍스트만 포함된 게시글',
+      '제목과 내용만 존재': {
+        summary: '제목과 내용만 포함된 게시글',
         value: {
-          title: '수정된 게시글 제목이죵',
-          content: '수정된 게시글 내용입니당',
+          title: '수정된 게시글 제목',
+          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>'
         },
       },
-      '이미지 포함': {
-        summary: '이미지를 포함한 게시글',
+      '제목, 내용, 병원명 포함': {
+        summary: '제목, 내용, 병원명이 포함된 게시글',
         value: {
-          title: '수정된 게시글 제목이죵',
-          content:
-            '수정된 게시글 내용입니당. 이미지가 포함되면 imageTypes에 이미지 타입이 들어갑니당. 내용은 여기에 들어가용',
-          imageTypes: ['image/jpeg'],
+          title: '수정된 게시글 제목',
+          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
+          hospitalNames: ['서울대학교병원', '아주대학교병원', '연세의료원'],
+        },
+      },
+      '제목, 내용, 첨부파일, 병원명 포함': {
+        summary: '첨부파일을 포함한 게시글',
+        value: {
+          title: '수정된 게시글 제목',
+          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
+          fileUrls: [
+            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2psdlksg.png',
+            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2ps20395230961ksg.png',
+          ],
+          hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
       },
     },
@@ -393,20 +409,9 @@ export class PostsController {
         postId: 2,
         userId: 35,
         title: '새 게시글 제목',
-        content: '내용이 보입니다. 100자 넘어가면 ... 처리됩니다.',
+        content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
-        presignedPostData: [
-          {
-            url: 'https://example.com/upload',
-            fields: {
-              key: 'image-key',
-              policy: 'policy',
-              signature: 'signature',
-            },
-            key: 'image-key',
-          },
-        ],
       },
     },
   })
@@ -455,9 +460,9 @@ export class PostsController {
     @Param('postId') postId: number,
     @Body() updatePostDto: UpdatePostDto,
     @SessionUser() sessionUser: IUser,
-  ): Promise<IPostResponse> {
+  ): Promise<IPostResponse | { message: string }> {
     try {
-      const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
+      const result = await this.postsService.updatePost(postId, updatePostDto, sessionUser);
       return result;
     } catch (err) {
       throw err;

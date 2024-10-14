@@ -20,11 +20,10 @@ import { join } from 'path';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OcrModule } from './orc/ocr.module';
 import { ReportsModule } from './reports/reports.module';
-import { FilesController } from './files/files.controller';
-import { FilesService } from './files/files.service';
 import { FilesModule } from './files/files.module';
 import { KakaoMessageModule } from './kakao-message/kakao-message.module';
 import { SessionModule } from './session/session.module';
+import { TestControllerModule } from './_test-controller/test-controller.module';
 
 @Module({
   imports: [
@@ -54,8 +53,9 @@ import { SessionModule } from './session/session.module';
     ReportsModule,
     KakaoMessageModule,
     SessionModule,
+    TestControllerModule,
   ],
-  controllers: [AppController, FilesController],
-  providers: [AppService, SessionConfigService, FilesService],
+  controllers: [AppController],
+  providers: [AppService, SessionConfigService],
 })
 export class AppModule {}

@@ -13,7 +13,7 @@ import { PostsEntity } from '../../posts/entities/base-posts.entity';
 export class FilesEntity {
   // 파일의 고유 ID
   @PrimaryGeneratedColumn()
-  id: number;
+  fileId: number;
 
   // 파일의 URL
   @Column()

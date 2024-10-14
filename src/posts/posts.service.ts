@@ -220,7 +220,7 @@ export class PostsService {
   }
 
   // 게시글 삭제
-  // 게시글 삭제할 때 해당 이미지도 같이 삭제해야됨.
+  // 게시글 삭제할 때 첨부된 파일들도 같이 삭제해야됨.
   async deletePost(boardType: EBoardType, postId: number, sessionUser: IUser): Promise<{ message: string }> {
     try {
       const { userId } = sessionUser;

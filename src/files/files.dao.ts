@@ -30,4 +30,9 @@ export class FilesDAO {
     const fileEntities = await this.filesRepository.find({ where: { postId } });
     return fileEntities.map((fileEntity) => fileEntity.url);
   }
+
+  // 특정 URL에 해당하는 Row 조회하기
+  async getOneFileUrl(url: string): Promise<FilesEntity> {
+    return await this.filesRepository.findOne({ where: { url } });
+  }
 }

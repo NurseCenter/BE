@@ -1,4 +1,10 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
@@ -148,7 +154,6 @@ export class TestPostsService {
   }
 
   // 게시글 삭제
-  // 게시글 삭제할 때 해당 이미지도 같이 삭제해야됨.
   async deletePost(boardType: EBoardType, postId: number): Promise<{ message: string }> {
     try {
       const userId = 10041004;
@@ -166,12 +171,27 @@ export class TestPostsService {
         throw new ConflictException('이미 삭제된 게시물입니다.');
       }
 
-      const result = await this.postsDAO.deletePost(postId);
-      if (result.affected === 0) {
-        throw new NotFoundException(`게시물 삭제 중 에러가 발생하였습니다.`);
+      // 첨부파일 URL 조회
+      const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
+      const deletionErrors: string[] = [];
+
+      // 반복문으로 URL을 하나씩 찾아서 삭제
+      for (const url of fileUrls) {
+        const fileToDelete = await this.filesDAO.getOneFileUrl(url);
+        if (fileToDelete) {
+          const deleteResult = await this.filesDAO.deleteFile(fileToDelete);
+          if (deleteResult.affected === 0) {
+            deletionErrors.push(`URL: ${url}는 삭제되지 않았습니다.`);
+          }
+        }
       }
 
-      return { message: '게시물이 삭제되었습니다.' };
+      const result = await this.postsDAO.deletePost(postId);
+      if (result.affected === 0) {
+        throw new InternalServerErrorException(`게시물 삭제 중 에러가 발생하였습니다.`);
+      }
+
+      return { message: '게시물이 삭제되었습니다.', ...(deletionErrors.length > 0 && { errors: deletionErrors }) };
     } catch (err) {
       throw err;
     }

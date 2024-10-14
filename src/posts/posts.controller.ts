@@ -480,7 +480,24 @@ export class PostsController {
     status: 200,
     description: '게시글 삭제 성공',
     schema: {
-      example: { message: '게시물이 삭제되었습니다.' },
+      examples: {
+        '게시물 및 첨부파일 삭제 성공': {
+          summary: '게시물 및 첨부파일도 성공적으로 삭제된 경우',
+          value: {
+            message: '게시물이 삭제되었습니다.',
+          },
+        },
+        '게시물 삭제 성공, 첨부파일 삭제 오류': {
+          summary: '게시물은 성공적으로 삭제되었으나, 특정 첨부파일이 삭제되지 않은 경우',
+          value: {
+            message: '게시물이 삭제되었습니다.',
+            errors: [
+              'URL: http://example.com/file1.jpg는 삭제되지 않았습니다.',
+              'URL: http://example.com/file2.jpg는 삭제되지 않았습니다.',
+            ],
+          },
+        },
+      },
     },
   })
   @ApiResponse({

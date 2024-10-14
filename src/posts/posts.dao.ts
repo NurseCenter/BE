@@ -97,12 +97,15 @@ export class PostsDAO {
       .where('post.deletedAt IS NULL');
 
     if (boardType !== 'all') {
-      query.where('post.boardType = :boardType', { boardType });
+      query.andWhere('post.boardType = :boardType', { boardType });
     }
 
     if (search) {
-      query.andWhere('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
+      query.andWhere('(post.title LIKE :search OR post.content LIKE :search)', { search: `%${search}%` });
     }
+
+    // console.log(query.getQuery());
+    // console.log(query.getParameters());
 
     sortType = Object.values(ESortType).includes(sortType) ? sortType : ESortType.DATE;
     sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
@@ -139,6 +142,7 @@ export class PostsDAO {
 
     return { posts: convertedPosts, total };
   }
+
   // 특정 게시글 조회 메소드
   async findOnePostByPostId(postId: number): Promise<PostsEntity> {
     const post = await this.postsRepository

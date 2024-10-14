@@ -318,9 +318,9 @@ export class PostsController {
       },
     },
   })
-  async createPost(@Body() createPostDto: CreatePostDto, @SessionUser() sessionUser: IUser): Promise<IPostResponse> {
+  async createPost(@Param() boardType: EBoardType, @Body() createPostDto: CreatePostDto, @SessionUser() sessionUser: IUser): Promise<IPostResponse> {
     try {
-      const result = await this.postsService.createPost(createPostDto, sessionUser);
+      const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
       return result;
     } catch (err) {
       throw err;
@@ -454,7 +454,7 @@ export class PostsController {
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse | { message: string }> {
     try {
-      const result = await this.postsService.updatePost(postId, updatePostDto, sessionUser);
+      const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
       return result;
     } catch (err) {
       throw err;

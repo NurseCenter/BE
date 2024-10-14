@@ -173,9 +173,9 @@ export class TestPostsController {
       },
     },
   })
-  async createPost(@Body() createPostDto: CreatePostDto): Promise<IPostResponse> {
+  async createPost(@Param() boardType: EBoardType, @Body() createPostDto: CreatePostDto): Promise<IPostResponse> {
     try {
-      const result = await this.testPostsService.createPost(createPostDto);
+      const result = await this.testPostsService.createPost(boardType, createPostDto);
       return result;
     } catch (err) {
       throw err;
@@ -297,7 +297,7 @@ export class TestPostsController {
     @Body() updatePostDto: UpdatePostDto,
   ): Promise<IPostResponse | { message: string }> {
     try {
-      const result = await this.testPostsService.updatePost(postId, updatePostDto);
+      const result = await this.testPostsService.updatePost(boardType, postId, updatePostDto);
       return result;
     } catch (err) {
       throw err;

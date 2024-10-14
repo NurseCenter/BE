@@ -28,8 +28,8 @@ export class TestPostsService {
   ) {}
 
   // 게시물 생성
-  async createPost(createPostDto: CreatePostDto): Promise<IPostResponse> {
-    const { title, content, boardType, fileUrls, hospitalNames } = createPostDto;
+  async createPost(boardType: EBoardType, createPostDto: CreatePostDto): Promise<IPostResponse> {
+    const { title, content, fileUrls, hospitalNames } = createPostDto;
     const userId = 10041004;
 
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
@@ -41,6 +41,7 @@ export class TestPostsService {
 
     return {
       postId: createdPost.postId, // 게시물 ID
+      category: createdPost.boardType, // 게시물 카테고리
       userId: createdPost.userId, // 작성자 ID
       title: createdPost.title, // 게시물 제목
       content: summaryContent, // 내용 (요약본)
@@ -80,9 +81,9 @@ export class TestPostsService {
   }
 
   // 게시글 수정
-  async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<IPostResponse | { message: string }> {
+  async updatePost(boardType: EBoardType, postId: number, updatePostDto: UpdatePostDto): Promise<IPostResponse | { message: string }> {
     const userId = 10041004;
-    const { title, content, boardType, fileUrls } = updatePostDto;
+    const { title, content, fileUrls } = updatePostDto;
 
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
@@ -144,6 +145,7 @@ export class TestPostsService {
 
     return {
       postId: updatedPost.postId, // 게시물 ID
+      category: updatedPost.boardType, // 게시물 카테고리
       userId: updatedPost.user.userId, // 작성자 ID
       title: updatedPost.title, // 게시물 제목
       content: summaryContent, // 내용 (요약본)

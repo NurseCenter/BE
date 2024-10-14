@@ -12,6 +12,7 @@ import { FilesEntity } from './entities/files.entity';
 export class FilesService {
   private s3Client: S3Client;
   private readonly logger = new Logger(FilesService.name);
+  private bucket = process.env.S3_BUCKET_NAME;
 
   constructor(
     private filesDAO: FilesDAO,
@@ -29,7 +30,6 @@ export class FilesService {
   // presignedURL 생성
   async generatePresignedUrl(createPresignedUrlDto: CreatePresignedUrlDto): Promise<PresignedUrlResponseDto> {
     const { fileType } = createPresignedUrlDto;
-    const bucket = process.env.S3_BUCKET_NAME;
     const now = dayjs();
     const year = now.year();
     const month = now.month() + 1;
@@ -61,7 +61,7 @@ export class FilesService {
 
     try {
       const { url, fields } = await createPresignedPost(this.s3Client, {
-        Bucket: bucket,
+        Bucket: this.bucket,
         Key: key,
         Conditions: [
           ['content-length-range', 0, 52428800], // 최대 50MB
@@ -110,6 +110,22 @@ export class FilesService {
     return savedFiles;
   }
 
+  // 버킷 안의 파일을 삭제
+  async deleteFile(url: string): Promise<void> {
+    if (!this.isValidUrl(url)) {
+      throw new BadRequestException('유효하지 않은 URL입니다.');
+    }
+
+    // try {
+    //   const params = {
+    //     Bucket: this.bucket,
+    //     key: this.extractFileTypeFromUrl(url)
+    //   }
+    // } catch (error) {
+
+    // }
+  }
+
   // 파일 타입 추출하는 함수
   private extractFileTypeFromUrl(url: string): string | null {
     try {
@@ -136,4 +152,10 @@ export class FilesService {
     // URL 형식이 맞고, URL에 유효한 문자들만 포함되어 있는지 확인
     return s3UrlPattern.test(url);
   }
+
+  // URL에서 키 추출하는 함수
+  // private extractKeyFromUrl(url: string): string {
+  //   const urlParts = url.split('/');
+  //   return urlParts.slice(3).join('/');
+  // }
 }

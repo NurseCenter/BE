@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { S3Client } from '@aws-sdk/client-s3';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import * as dayjs from 'dayjs';
@@ -8,6 +8,7 @@ import { getExtensionFromMime } from 'src/common/utils';
 import { FilesDAO } from './files.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { FilesEntity } from './entities/files.entity';
+
 @Injectable()
 export class FilesService {
   private s3Client: S3Client;
@@ -111,19 +112,25 @@ export class FilesService {
   }
 
   // 버킷 안의 파일을 삭제
-  async deleteFile(url: string): Promise<void> {
+  async deleteSingleFile(url: string): Promise<void> {
     if (!this.isValidUrl(url)) {
       throw new BadRequestException('유효하지 않은 URL입니다.');
     }
 
-    // try {
-    //   const params = {
-    //     Bucket: this.bucket,
-    //     key: this.extractFileTypeFromUrl(url)
-    //   }
-    // } catch (error) {
+    const key = this.extractKeyFromUrl(url);
 
-    // }
+    try {
+      const params = {
+        Bucket: this.bucket,
+        Key: key
+      }
+      
+      const command: DeleteObjectCommand = new DeleteObjectCommand(params)
+      await this.s3Client.send(command);
+    } catch (error) {
+      this.logger.error(`파일 삭제 중 오류 발생: ${error.message}`);
+      throw new InternalServerErrorException('파일 삭제 중 오류가 발생했습니다.');
+    }
   }
 
   // 파일 타입 추출하는 함수
@@ -154,8 +161,8 @@ export class FilesService {
   }
 
   // URL에서 키 추출하는 함수
-  // private extractKeyFromUrl(url: string): string {
-  //   const urlParts = url.split('/');
-  //   return urlParts.slice(3).join('/');
-  // }
+  private extractKeyFromUrl(url: string): string {
+    const urlParts = url.split('/');
+    return urlParts.slice(3).join('/');
+  }
 }

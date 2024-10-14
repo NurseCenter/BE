@@ -1,6 +1,6 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Param } from '@nestjs/common';
 import { CreatePresignedUrlDto, PresignedUrlResponseDto } from './dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FilesService } from './files.service';
 
 @ApiTags('Files')
@@ -8,6 +8,7 @@ import { FilesService } from './files.service';
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
+  @Post('presigned-url')
   @ApiOperation({
     summary: 'S3 버킷에 파일 업로드를 위한 pre-signed URL 포함 인증 정보 제공',
     description: '주어진 파일 타입에 대한 S3 업로드를 위한 pre-signed URL과 관련된 정보를 제공함.',
@@ -113,8 +114,40 @@ export class FilesController {
       },
     },
   })
-  @Post('presigned-url')
   async getPresignedUrl(@Body() createPresignedUrlDto: CreatePresignedUrlDto): Promise<PresignedUrlResponseDto> {
     return await this.filesService.generatePresignedUrl(createPresignedUrlDto);
+  }
+
+  @Delete(':url')
+  @ApiParam({
+    name: 'url',
+    required: true,
+    description: '삭제할 파일의 S3 URL (인코딩된 형태).',
+    type: String,
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: '파일이 성공적으로 삭제되었습니다.', 
+    schema: {
+      example: {
+        message: '파일이 성공적으로 삭제되었습니다.',
+      },
+    },
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '유효하지 않은 URL입니다.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: '파일을 찾을 수 없습니다.' 
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: '서버 오류가 발생했습니다.' 
+  })
+  async deleteFile(@Param('url') url: string) {
+    await this.filesService.deleteSingleFile(url);
+    return { message : '파일이 성공적으로 삭제되었습니다.' }
   }
 }

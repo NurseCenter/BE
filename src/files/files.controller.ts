@@ -147,7 +147,9 @@ export class FilesController {
     description: '서버 오류가 발생했습니다.' 
   })
   async deleteFile(@Param('url') url: string) {
-    await this.filesService.deleteSingleFile(url);
+    const decodedUrl = decodeURIComponent(url);
+    console.log(decodedUrl)
+    await this.filesService.deleteSingleFile(decodedUrl);
     return { message : '파일이 성공적으로 삭제되었습니다.' }
   }
 }

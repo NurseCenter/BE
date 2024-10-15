@@ -53,7 +53,11 @@ export class ReportedPostsDAO {
       relations: ['posts', 'posts.user'],
     });
 
-    const reporterId = reportedPost.userId; // 신고자 회원 ID
+    if (!reportedPost) {
+      return null; // 존재하지 않으면 null 반환
+    }
+
+    const reporterId = reportedPost?.userId; // 신고자 회원 ID
     const reporterNickname = await this.usersDAO.findUserNicknameByUserId(reporterId);
 
     const formattedPost = {
@@ -95,7 +99,7 @@ export class ReportedPostsDAO {
     const [items, total] = await this.reportPostsRepository.findAndCount({
       skip,
       take: limit,
-      relations: ['posts', 'posts.user'],
+      relations: ['posts', 'posts.user', 'reportingUser'],
       where: {
         posts: {
           deletedAt: null,
@@ -115,7 +119,7 @@ export class ReportedPostsDAO {
         postTitle: reportPost.posts.title, // 게시물 제목
         postAuthor: reportPost.posts.user.nickname, // 게시물 작성자
         reportDate: reportPost.createdAt, // 신고일자
-        reporter: reportPost.reportingUser, // 신고자
+        reporter: reportPost.reportingUser.nickname, // 신고자
         reportReason: reportPost.reportedReason, // 신고 사유
         otherReportedReason: reportPost.otherReportedReason, // 기타 신고 사유
         status: reportPost.status, // 처리 상태

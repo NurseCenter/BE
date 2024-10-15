@@ -119,6 +119,10 @@ export class FilesController {
   }
 
   @Delete(':url')
+  @ApiOperation({
+    summary: 'S3 버킷에서 파일 삭제 요청',
+    description: '특정 파일의 url을 path parameter로 보내서 해당 URL의 파일을 버킷에서 삭제',
+  })
   @ApiParam({
     name: 'url',
     required: true,
@@ -148,7 +152,6 @@ export class FilesController {
   })
   async deleteFile(@Param('url') url: string) {
     const decodedUrl = decodeURIComponent(url);
-    console.log(decodedUrl);
     await this.filesService.deleteSingleFile(decodedUrl);
     return { message: '파일이 성공적으로 삭제되었습니다.' };
   }

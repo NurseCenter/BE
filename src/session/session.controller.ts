@@ -32,8 +32,6 @@ export class SessionController {
       const cookie = req.headers?.cookie;
       let sessionId;
 
-      console.log('클라이언트의 헤더의 쿠키', cookie);
-
       if (cookie) {
         // 쿠키에서 sessionId 추출
         sessionId = extractSessionIdFromCookie(cookie);
@@ -42,8 +40,6 @@ export class SessionController {
       if (!sessionId) {
         res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
       }
-
-      console.log('헤더의 쿠키에서 추출한 sessionId', sessionId);
 
       // 세션 모니터링 시작
       this.sessionService.monitorSession(sessionId);

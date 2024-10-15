@@ -125,31 +125,31 @@ export class FilesController {
     description: '삭제할 파일의 S3 URL (인코딩된 형태).',
     type: String,
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: '파일이 성공적으로 삭제되었습니다.', 
+  @ApiResponse({
+    status: 200,
+    description: '파일이 성공적으로 삭제되었습니다.',
     schema: {
       example: {
         message: '파일이 성공적으로 삭제되었습니다.',
       },
     },
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: '유효하지 않은 URL입니다.' 
+  @ApiResponse({
+    status: 400,
+    description: '유효하지 않은 URL입니다.',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: '파일을 찾을 수 없습니다.' 
+  @ApiResponse({
+    status: 404,
+    description: '파일을 찾을 수 없습니다.',
   })
-  @ApiResponse({ 
-    status: 500, 
-    description: '서버 오류가 발생했습니다.' 
+  @ApiResponse({
+    status: 500,
+    description: '서버 오류가 발생했습니다.',
   })
   async deleteFile(@Param('url') url: string) {
     const decodedUrl = decodeURIComponent(url);
-    console.log(decodedUrl)
+    console.log(decodedUrl);
     await this.filesService.deleteSingleFile(decodedUrl);
-    return { message : '파일이 성공적으로 삭제되었습니다.' }
+    return { message: '파일이 성공적으로 삭제되었습니다.' };
   }
 }

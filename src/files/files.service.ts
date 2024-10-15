@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
@@ -122,10 +128,10 @@ export class FilesService {
     try {
       const params = {
         Bucket: this.bucket,
-        Key: key
-      }
-      
-      const command: DeleteObjectCommand = new DeleteObjectCommand(params)
+        Key: key,
+      };
+
+      const command: DeleteObjectCommand = new DeleteObjectCommand(params);
       await this.s3Client.send(command);
     } catch (error) {
       this.logger.error(`파일 삭제 중 오류 발생: ${error.message}`);

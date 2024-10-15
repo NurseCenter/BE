@@ -81,7 +81,11 @@ export class TestPostsService {
   }
 
   // 게시글 수정
-  async updatePost(boardType: EBoardType, postId: number, updatePostDto: UpdatePostDto): Promise<IPostResponse | { message: string }> {
+  async updatePost(
+    boardType: EBoardType,
+    postId: number,
+    updatePostDto: UpdatePostDto,
+  ): Promise<IPostResponse | { message: string }> {
     const userId = 10041004;
     const { title, content, fileUrls } = updatePostDto;
 

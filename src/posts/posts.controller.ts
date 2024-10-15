@@ -318,7 +318,11 @@ export class PostsController {
       },
     },
   })
-  async createPost(@Param() boardType: EBoardType, @Body() createPostDto: CreatePostDto, @SessionUser() sessionUser: IUser): Promise<IPostResponse> {
+  async createPost(
+    @Param() boardType: EBoardType,
+    @Body() createPostDto: CreatePostDto,
+    @SessionUser() sessionUser: IUser,
+  ): Promise<IPostResponse> {
     try {
       const result = await this.postsService.createPost(boardType, createPostDto, sessionUser);
       return result;

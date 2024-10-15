@@ -1,4 +1,4 @@
-import { EBoardType } from "../enum/board-type.enum";
+import { EBoardType } from '../enum/board-type.enum';
 
 export interface IPostResponse {
   postId: number; // 게시물 ID

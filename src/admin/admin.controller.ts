@@ -361,6 +361,7 @@ export class AdminController {
   }
 
   // 관리자의 정회원 승인 및 거절 처리
+  @UseGuards(AdminGuard)
   @Post('user/approval')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 승인 처리' })
@@ -386,6 +387,7 @@ export class AdminController {
   }
 
   // 관리자의 정회원 거절 처리
+  @UseGuards(AdminGuard)
   @Post('user/rejection')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 거절 처리' })
@@ -565,6 +567,7 @@ export class AdminController {
   }
 
   // 관리자 이메일 발송
+  @UseGuards(AdminGuard)
   @Post('email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '이메일 발송' })
@@ -596,5 +599,44 @@ export class AdminController {
       default:
         throw new NotFoundException('지원하지 않는 이메일 유형입니다.');
     }
+  }
+
+  @Post('check-password')
+  @ApiOperation({ summary: '관리자 페이지 비밀번호 확인' })
+  @ApiBody({
+    description: '비밀번호 확인을 위한 요청 본문',
+    type: String,
+    schema: {
+      type: 'object',
+      properties: {
+        password: {
+          type: 'string',
+          example: 'yourPassword',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '비밀번호가 일치하는 경우 성공 메시지 반환',
+    schema: {
+      example: {
+        message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치합니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '비밀번호가 일치하지 않는 경우 오류 반환',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치하지 않습니다.',
+      },
+    },
+  })
+  async postCheckPassword(@Body('password') plainPassword: string) {
+    await this.adminService.checkAdminPagePassword(plainPassword);
+    return { message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치합니다.' };
   }
 }

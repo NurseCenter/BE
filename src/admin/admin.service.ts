@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { AuthSignInService, AuthUserService } from 'src/auth/services';
+import { AuthPasswordService, AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
 import { EmanagementStatus } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
@@ -34,6 +34,7 @@ export class AdminService {
     private readonly authUserService: AuthUserService,
     private readonly authSignInService: AuthSignInService,
     private readonly authService: AuthService,
+    private readonly authPasswordService: AuthPasswordService,
     private readonly emailService: EmailService,
     private readonly postsService: PostsService,
     private readonly usersDAO: UsersDAO,
@@ -485,6 +486,18 @@ export class AdminService {
         await this.commentsDAO.deleteComment(commentId);
       case ECommentType.REPLY:
         await this.repliesDAO.deleteReply(commentId);
+    }
+  }
+
+  // 관리자페이지 비밀번호 확인
+  async checkAdminPagePassword(plainPassword: string): Promise<void> {
+    const isPasswordCorrect = await this.authPasswordService.matchPassword(
+      plainPassword,
+      process.env.ADMIN_PAGE_PASSWORD,
+    );
+
+    if (!isPasswordCorrect) {
+      throw new ForbiddenException('입력한 비밀번호가 관리자 페이지 비밀번호와 일치하지 않습니다.');
     }
   }
 }

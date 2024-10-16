@@ -151,7 +151,10 @@ export class ReportsController {
               otherReportedReason: { type: 'string', nullable: true },
               status: { type: 'string', enum: Object.values(EReportStatus) },
               postId: { type: 'integer' },
-              postCategory: { type: 'string', enum: ['employment', 'event', 'exam', 'job', 'notice', 'practice', 'theory', 'all'] },
+              postCategory: {
+                type: 'string',
+                enum: ['employment', 'event', 'exam', 'job', 'notice', 'practice', 'theory', 'all'],
+              },
               postTitle: { type: 'string' },
             },
             example: {
@@ -166,8 +169,8 @@ export class ReportsController {
               otherReportedReason: null,
               status: 'pending',
               postId: 21,
-              postCategory: "job",
-              postTitle: "신규 간호사 채용 공고"
+              postCategory: 'job',
+              postTitle: '신규 간호사 채용 공고',
             },
           },
         },
@@ -189,8 +192,8 @@ export class ReportsController {
             otherReportedReason: null,
             status: 'pending',
             postId: 25,
-            postCategory: "exam",
-            postTitle: "간호관리학 시험 잘보는 방법"
+            postCategory: 'exam',
+            postTitle: '간호관리학 시험 잘보는 방법',
           },
           {
             type: 'reply',
@@ -204,8 +207,8 @@ export class ReportsController {
             otherReportedReason: null,
             status: 'pending',
             postId: 21,
-            postCategory: "job",
-            postTitle: "신규 간호사 채용 공고"
+            postCategory: 'job',
+            postTitle: '신규 간호사 채용 공고',
           },
         ],
         totalItems: 60,

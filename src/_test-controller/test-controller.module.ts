@@ -10,14 +10,17 @@ import { ScrapsEntity } from 'src/scraps/entities/scraps.entity';
 import { TestGuardsController } from './test-guards.controller';
 import { TestPostsService } from './test-posts.service';
 import { TestPostsController } from './test-posts.controller';
+import { TestAuthController } from './test-auth.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CommentsEntity, PostsEntity, FilesEntity, ScrapsEntity, LikesEntity]),
     FilesModule,
     DataAccessModule,
+    AuthModule,
   ],
-  controllers: [TestPostsController, TestGuardsController],
+  controllers: [TestPostsController, TestGuardsController, TestAuthController],
   providers: [TestPostsService],
 })
 export class TestControllerModule {}

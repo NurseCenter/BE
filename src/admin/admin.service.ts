@@ -8,7 +8,7 @@ import {
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthPasswordService, AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { EmanagementStatus } from './enums';
+import { EmanagementStatus, ESearchUser } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto } from './dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -206,8 +206,13 @@ export class AdminService {
   }
 
   // 모든 회원 조회
-  async fetchAllUsersByAdmin(page: number, limit: number = 10): Promise<IPaginatedResponse<IUserList>> {
-    const [users, total] = await this.usersDAO.findUsersWithDetails(page, limit);
+  async fetchAllUsersByAdmin(
+    page: number = 1,
+    limit: number = 10,
+    type?: ESearchUser,
+    search?: string,
+  ): Promise<IPaginatedResponse<IUserList>> {
+    const [users, total] = await this.usersDAO.findUsersWithDetails(page, limit, type, search);
     const suspendedUsers = await this.suspendedUsersDAO.findSuspendedUsers();
     const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
 

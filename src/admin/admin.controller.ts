@@ -32,7 +32,8 @@ import {
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { EmailQueryDto } from './dto/email-query.dto';
-import { EEmailType } from './enums';
+import { EEmailType, ESearchUser } from './enums';
+import { SearchUserQueryDto } from './dto/search-user-query.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -254,14 +255,26 @@ export class AdminController {
   @Get('users')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 회원 조회' })
-  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'type', enum: ESearchUser, required: false, description: '검색할 타입 (회원 ID, 닉네임, 이메일)' })
+  @ApiQuery({ name: 'search', required: false, description: '검색어' })
   @ApiResponse({
     status: 200,
     description: '회원 목록 조회 성공',
     schema: {
       example: {
         items: [
+          {
+            userId: 34,
+            nickname: '마이콜',
+            email: 'mycall@example.com',
+            postCount: 1,
+            commentCount: 0,
+            createdAt: '2024-10-16T05:09:11.818Z',
+            managementStatus: '해당없음',
+            managementReason: '없음',
+          },
           {
             userId: 123,
             nickname: 'user_nickname',
@@ -271,6 +284,16 @@ export class AdminController {
             createdAt: '2024-01-01T00:00:00.000Z',
             managementStatus: '정지',
             managementReason: '정지된 사유',
+          },
+          {
+            userId: 16,
+            nickname: '박지민',
+            email: 'user4@example.com',
+            postCount: 0,
+            commentCount: 0,
+            createdAt: '2024-01-05T04:00:00.000Z',
+            managementStatus: '탈퇴',
+            managementReason: '허락없이 광고글을 여러 번 기재하여 주의 주었지만 무시함.',
           },
         ],
         totalItems: 100,
@@ -286,9 +309,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async getAllUsers(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IUserList>> {
-    const { page, limit } = query;
-    const result = await this.adminService.fetchAllUsersByAdmin(page, limit);
+  async getAllUsers(@Query() query: PaginationQueryDto & SearchUserQueryDto): Promise<IPaginatedResponse<IUserList>> {
+    const { page = 1, limit = 10, type, search } = query;
+    const result = await this.adminService.fetchAllUsersByAdmin(Number(page), Number(limit), type, search);
     return result;
   }
 
@@ -425,7 +448,7 @@ export class AdminController {
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
-  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
   @ApiResponse({

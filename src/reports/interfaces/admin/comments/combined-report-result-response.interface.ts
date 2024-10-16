@@ -1,3 +1,4 @@
+import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { EReportReason, EReportStatus } from 'src/reports/enum';
 import { ECommentType } from 'src/users/enums';
 
@@ -13,4 +14,7 @@ export interface ICombinedReportResultResponse {
   reportReason: EReportReason; // 신고 사유
   otherReportedReason: string | null; // 기타 신고사유
   status: EReportStatus; // 신고처리 상태
+  postId: number; // 게시물 ID
+  postCategory: EBoardType; // 게시판 카테고리
+  postTitle: string; // 게시물 제목
 }

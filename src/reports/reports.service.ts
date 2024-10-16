@@ -90,6 +90,8 @@ export class ReportsService {
       const reportedUser = await this.usersDAO.findUserByUserId(comment.reportedUserId);
       const reportedUserNickname = reportedUser.nickname;
       const content = await this.commentsDAO.findCommentContentByCommentId(comment.commentId);
+      const originalComment = await this.commentsDAO.findCommentById(comment.commentId);
+      const post = await this.postsDAO.findOnePostByPostId(originalComment.postId);
 
       combinedResults.push({
         type: ECommentType.COMMENT,
@@ -102,6 +104,9 @@ export class ReportsService {
         reportReason: comment.reportedReason, // 신고 사유
         otherReportedReason: comment.otherReportedReason || null, // 기타 신고사유
         status: comment.status, // 신고처리 상태
+        postId: post.postId, // 게시물 ID
+        postCategory: post.boardType, // 게시판 카테고리
+        postTitle: post.title, // 게시물 제목
       });
     }
 
@@ -112,6 +117,8 @@ export class ReportsService {
       const reportedUser = await this.usersDAO.findUserByUserId(reply.reportedUserId);
       const reportedUserNickname = reportedUser.nickname;
       const content = await this.repliesDAO.findReplyContentByReplyId(reply.replyId);
+      const originalReply = await this.repliesDAO.findReplyByIdWithDeletedReply(reply.replyId);
+      const post = await this.postsDAO.findOnePostByPostId(originalReply?.postId);
 
       combinedResults.push({
         type: ECommentType.REPLY,
@@ -124,6 +131,9 @@ export class ReportsService {
         reportReason: reply.reportedReason, // 신고 사유
         otherReportedReason: reply.otherReportedReason || null, // 기타 신고사유
         status: reply.status, // 신고처리 상태
+        postId: post.postId, // 게시물 ID
+        postCategory: post.boardType, // 게시판 카테고리
+        postTitle: post.title, // 게시물 제목
       });
     }
 

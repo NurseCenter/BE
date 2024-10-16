@@ -173,8 +173,13 @@ export class TestPostsController {
       },
     },
   })
-  async createPost(@Param() boardType: EBoardType, @Body() createPostDto: CreatePostDto): Promise<IPostResponse> {
+  async createPost(
+    @Param('boardType') boardType: EBoardType,
+    @Body() createPostDto: CreatePostDto,
+  ): Promise<IPostResponse> {
     try {
+      console.log('컨트롤러의 boardType: ', boardType);
+
       const result = await this.testPostsService.createPost(boardType, createPostDto);
       return result;
     } catch (err) {

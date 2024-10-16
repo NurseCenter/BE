@@ -22,6 +22,15 @@ export class RepliesDAO {
     });
   }
 
+  // 답글 ID로 답글 조회 (삭제된 답글 포함)
+  async findReplyByIdWithDeletedReply(replyId: number): Promise<RepliesEntity | undefined> {
+    return this.repliesRepository.findOne({
+      where: {
+        replyId,
+      },
+    });
+  }
+
   // 답글 ID로 답글 내용 조회 (100자 이상이면 축약)
   async findReplyContentByReplyId(replyId: number): Promise<string> {
     const { content } = await this.repliesRepository.findOne({

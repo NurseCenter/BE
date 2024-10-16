@@ -6,65 +6,14 @@ import { EReportReason, EReportStatus } from './enum';
 import { ReportPostsEntity } from './entities';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto } from 'src/common/dto';
-import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { UpdateReportStatusDto } from './dto/update-report-post-status.dto';
-import { GetOneReportedPostDetailDto } from './dto/get-one-reported-post-detail.dto';
-import { GetOneReportedCommentDetailDto, UpdateReportCommentStatusDto } from './dto';
-import { ECommentType } from 'src/users/enums';
-import { ICombinedReportResultResponse, IFormattedReportedPostResponse } from './interfaces/admin';
+import { UpdateReportCommentStatusDto } from './dto';
+import { ICombinedReportResultResponse } from './interfaces/admin';
 
 @ApiTags('Reports')
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
-
-  // 신고된 특정 게시물 내역 조회
-  @UseGuards(AdminGuard)
-  @Get('')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 특정 게시물 내역 조회' })
-  @ApiQuery({ name: 'reportId', type: 'number', description: '신고 테이블 고유 ID', required: true })
-  @ApiQuery({ name: 'postId', type: 'number', description: '게시물 ID', required: true })
-  @ApiResponse({
-    status: 200,
-    description: '신고된 특정 게시물 내역 조회 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        postAuthor: { type: 'string', description: '게시물 작성자' },
-        postDate: { type: 'string', format: 'date-time', description: '게시물 작성일자' },
-        postCategory: { type: 'string', enum: Object.values(EBoardType), description: '게시물 카테고리' },
-        postId: { type: 'integer', description: '게시물 ID' },
-        postTitle: { type: 'string', description: '게시물 제목' },
-        reporter: { type: 'string', description: '신고자 닉네임' },
-        reportDate: { type: 'string', format: 'date-time', description: '신고일자' },
-        reportId: { type: 'integer', description: '신고 테이블에서의 고유 ID' },
-        reportedReason: { type: 'string', enum: Object.values(EReportReason), description: '신고 사유' },
-        otherReportedReason: { type: 'string', description: '기타 신고 사유 (선택적)' },
-      },
-      example: {
-        postAuthor: 'Author Name',
-        postDate: '2024-09-10T10:00:00.000Z',
-        postCategory: EBoardType.EVENT,
-        postId: 1001,
-        postTitle: '신고해봐라 이것들아',
-        reporter: '정의의용사',
-        reportDate: '2024-09-10T10:00:00.000Z',
-        reportId: 1,
-        reportedReason: EReportReason.PORNOGRAPHY,
-        otherReportedReason: null,
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '게시물을 찾을 수 없음' })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
-  async getReportedPost(
-    @Query() getOneReportedDetailDto: GetOneReportedPostDetailDto,
-  ): Promise<IFormattedReportedPostResponse> {
-    const { reportId, postId } = getOneReportedDetailDto;
-    return await this.reportsService.getReportedPost(reportId, postId);
-  }
 
   // 신고된 게시물 내역 전체 조회
   @UseGuards(AdminGuard)
@@ -173,16 +122,16 @@ export class ReportsController {
     return await this.reportsService.updatePostStatus(reportId, postId, status);
   }
 
-  // 신고된 댓글 전체 조회
+  // 신고된 댓글 및 답글 전체 조회
   @UseGuards(AdminGuard)
   @Get('comments')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 댓글 전체 조회' })
+  @ApiOperation({ summary: '신고된 댓글 및 답글 전체 조회' })
   @ApiQuery({ name: 'page', type: 'number', required: true, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: 'number', required: false, description: '페이지 사이즈' })
   @ApiResponse({
     status: 200,
-    description: '신고된 댓글 목록 조회 성공',
+    description: '신고된 댓글 및 답글 목록 조회 성공',
     schema: {
       type: 'object',
       properties: {
@@ -201,18 +150,24 @@ export class ReportsController {
               reportReason: { type: 'string', enum: Object.values(EReportReason) },
               otherReportedReason: { type: 'string', nullable: true },
               status: { type: 'string', enum: Object.values(EReportStatus) },
+              postId: { type: 'integer' },
+              postCategory: { type: 'string', enum: ['employment', 'event', 'exam', 'job', 'notice', 'practice', 'theory', 'all'] },
+              postTitle: { type: 'string' },
             },
             example: {
               type: 'comment',
               reportId: 34,
               commentId: 43,
-              commentContent: '유저41번이 남긴 댓글',
-              commentAuthor: '23일두번째',
+              commentContent: '클릭하면 월급 천 만원',
+              commentAuthor: '독기냥냥이',
               reportDate: '2024-09-23T06:13:46.643Z',
-              reporter: '23일테스트',
+              reporter: '지구푸르게',
               reportReason: 'spam',
               otherReportedReason: null,
               status: 'pending',
+              postId: 21,
+              postCategory: "job",
+              postTitle: "신규 간호사 채용 공고"
             },
           },
         },
@@ -233,9 +188,12 @@ export class ReportsController {
             reportReason: 'spam',
             otherReportedReason: null,
             status: 'pending',
+            postId: 25,
+            postCategory: "exam",
+            postTitle: "간호관리학 시험 잘보는 방법"
           },
           {
-            type: 'comment',
+            type: 'reply',
             reportId: 30,
             commentId: 26,
             commentContent: '내가 쓴 댓글 및 답글 테스트2',
@@ -245,6 +203,9 @@ export class ReportsController {
             reportReason: 'spam',
             otherReportedReason: null,
             status: 'pending',
+            postId: 21,
+            postCategory: "job",
+            postTitle: "신규 간호사 채용 공고"
           },
         ],
         totalItems: 60,
@@ -259,52 +220,6 @@ export class ReportsController {
   ): Promise<IPaginatedResponse<ICombinedReportResultResponse>> {
     const { page = 1, limit = 10 } = paginationQueryDto;
     return await this.reportsService.getAllReportedCommentsAndReplies(page, limit);
-  }
-
-  // 신고된 특정 댓글 혹은 답글 내역 조회
-  @UseGuards(AdminGuard)
-  @Get('comment')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '신고된 특정 댓글 혹은 답글 내역 조회' })
-  @ApiQuery({ name: 'reportId', type: 'number', description: '신고 테이블 고유 ID', required: true })
-  @ApiQuery({ name: 'commentId', type: 'number', description: '댓글 ID', required: true })
-  @ApiQuery({ name: 'type', enum: ECommentType, description: '댓글 또는 답글 타입', required: true })
-  @ApiResponse({
-    status: 200,
-    description: '신고된 댓글 조회 성공',
-    schema: {
-      type: 'object',
-      properties: {
-        commentAuthor: { type: 'string' },
-        commentDate: { type: 'string', format: 'date-time' },
-        postCategory: { type: 'string', enum: Object.values(EBoardType) },
-        postId: { type: 'integer' },
-        postTitle: { type: 'string' },
-        commentContent: { type: 'string' },
-        reporter: { type: 'string' },
-        reportDate: { type: 'string', format: 'date-time' },
-        reportedReason: { type: 'string', enum: Object.values(EReportReason) },
-        otherReportedReason: { type: 'string', nullable: true },
-      },
-      example: {
-        commentAuthor: '독기냥냥이',
-        commentDate: '2024-09-10T10:00:00.000Z',
-        postCategory: EBoardType.JOB,
-        postId: 1001,
-        postTitle: '클릭하면 월급 천 만원',
-        commentContent: '어그로 끌지말자^^',
-        reporter: '우리지구푸르게',
-        reportDate: '2024-09-10T10:00:00.000Z',
-        reportedReason: EReportReason.SPAM,
-        otherReportedReason: null,
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
-  async getReportedComment(@Query() getOneReportedCommentDetailDto: GetOneReportedCommentDetailDto) {
-    const { reportId, type, commentId } = getOneReportedCommentDetailDto;
-    return await this.reportsService.getReportedComment(reportId, type, commentId);
   }
 
   // 신고된 댓글 내역 처리상태를 변경

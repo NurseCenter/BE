@@ -354,6 +354,7 @@ export class AdminService {
         nickname: user.nickname, // 닉네임
         email: user.email, // 이메일
         createdAt: user.createdAt, // 가입 날짜
+        studentStatus: user.studentStatus, // 재학생 또는 졸업생 여부
         membershipStatus: user.membershipStatus, // 현재 회원상태
         certificationDocumentUrl: user.certificationDocumentUrl, // 첨부파일
         status: user.rejected ? '승인거절' : '승인대기', // 상태

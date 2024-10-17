@@ -354,6 +354,27 @@ export class AdminController {
     status: 200,
     description: '정회원 승인 대기자 목록 조회 성공',
     schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              userId: { type: 'number', description: '사용자 ID' },
+              nickname: { type: 'string', description: '사용자 닉네임' },
+              email: { type: 'string', description: '사용자 이메일' },
+              createdAt: { type: 'string', format: 'date-time', description: '계정 생성 일자' },
+              studentStatus: { type: 'string', description: '학생 상태' },
+              membershipStatus: { type: 'string', description: '회원 상태' },
+              certificationDocumentUrl: { type: 'string', format: 'uri', description: '인증 문서 URL' },
+            },
+          },
+        },
+        totalItems: { type: 'number', description: '총 아이템 수' },
+        totalPages: { type: 'number', description: '총 페이지 수' },
+        currentPage: { type: 'number', description: '현재 페이지 번호' },
+      },
       example: {
         items: [
           {
@@ -361,6 +382,7 @@ export class AdminController {
             nickname: 'user_nickname',
             email: 'user@example.com',
             createdAt: '2024-01-01T00:00:00.000Z',
+            studentStatus: 'current_student',
             membershipStatus: 'email_verified',
             certificationDocumentUrl: 'http://example.com/document',
           },

@@ -9,4 +9,5 @@ export interface ICombinedResult {
   postId: number; // 원 게시물 ID
   boardType: string; // 게시물 카테고리
   title: string; // 게시물 제목
+  numberOfCommentsAndReplies: number; // 게시물에 달린 댓글 및 답글 수
 }

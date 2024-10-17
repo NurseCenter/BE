@@ -145,43 +145,47 @@ export class UsersService {
       ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.commentId))),
     ];
     const posts = await this.postsDAO.findPostsByIds(postIds);
-    const allPostsToFind = await this.postsDAO.findAllPostsWithoutConditions();
+
     const combinedResults: ICombinedResult[] = [];
 
     // 댓글 결과 조합
-    comments.forEach((comment) => {
-      const post = posts.find((post) => post.postId === comment.postId);
-      combinedResults.push({
-        type: ECommentType.COMMENT,
-        commentId: comment.commentId,
-        content: comment.content,
-        createdAt: comment.createdAt,
-        postId: comment.postId,
-        boardType: post?.boardType,
-        title: post?.title,
-      });
-    });
+    await Promise.all(
+      comments.map(async (comment) => {
+        const post = posts.find((p) => p.postId === comment.postId);
+        const total = await this.postsService.getNumberOfCommentsAndReplies(comment.postId);
+
+        combinedResults.push({
+          type: ECommentType.COMMENT,
+          commentId: comment.commentId,
+          content: comment.content,
+          createdAt: comment.createdAt,
+          postId: comment.postId,
+          boardType: post?.boardType,
+          title: post?.title,
+          numberOfCommentsAndReplies: total,
+        });
+      }),
+    );
 
     // 답글 결과 조합
-    for (const reply of replies) {
-      const originalComment = await this.commentsDAO.findCommentByIdWithDeletedComment(reply.commentId);
+    await Promise.all(
+      replies.map(async (reply) => {
+        const post = posts.find((p) => p.postId === reply.postId);
+        const total = await this.postsService.getNumberOfCommentsAndReplies(reply.postId);
 
-      if (originalComment) {
-        const post = allPostsToFind.find((post) => post.postId === originalComment?.postId);
         combinedResults.push({
           type: ECommentType.REPLY,
           replyId: reply.replyId,
           commentId: reply.commentId,
           content: reply.content,
           createdAt: reply.createdAt,
-          postId: originalComment?.postId,
+          postId: reply.postId,
           boardType: post?.boardType || '정보없음',
           title: post?.title || '정보없음',
+          numberOfCommentsAndReplies: total,
         });
-      } else {
-        console.log(`부모 댓글이 없습니다: ${reply.commentId}`);
-      }
-    }
+      }),
+    );
 
     // 최신순 정렬 (기본)
     combinedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

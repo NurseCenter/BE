@@ -508,15 +508,19 @@ export class AdminController {
 
   // 관리자 특정 게시물 삭제
   @UseGuards(AdminGuard)
-  @Delete('posts/:postId')
+  @Delete('posts')
   @HttpCode(200)
   @ApiOperation({ summary: '특정 게시물 삭제' })
+  @ApiBody({
+    type: [Number], 
+    description: '게시물 ID 배열',
+  })
   @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
   @ApiResponse({
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '게시물이 성공적으로 삭제되었습니다.' },
+      example: { message: '게시물이 성공적으로 삭제되었습니다.', postIds: [1, 2, 3] },
     },
   })
   @ApiResponse({
@@ -526,9 +530,10 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deletePost(@Param('postId') postId: number): Promise<{ message: string; postId: number }> {
-    await this.adminService.deletePost(postId);
-    return { message: '게시물이 성공적으로 삭제되었습니다.', postId };
+  async deletePosts(@Body('postIds') postIds: number[]): Promise<{ message: string; postIds: number[] }> {
+    console.log("postIds", postIds)
+    await this.adminService.deletePosts(postIds);
+    return { message: '게시물이 성공적으로 삭제되었습니다.', postIds };
   }
 
   // 관리자 댓글 및 답글 전체 조회

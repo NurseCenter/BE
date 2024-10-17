@@ -230,7 +230,7 @@ export class AuthService {
 
     // Redis에서 이메일 조회
     const email = await this.redisClient.get(`emailVerificationToken:${token}`);
-    if (!email) throw new NotFoundException('해당 이메일 확인 링크가 존재하지 않습니다.');
+    if (!email) throw new NotFoundException('해당 이메일 ${email}확인 링크가 존재하지 않습니다.');
 
     // 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);

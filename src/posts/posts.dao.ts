@@ -289,6 +289,17 @@ export class PostsDAO {
     return this.postsRepository.softDelete(postId);
   }
 
+  // 여러 게시물 삭제
+  async deletePosts(postIds: number[]): Promise<{ raw: [], affected: number }> {
+    console.log("postIds", postIds)
+    const deleteResults = await Promise.all(
+      postIds.map((postId) => this.postsRepository.softDelete(postId))
+    )
+    const affectedCount = deleteResults.reduce((total, result) => total + result.affected, 0);
+    
+    return { raw: [], affected: affectedCount };
+  }
+
   // 게시판 카테고리별 게시물 수 조회
   async countPostsByCategory(boardType?: EBoardType): Promise<{ boardType: EBoardType; count: number }[]> {
     const totalCount = await this.countAllposts();

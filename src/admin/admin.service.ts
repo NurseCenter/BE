@@ -371,26 +371,6 @@ export class AdminService {
     }
   }
 
-  // // 게시물 관리 페이지 데이터 조회
-  // async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-  //   const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
-
-  //   const items = posts.map((post) => ({
-  //     postId: post.postId, // 게시물 ID
-  //     boardType: post.boardType, // 카테고리
-  //     title: post.title, // 제목
-  //     author: post.user.nickname, // 작성자
-  //     createdAt: post.createdAt, // 작성일
-  //   }));
-
-  //   return {
-  //     items,
-  //     totalItems: total,
-  //     totalPages: Math.ceil(total / limit),
-  //     currentPage: page,
-  //   };
-  // }
-
   // 게시물 관리 페이지 데이터 조회
   async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
     const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
@@ -423,6 +403,14 @@ export class AdminService {
     const result = await this.postsDAO.deletePost(postId);
     if (result.affected === 0) {
       throw new NotFoundException(`게시물 삭제 중 에러가 발생하였습니다.`);
+    }
+  }
+
+  // 여러 게시물 삭제
+  async deletePosts(postIds: number[]): Promise<void> {
+    const result = await this.postsDAO.deletePosts(postIds);
+    if (result.affected === 0) {
+      throw new NotFoundException(`게시물이 존재하지 않거나 이미 삭제되었습니다.`);
     }
   }
 

@@ -258,7 +258,12 @@ export class AuthService {
   async findEmail(findEmailDto: FindEmailDto) {
     const { username, phoneNumber } = findEmailDto;
     const user = await this.usersDAO.findUserByUsernameAndPhone(username, phoneNumber);
-    return maskEmail(user.email);
+
+    if (!user) {
+      throw new NotFoundException(`이름: ${username}, 휴대폰번호: ${phoneNumber}인 회원이 존재하지 않습니다.`);
+    }
+
+    return maskEmail(user?.email);
   }
 
   // 비밀번호 찾기 (임시 비밀번호 발급)

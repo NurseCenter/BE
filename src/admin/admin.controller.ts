@@ -523,7 +523,7 @@ export class AdminController {
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '총 2개 게시물이 삭제되었습니다. 게시물 3번은 이미 삭제되었기 때문에 삭제되지 않았습니다.' },
+      example: { message: '총 2개 게시물이 삭제되었습니다. 게시물 3번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.' },
     },
   })
   @ApiResponse({
@@ -539,7 +539,7 @@ export class AdminController {
     let message = `총 ${affected}개 게시물이 삭제되었습니다.`;
 
     if (alreadyDeletedPostIds.length > 0) {
-      message += `게시물 ${alreadyDeletedPostIds.join(', ')}번은 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+      message += `게시물 ${alreadyDeletedPostIds.join(', ')}번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
     }
 
     return { message };
@@ -636,7 +636,7 @@ export class AdminController {
     schema: {
       example: {
         message:
-          '총 5개 댓글이 삭제되었습니다. (댓글 3개, 답글 2개) 댓글 2, 3번은 이미 삭제되었기 때문에 삭제되지 않았습니다. 답글 5번은 이미 삭제되었기 때문에 삭제되지 않았습니다.',
+          '총 5개 댓글이 삭제되었습니다. (댓글 3개, 답글 2개) 댓글 2, 3번은 존재하지 않는 댓글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다. 답글 5번은 존재하지 않는 답글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.',
       },
     },
   })
@@ -654,11 +654,11 @@ export class AdminController {
     let message = `총 ${total}개 댓글이 삭제되었습니다. (댓글 ${numberOfdeletedComments}, 답글 ${numberOfdeletedReplies})`;
 
     if (alreadyDeletedComments.length > 0) {
-      message += `\n댓글 ${alreadyDeletedComments.join(', ')}는 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+      message += `\n댓글 ${alreadyDeletedComments.join(', ')}는 존재하지 않는 댓글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
     }
 
     if (alreadyDeletedReplies.length > 0) {
-      message += `\n답글 ${alreadyDeletedReplies.join(', ')}는 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+      message += `\n답글 ${alreadyDeletedReplies.join(', ')}는 존재하지 않는 답글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
     }
 
     return { message };

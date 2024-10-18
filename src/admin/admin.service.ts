@@ -447,15 +447,17 @@ export class AdminService {
     // 댓글과 답글을 합침
     const combinedPromises = comments.map(async (comment) => {
       const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+      const user = await this.usersDAO.findUserByUserId(comment.userId);
 
       return {
         id: comment.commentId, // 댓글 ID
         type: ECommentType.COMMENT, // 댓글 표시
         postId: post.postId || null,
         category: post.boardType || null, // 게시물 카테고리
+        
         postTitle: post.title || null, // 게시물 제목
         content: comment.content, // 댓글 내용
-        nickname: comment.nickname, // 작성자 닉네임
+        nickname: user.nickname, // 작성자 닉네임
         createdAt: new Date(comment.createdAt), // 작성일
       };
     });
@@ -463,6 +465,7 @@ export class AdminService {
     const replyPromises = replies.map(async (reply) => {
       const comment = await this.commentsDAO.findCommentById(reply.commentId);
       const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+      const user = await this.usersDAO.findUserByUserId(comment.userId);
 
       return {
         id: reply.replyId, // 답글 ID
@@ -471,7 +474,7 @@ export class AdminService {
         category: post.boardType || null, // 게시물 카테고리
         postTitle: post.title || null, // 게시물 제목
         content: reply.content, // 답글 내용
-        nickname: reply.nickname, // 작성자 닉네임
+        nickname: user.nickname, // 작성자 닉네임
         createdAt: new Date(reply.createdAt), // 작성일
       };
     });

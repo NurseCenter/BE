@@ -569,6 +569,7 @@ export class AdminController {
             category: 'notice',
             postTitle: '간호학과 실습 병원 변경 안내',
             content: '유저41번이 남긴 답글이다',
+            nickname: "졸린루피",
             createdAt: '2024-09-23T05:23:22.541Z',
           },
           {
@@ -578,6 +579,7 @@ export class AdminController {
             category: 'job',
             postTitle: '제목 수정할게요. 되는지 보자',
             content: '유저41번이 남긴 댓글',
+            nickname: "인간",
             createdAt: '2024-09-23T05:21:23.690Z',
           },
         ],
@@ -682,19 +684,55 @@ export class AdminController {
         userId: {
           type: 'number',
           description: '이메일을 받을 회원의 ID',
-        },
+        }
       },
       required: ['userId'],
-      example: { userId: 123 },
+      example: {
+        userId: 123,
+        reason: '가입 거부 사유를 전달합니다.',
+      },
     },
+  })
+  @ApiQuery({
+    name: 'type',
+    required: true,
+    description: '전송할 이메일 유형',
+    enum: EEmailType,
   })
   @ApiResponse({
     status: 200,
     description: '이메일 발송 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: '이메일 발송 결과 메시지',
+        },
+        email: {
+          type: 'string',
+          description: '발송된 이메일 주소',
+        },
+      },
+      example: {
+        message: '이메일이 성공적으로 발송되었습니다.',
+        email: 'user@example.com',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
     description: '해당 회원이 존재하지 않습니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: '에러 메시지',
+        },
+      },
+      example: { message: '해당 회원이 존재하지 않습니다.' },
+    },
   })
   async handleEmailSending(
     @Query('type') emailType: EEmailType,

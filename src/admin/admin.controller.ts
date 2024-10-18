@@ -368,6 +368,7 @@ export class AdminController {
               studentStatus: { type: 'string', description: '학생 상태' },
               membershipStatus: { type: 'string', description: '회원 상태' },
               certificationDocumentUrl: { type: 'string', format: 'uri', description: '인증 문서 URL' },
+              status: { type: 'string', description: '승인 대기, 승인 완료, 승인 거절'}
             },
           },
         },
@@ -385,6 +386,7 @@ export class AdminController {
             studentStatus: 'current_student',
             membershipStatus: 'email_verified',
             certificationDocumentUrl: 'http://example.com/document',
+            status : '승인거절'
           },
         ],
         totalItems: 50,
@@ -518,7 +520,6 @@ export class AdminController {
       example: { postIds: [1, 200, 342] },
     },
   })
-  @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
   @ApiResponse({
     status: 200,
     description: '게시물 삭제 성공',

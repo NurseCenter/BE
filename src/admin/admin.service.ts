@@ -10,7 +10,7 @@ import { AuthPasswordService, AuthSignInService, AuthUserService } from 'src/aut
 import { UsersDAO } from 'src/users/users.dao';
 import { EmanagementStatus, ESearchUser } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
-import { ApprovalUserDto } from './dto';
+import { ApprovalUserDto, DeleteCommentsDto } from './dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList } from './interfaces';
 import { CommentsDAO } from 'src/comments/comments.dao';
@@ -407,11 +407,8 @@ export class AdminService {
   }
 
   // 여러 게시물 삭제
-  async deletePosts(postIds: number[]): Promise<void> {
-    const result = await this.postsDAO.deletePosts(postIds);
-    if (result.affected === 0) {
-      throw new NotFoundException(`게시물이 존재하지 않거나 이미 삭제되었습니다.`);
-    }
+  async deletePosts(postIds: number[]): Promise<{ affected: number; alreadyDeletedPostIds: number[] }> {
+    return await this.postsDAO.deletePosts(postIds);
   }
 
   // 댓글 및 답글 조회
@@ -481,6 +478,44 @@ export class AdminService {
       case ECommentType.REPLY:
         await this.repliesDAO.deleteReply(commentId);
     }
+  }
+
+  // 여러 댓글 또는 답글 삭제
+  async deleteCommentsOrReplies(deleteCommentsDto: DeleteCommentsDto[]): Promise<{
+    numberOfdeletedComments: number;
+    numberOfdeletedReplies: number;
+    total: number;
+    alreadyDeletedComments: number[];
+    alreadyDeletedReplies: number[];
+  }> {
+    const commentIds: number[] = [];
+    const replyIds: number[] = [];
+
+    // 댓글과 답글 ID를 각각 다른 배열로 분리
+    deleteCommentsDto.forEach((data) => {
+      const { type, commentId } = data;
+      if (type === 'comment') {
+        commentIds.push(commentId);
+      } else {
+        replyIds.push(commentId);
+      }
+    });
+
+    const commentResult = await this.commentsDAO.deleteComments(commentIds);
+    const numberOfdeletedComments = commentResult.affected;
+
+    const replyResult = await this.repliesDAO.deleteReplies(replyIds);
+    const numberOfdeletedReplies = replyResult.affected;
+
+    const total = numberOfdeletedComments + numberOfdeletedReplies;
+
+    return {
+      numberOfdeletedComments,
+      numberOfdeletedReplies,
+      total,
+      alreadyDeletedComments: commentResult.alreadyDeletedIds,
+      alreadyDeletedReplies: replyResult.alreadyDeletedIds,
+    };
   }
 
   // 관리자페이지 비밀번호 확인

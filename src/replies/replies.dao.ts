@@ -114,6 +114,27 @@ export class RepliesDAO {
     return this.repliesRepository.softDelete(replyId);
   }
 
+  // 여러 답글 삭제
+  async deleteReplies(replyIds: number[]): Promise<{ affected: number; alreadyDeletedIds: number[] }> {
+    let affectedCount = 0;
+    const alreadyDeletedIds: number[] = [];
+
+    for (const replyId of replyIds) {
+      const reply = await this.repliesRepository.findOne({ where: { replyId } });
+
+      if (!reply || reply.deletedAt !== null) {
+        alreadyDeletedIds.push(replyId);
+        continue;
+      }
+
+      reply.deletedAt = new Date();
+      await this.repliesRepository.save(reply);
+      affectedCount++;
+    }
+
+    return { affected: affectedCount, alreadyDeletedIds };
+  }
+
   // 답글 저장
   async saveReply(reply: RepliesEntity): Promise<RepliesEntity> {
     return this.repliesRepository.save(reply);

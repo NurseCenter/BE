@@ -211,6 +211,28 @@ export class CommentsDAO {
     return { affected: 1, raw: {} };
   }
 
+  // 여러 댓글 삭제
+  async deleteComments(commentIds: number[]): Promise<{ affected: number; alreadyDeletedIds: number[] }> {
+    let affectedCount = 0;
+    const alreadyDeletedIds: number[] = [];
+
+    for (const commentId of commentIds) {
+      const comment = await this.commentsRepository.findOne({ where: { commentId } });
+
+      // 본 API 요청 전 이미 삭제된 상태의 댓글을 저장
+      if (!comment || comment.deletedAt) {
+        alreadyDeletedIds.push(commentId);
+        continue;
+      }
+
+      comment.deletedAt = new Date();
+      await this.commentsRepository.save(comment);
+      affectedCount++;
+    }
+
+    return { affected: affectedCount, alreadyDeletedIds };
+  }
+
   // 댓글 저장
   async saveComment(comment: CommentsEntity): Promise<CommentsEntity> {
     return this.commentsRepository.save(comment);

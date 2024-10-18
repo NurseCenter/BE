@@ -20,7 +20,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { Request, Response } from 'express';
-import { ECommentType, EMembershipStatus } from 'src/users/enums';
+import { EMembershipStatus } from 'src/users/enums';
 import { SignInUserDto } from 'src/auth/dto';
 import {
   WithdrawalUserDto,
@@ -28,7 +28,7 @@ import {
   UserIdDto,
   SuspensionUserDto,
   ApprovalUserDto,
-  GetOneCommentDto,
+  DeleteCommentsDto,
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { EmailQueryDto } from './dto/email-query.dto';
@@ -506,21 +506,24 @@ export class AdminController {
     return this.adminService.getAllPosts(page, limit, search);
   }
 
-  // 관리자 특정 게시물 삭제
+  // 관리자 게시물 삭제
   @UseGuards(AdminGuard)
   @Delete('posts')
   @HttpCode(200)
-  @ApiOperation({ summary: '특정 게시물 삭제' })
+  @ApiOperation({ summary: '1개 이상의 게시물 삭제' })
   @ApiBody({
-    type: [Number], 
-    description: '게시물 ID 배열',
+    type: [Number],
+    description: '삭제할 게시물 ID 배열',
+    schema: {
+      example: { postIds: [1, 200, 342] },
+    },
   })
   @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
   @ApiResponse({
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '게시물이 성공적으로 삭제되었습니다.', postIds: [1, 2, 3] },
+      example: { message: '총 2개 게시물이 삭제되었습니다. 게시물 3번은 이미 삭제되었기 때문에 삭제되지 않았습니다.' },
     },
   })
   @ApiResponse({
@@ -530,10 +533,16 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deletePosts(@Body('postIds') postIds: number[]): Promise<{ message: string; postIds: number[] }> {
-    console.log("postIds", postIds)
-    await this.adminService.deletePosts(postIds);
-    return { message: '게시물이 성공적으로 삭제되었습니다.', postIds };
+  async deletePosts(@Body('postIds') postIds: number[]): Promise<{ message: string }> {
+    const { affected, alreadyDeletedPostIds } = await this.adminService.deletePosts(postIds);
+
+    let message = `총 ${affected}개 게시물이 삭제되었습니다.`;
+
+    if (alreadyDeletedPostIds.length > 0) {
+      message += `게시물 ${alreadyDeletedPostIds.join(', ')}번은 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    return { message };
   }
 
   // 관리자 댓글 및 답글 전체 조회
@@ -586,19 +595,49 @@ export class AdminController {
     return await this.adminService.findAllCommentsAndReplies(page, limit);
   }
 
-  // 관리자 특정 댓글 혹은 답글 삭제
-  // 댓글 혹은 답글의 종류, ID 값을 넘겨주면 삭제함.
+  // 관리자 여러 댓글 혹은 답글 삭제
   @UseGuards(AdminGuard)
   @Delete('comments')
   @HttpCode(200)
-  @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
-  @ApiQuery({ name: 'type', type: String, description: '댓글 또는 답글 타입', enum: ECommentType })
-  @ApiQuery({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
+  @ApiOperation({ summary: '1개 이상의 댓글 또는 답글 삭제' })
+  @ApiBody({
+    description: '삭제할 댓글 또는 답글 목록',
+    type: [DeleteCommentsDto],
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            description: '삭제할 타입: comment(댓글) 또는 reply(답글)',
+            enum: ['comment', 'reply'],
+          },
+          commentId: {
+            type: 'number',
+            description: '삭제할 댓글 또는 답글의 ID',
+            example: 13,
+          },
+        },
+        required: ['type', 'commentId'],
+      },
+      example: [
+        { type: 'comment', commentId: 13 },
+        { type: 'reply', commentId: 35 },
+        { type: 'comment', commentId: 42 },
+        { type: 'reply', commentId: 56 },
+        { type: 'comment', commentId: 78 },
+      ],
+    },
+  })
   @ApiResponse({
     status: 200,
     description: '댓글 또는 답글 삭제 성공',
     schema: {
-      example: { message: '댓글이 성공적으로 삭제되었습니다.', type: 'reply', commentId: 128 },
+      example: {
+        message:
+          '총 5개 댓글이 삭제되었습니다. (댓글 3개, 답글 2개) 댓글 2, 3번은 이미 삭제되었기 때문에 삭제되지 않았습니다. 답글 5번은 이미 삭제되었기 때문에 삭제되지 않았습니다.',
+      },
     },
   })
   @ApiResponse({
@@ -608,22 +647,42 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteComment(
-    @Query() getOneCommentDto: GetOneCommentDto,
-  ): Promise<{ message: string; type: ECommentType; commentId: number }> {
-    const { type, commentId } = getOneCommentDto;
-    await this.adminService.deleteCommentOrReplyById(type, commentId);
-    return { message: '댓글이 성공적으로 삭제되었습니다.', type, commentId };
+  async deleteComments(@Body() deleteCommentsDto: DeleteCommentsDto[]): Promise<{ message: string }> {
+    const { total, numberOfdeletedComments, numberOfdeletedReplies, alreadyDeletedComments, alreadyDeletedReplies } =
+      await this.adminService.deleteCommentsOrReplies(deleteCommentsDto);
+
+    let message = `총 ${total}개 댓글이 삭제되었습니다. (댓글 ${numberOfdeletedComments}, 답글 ${numberOfdeletedReplies})`;
+
+    if (alreadyDeletedComments.length > 0) {
+      message += `\n댓글 ${alreadyDeletedComments.join(', ')}는 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    if (alreadyDeletedReplies.length > 0) {
+      message += `\n답글 ${alreadyDeletedReplies.join(', ')}는 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    return { message };
   }
 
   // 관리자 이메일 발송
   @UseGuards(AdminGuard)
   @Post('email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '이메일 발송' })
+  @ApiOperation({ summary: '관리자의 이메일 발송' })
   @ApiBody({
     description: '이메일 발송을 위한 정보',
     type: EmailQueryDto,
+    schema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'number',
+          description: '이메일을 받을 회원의 ID',
+        },
+      },
+      required: ['userId'],
+      example: { userId: 123 },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -631,11 +690,11 @@ export class AdminController {
   })
   @ApiResponse({
     status: 404,
-    description: '해당 회원이 존재하지 않음',
+    description: '해당 회원이 존재하지 않습니다.',
   })
   async handleEmailSending(
     @Query('type') emailType: EEmailType,
-    @Body() { userId }: { userId: number },
+    @Body('userId') userId: number,
   ): Promise<{ message: string; email: string }> {
     switch (emailType) {
       case 'rejection':

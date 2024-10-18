@@ -290,14 +290,24 @@ export class PostsDAO {
   }
 
   // 여러 게시물 삭제
-  async deletePosts(postIds: number[]): Promise<{ raw: [], affected: number }> {
-    console.log("postIds", postIds)
-    const deleteResults = await Promise.all(
-      postIds.map((postId) => this.postsRepository.softDelete(postId))
-    )
-    const affectedCount = deleteResults.reduce((total, result) => total + result.affected, 0);
-    
-    return { raw: [], affected: affectedCount };
+  async deletePosts(postIds: number[]): Promise<{ affected: number; alreadyDeletedPostIds: number[] }> {
+    const alreadyDeletedPostIds: number[] = [];
+
+    const posts = await this.findPostsByIds(postIds);
+
+    for (const postId of postIds) {
+      const post = posts.find((post) => post.postId === postId);
+
+      if (!post || post.deletedAt !== null) {
+        alreadyDeletedPostIds.push(postId);
+      } else {
+        await this.postsRepository.softDelete(postId);
+      }
+    }
+
+    const affectedCount = postIds.length - alreadyDeletedPostIds.length;
+
+    return { affected: affectedCount, alreadyDeletedPostIds };
   }
 
   // 게시판 카테고리별 게시물 수 조회

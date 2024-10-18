@@ -16,7 +16,6 @@ import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 import { InvalidPhoneNumberException } from 'src/common/exceptions/twilio-sms.exceptions';
-import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import clearAutoLoginCookieOptions from './cookie-options/clear-auto-login-cookie-options';
 import { sendAutoLoginCookieOptions } from './cookie-options/auto-login-cookie-options';
 
@@ -66,7 +65,9 @@ export class AuthService {
 
     // 1. 이메일로 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);
-    throwIfUserNotExists(user, undefined, email);
+    if (!user) {
+      throw new NotFoundException(`이메일이 ${email}인 회원이 존재하지 않습니다.`);
+    }
 
     // 2. 이미 탈퇴한 유저인지 확인
     await this.authUserService.checkDeletedByUserId(user.userId);
@@ -234,7 +235,9 @@ export class AuthService {
 
     // 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);
-    throwIfUserNotExists(user, undefined, email);
+    if (!user) {
+      throw new NotFoundException(`이메일이 ${email}인 회원이 존재하지 않습니다.`);
+    }
 
     // 회원 이메일 상태를 확인
     if (user.membershipStatus === EMembershipStatus.PENDING_VERIFICATION) {
@@ -271,7 +274,9 @@ export class AuthService {
     const { username, email } = findPasswordDto;
 
     const user = await this.usersDAO.findUserByEmail(email);
-    throwIfUserNotExists(user, undefined, email);
+    if (!user) {
+      throw new NotFoundException(`이메일이 ${email}인 회원이 존재하지 않습니다.`);
+    }
 
     if (user.username !== username) throw new UnauthorizedException('비밀번호 찾기에 대한 권한이 없습니다.');
 

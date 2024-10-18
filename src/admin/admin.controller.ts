@@ -368,7 +368,7 @@ export class AdminController {
               studentStatus: { type: 'string', description: '학생 상태' },
               membershipStatus: { type: 'string', description: '회원 상태' },
               certificationDocumentUrl: { type: 'string', format: 'uri', description: '인증 문서 URL' },
-              status: { type: 'string', description: '승인 대기, 승인 완료, 승인 거절'}
+              status: { type: 'string', description: '승인 대기, 승인 완료, 승인 거절' },
             },
           },
         },
@@ -386,7 +386,7 @@ export class AdminController {
             studentStatus: 'current_student',
             membershipStatus: 'email_verified',
             certificationDocumentUrl: 'http://example.com/document',
-            status : '승인거절'
+            status: '승인거절',
           },
         ],
         totalItems: 50,
@@ -524,7 +524,10 @@ export class AdminController {
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '총 2개 게시물이 삭제되었습니다. 게시물 3번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.' },
+      example: {
+        message:
+          '총 2개 게시물이 삭제되었습니다. 게시물 3번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.',
+      },
     },
   })
   @ApiResponse({

@@ -27,7 +27,6 @@ import { UsersDAO } from 'src/users/users.dao';
 import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
-import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import { IUser } from 'src/auth/interfaces';
 import { FilesService } from 'src/files/files.service';
 import { FilesDAO } from 'src/files/files.dao';
@@ -81,7 +80,9 @@ export class PostsService {
     const { userId } = sessionUser;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     if (boardType === EBoardType.NOTICE && !user.isAdmin) {
       throw new ForbiddenException(

@@ -6,11 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SuspensionUserDto } from './dto/suspension-user.dto';
-import { AuthSignInService, AuthUserService } from 'src/auth/services';
+import { AuthPasswordService, AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { EmanagementStatus } from './enums';
+import { EmanagementStatus, ESearchUser } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
-import { ApprovalUserDto } from './dto';
+import { ApprovalUserDto, DeleteCommentsDto } from './dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserList, IUserInfo, IApprovalUserList, IPostList } from './interfaces';
 import { CommentsDAO } from 'src/comments/comments.dao';
@@ -25,7 +25,6 @@ import { SuspendedUsersDAO } from './dao/suspended-users.dao';
 import { EmailService } from 'src/email/email.service';
 import { formatSuspensionEndDate } from 'src/common/utils/format-suspension-end-date.utils';
 import { calculateSuspensionEndDate } from 'src/common/utils/calculate-suspension-end-date.utils';
-import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import { PostsService } from 'src/posts/posts.service';
 
 @Injectable()
@@ -34,6 +33,7 @@ export class AdminService {
     private readonly authUserService: AuthUserService,
     private readonly authSignInService: AuthSignInService,
     private readonly authService: AuthService,
+    private readonly authPasswordService: AuthPasswordService,
     private readonly emailService: EmailService,
     private readonly postsService: PostsService,
     private readonly usersDAO: UsersDAO,
@@ -62,7 +62,10 @@ export class AdminService {
   async withdrawUserByAdmin(userId: number, deletionReason: string): Promise<void> {
     // 사용자 조회
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     if (user && user.deletedAt !== null) {
       throw new ConflictException('이미 탈퇴 처리된 회원입니다.');
@@ -92,7 +95,10 @@ export class AdminService {
   // 강제 탈퇴 안내 이메일 발송
   async sendForcedWithdrawalEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
-    throwIfUserNotExists(user, userId);
+
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const { email, nickname } = user;
     const { deletionReason } = await this.deletedUsersDAO.findDeletedUserByUserId(userId);
@@ -109,7 +115,9 @@ export class AdminService {
     await this.deletedUsersDAO.saveDeletedUser(deletedUser);
 
     const user = await this.usersDAO.findUserByUserIdForAdmin(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     user.deletedAt = null;
     await this.usersDAO.saveUser(user);
@@ -120,7 +128,9 @@ export class AdminService {
     const { userId, suspensionReason, suspensionDuration } = suspensionUserDto;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const alreadySuspendedUser = await this.suspendedUsersDAO.findSuspendedUserByUserId(userId);
     const suspensionEndDate = calculateSuspensionEndDate(suspensionDuration);
@@ -162,7 +172,9 @@ export class AdminService {
   // 계정 활동 정지 이메일 발송
   async sendAccountSuspensionEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const { email, nickname } = user;
 
@@ -189,7 +201,9 @@ export class AdminService {
   // 회원 계정 정지 취소
   async cancelSuspension(userId: number): Promise<{ message: string; userId: number }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     user.suspensionEndDate = null;
     await this.usersDAO.saveUser(user);
@@ -205,8 +219,13 @@ export class AdminService {
   }
 
   // 모든 회원 조회
-  async fetchAllUsersByAdmin(page: number, limit: number = 10): Promise<IPaginatedResponse<IUserList>> {
-    const [users, total] = await this.usersDAO.findUsersWithDetails(page, limit);
+  async fetchAllUsersByAdmin(
+    page: number = 1,
+    limit: number = 10,
+    type?: ESearchUser,
+    search?: string,
+  ): Promise<IPaginatedResponse<IUserList>> {
+    const [users, total] = await this.usersDAO.findUsersWithDetails(page, limit, type, search);
     const suspendedUsers = await this.suspendedUsersDAO.findSuspendedUsers();
     const deletedUsers = await this.deletedUsersDAO.findDeletedUsers();
 
@@ -252,7 +271,9 @@ export class AdminService {
   // 회원 정보 (닉네임, 이메일) 조회
   async fetchUserInfoByAdmin(userId: number): Promise<IUserInfo> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const returnUserInfo = { userId: user.userId, nickname: user.nickname, email: user.email };
     return returnUserInfo as IUserInfo;
@@ -264,7 +285,9 @@ export class AdminService {
   ): Promise<{ message: string; userId: number; membershipStatus: EMembershipStatus }> {
     const { userId } = approvalDto;
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const membershipStatus = user.membershipStatus;
 
@@ -300,7 +323,9 @@ export class AdminService {
   // 정회원 승인 안내 이메일 발송
   async sendApprovalEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const { email, nickname } = user;
     await this.emailService.sendMembershipApprovalEmail(email, nickname);
@@ -314,7 +339,9 @@ export class AdminService {
     rejectedReason: string,
   ): Promise<{ message: string; userId: number; rejectedReason: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     user.rejected = true;
     const rejectedUser = await this.rejectedUsersDAO.createRejectedUser(userId, rejectedReason);
@@ -328,7 +355,9 @@ export class AdminService {
   // 정회원 승인 거절 이메일 발송
   async sendMembershipRejectionEmail(userId: number): Promise<{ message: string; email: string }> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const { email, nickname } = user;
     const { rejectedReason } = await this.rejectedUsersDAO.findRejectedUserByUserId(userId);
@@ -348,6 +377,7 @@ export class AdminService {
         nickname: user.nickname, // 닉네임
         email: user.email, // 이메일
         createdAt: user.createdAt, // 가입 날짜
+        studentStatus: user.studentStatus, // 재학생 또는 졸업생 여부
         membershipStatus: user.membershipStatus, // 현재 회원상태
         certificationDocumentUrl: user.certificationDocumentUrl, // 첨부파일
         status: user.rejected ? '승인거절' : '승인대기', // 상태
@@ -363,26 +393,6 @@ export class AdminService {
       console.error('회원가입 승인 화면 데이터를 가져오는 중 에러 발생: ', error);
     }
   }
-
-  // // 게시물 관리 페이지 데이터 조회
-  // async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-  //   const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
-
-  //   const items = posts.map((post) => ({
-  //     postId: post.postId, // 게시물 ID
-  //     boardType: post.boardType, // 카테고리
-  //     title: post.title, // 제목
-  //     author: post.user.nickname, // 작성자
-  //     createdAt: post.createdAt, // 작성일
-  //   }));
-
-  //   return {
-  //     items,
-  //     totalItems: total,
-  //     totalPages: Math.ceil(total / limit),
-  //     currentPage: page,
-  //   };
-  // }
 
   // 게시물 관리 페이지 데이터 조회
   async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
@@ -419,6 +429,11 @@ export class AdminService {
     }
   }
 
+  // 여러 게시물 삭제
+  async deletePosts(postIds: number[]): Promise<{ affected: number; alreadyDeletedPostIds: number[] }> {
+    return await this.postsDAO.deletePosts(postIds);
+  }
+
   // 댓글 및 답글 조회
   async findAllCommentsAndReplies(page: number = 1, limit: number = 10): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
@@ -432,15 +447,17 @@ export class AdminService {
     // 댓글과 답글을 합침
     const combinedPromises = comments.map(async (comment) => {
       const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+      const user = await this.usersDAO.findUserByUserId(comment.userId);
 
       return {
         id: comment.commentId, // 댓글 ID
         type: ECommentType.COMMENT, // 댓글 표시
         postId: post.postId || null,
         category: post.boardType || null, // 게시물 카테고리
+        
         postTitle: post.title || null, // 게시물 제목
         content: comment.content, // 댓글 내용
-        nickname: comment.nickname, // 작성자 닉네임
+        nickname: user.nickname, // 작성자 닉네임
         createdAt: new Date(comment.createdAt), // 작성일
       };
     });
@@ -448,6 +465,7 @@ export class AdminService {
     const replyPromises = replies.map(async (reply) => {
       const comment = await this.commentsDAO.findCommentById(reply.commentId);
       const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+      const user = await this.usersDAO.findUserByUserId(comment.userId);
 
       return {
         id: reply.replyId, // 답글 ID
@@ -456,7 +474,7 @@ export class AdminService {
         category: post.boardType || null, // 게시물 카테고리
         postTitle: post.title || null, // 게시물 제목
         content: reply.content, // 답글 내용
-        nickname: reply.nickname, // 작성자 닉네임
+        nickname: user.nickname, // 작성자 닉네임
         createdAt: new Date(reply.createdAt), // 작성일
       };
     });
@@ -485,6 +503,56 @@ export class AdminService {
         await this.commentsDAO.deleteComment(commentId);
       case ECommentType.REPLY:
         await this.repliesDAO.deleteReply(commentId);
+    }
+  }
+
+  // 여러 댓글 또는 답글 삭제
+  async deleteCommentsOrReplies(deleteCommentsDto: DeleteCommentsDto[]): Promise<{
+    numberOfdeletedComments: number;
+    numberOfdeletedReplies: number;
+    total: number;
+    alreadyDeletedComments: number[];
+    alreadyDeletedReplies: number[];
+  }> {
+    const commentIds: number[] = [];
+    const replyIds: number[] = [];
+
+    // 댓글과 답글 ID를 각각 다른 배열로 분리
+    deleteCommentsDto.forEach((data) => {
+      const { type, commentId } = data;
+      if (type === 'comment') {
+        commentIds.push(commentId);
+      } else {
+        replyIds.push(commentId);
+      }
+    });
+
+    const commentResult = await this.commentsDAO.deleteComments(commentIds);
+    const numberOfdeletedComments = commentResult.affected;
+
+    const replyResult = await this.repliesDAO.deleteReplies(replyIds);
+    const numberOfdeletedReplies = replyResult.affected;
+
+    const total = numberOfdeletedComments + numberOfdeletedReplies;
+
+    return {
+      numberOfdeletedComments,
+      numberOfdeletedReplies,
+      total,
+      alreadyDeletedComments: commentResult.alreadyDeletedIds,
+      alreadyDeletedReplies: replyResult.alreadyDeletedIds,
+    };
+  }
+
+  // 관리자페이지 비밀번호 확인
+  async checkAdminPagePassword(plainPassword: string): Promise<void> {
+    const isPasswordCorrect = await this.authPasswordService.matchPassword(
+      plainPassword,
+      process.env.ADMIN_PAGE_PASSWORD,
+    );
+
+    if (!isPasswordCorrect) {
+      throw new ForbiddenException('입력한 비밀번호가 관리자 페이지 비밀번호와 일치하지 않습니다.');
     }
   }
 }

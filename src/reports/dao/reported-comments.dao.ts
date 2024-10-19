@@ -70,6 +70,7 @@ export class ReportedCommentsDAO {
         'reportComment.reportCommentId AS reportId', // 신고된 댓글 ID (신고 테이블에서의 ID)
         'comment.commentId AS commentId', // 댓글 ID (댓글 테이블에서의 ID)
         'post.title AS postTitle', // 게시물 제목
+        'post.boardType AS postCategory', // 게시판 카테고리
         'comment.content AS commentContent', // 댓글 내용
         'user.nickname AS commentAuthor', // 댓글 작성자
         'reportComment.reportingUser AS reporter', // 신고자

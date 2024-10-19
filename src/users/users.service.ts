@@ -14,7 +14,6 @@ import { ECommentType } from './enums';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserInfoResponse } from './interfaces';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
-import { throwIfUserNotExists } from 'src/common/error-handlers/user-error-handlers';
 import { PostsService } from 'src/posts/posts.service';
 
 @Injectable()
@@ -35,7 +34,9 @@ export class UsersService {
   async fetchMyInfo(sessionUser: IUser): Promise<IUserInfoResponse> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     return { nickname: user.nickname, email: user.email, username: user.username, phoneNumber: user.phoneNumber };
   }
@@ -50,7 +51,9 @@ export class UsersService {
     const { newNickname } = updateNicknameDto;
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     // 닉네임 중복 여부 확인
     const nicknameExists = await this.usersDAO.checkNicknameExists(newNickname);
@@ -71,7 +74,9 @@ export class UsersService {
     const isTempPasswordSignIn = await this.authSignInService.checkTempPasswordSignIn(userId);
 
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const isOldPasswordValid = await this.authPasswordService.matchPassword(oldPassword, user.password);
 
@@ -106,7 +111,9 @@ export class UsersService {
 
     // 사용자 존재 확인
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     // 본인 작성 게시물 조회
     const postsResponse = await this.postsDAO.findMyPosts(userId, page, limit, sort);
@@ -145,43 +152,47 @@ export class UsersService {
       ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.commentId))),
     ];
     const posts = await this.postsDAO.findPostsByIds(postIds);
-    const allPostsToFind = await this.postsDAO.findAllPostsWithoutConditions();
+
     const combinedResults: ICombinedResult[] = [];
 
     // 댓글 결과 조합
-    comments.forEach((comment) => {
-      const post = posts.find((post) => post.postId === comment.postId);
-      combinedResults.push({
-        type: ECommentType.COMMENT,
-        commentId: comment.commentId,
-        content: comment.content,
-        createdAt: comment.createdAt,
-        postId: comment.postId,
-        boardType: post?.boardType,
-        title: post?.title,
-      });
-    });
+    await Promise.all(
+      comments.map(async (comment) => {
+        const post = posts.find((p) => p.postId === comment.postId);
+        const total = await this.postsService.getNumberOfCommentsAndReplies(comment.postId);
+
+        combinedResults.push({
+          type: ECommentType.COMMENT,
+          commentId: comment.commentId,
+          content: comment.content,
+          createdAt: comment.createdAt,
+          postId: comment.postId,
+          boardType: post?.boardType,
+          title: post?.title,
+          numberOfCommentsAndReplies: total,
+        });
+      }),
+    );
 
     // 답글 결과 조합
-    for (const reply of replies) {
-      const originalComment = await this.commentsDAO.findCommentByIdWithDeletedComment(reply.commentId);
+    await Promise.all(
+      replies.map(async (reply) => {
+        const post = posts.find((p) => p.postId === reply.postId);
+        const total = await this.postsService.getNumberOfCommentsAndReplies(reply.postId);
 
-      if (originalComment) {
-        const post = allPostsToFind.find((post) => post.postId === originalComment?.postId);
         combinedResults.push({
           type: ECommentType.REPLY,
           replyId: reply.replyId,
           commentId: reply.commentId,
           content: reply.content,
           createdAt: reply.createdAt,
-          postId: originalComment?.postId,
+          postId: reply.postId,
           boardType: post?.boardType || '정보없음',
           title: post?.title || '정보없음',
+          numberOfCommentsAndReplies: total,
         });
-      } else {
-        console.log(`부모 댓글이 없습니다: ${reply.commentId}`);
-      }
-    }
+      }),
+    );
 
     // 최신순 정렬 (기본)
     combinedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -216,7 +227,9 @@ export class UsersService {
   ): Promise<IPaginatedResponse<any>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
 
@@ -261,7 +274,9 @@ export class UsersService {
   // 회원 인증서류 URL에서 실명 추출
   async extractUserName(userId: number): Promise<string> {
     const user = await this.usersDAO.findUserByUserId(userId);
-    throwIfUserNotExists(user, userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
 
     const certificationUrl = user.certificationDocumentUrl;
     if (!certificationUrl) throw new NotFoundException('해당 회원의 인증서류 URL을 찾을 수 없습니다.');

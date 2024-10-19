@@ -17,14 +17,11 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
   constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
 
   handleConnection(client: Socket) {
-    console.log('소켓 연결됨', client.id);
-    console.log('Handshake Headers: ', client.handshake.headers);
+    // console.log('Handshake Headers: ', client.handshake.headers);
 
     // 쿠키에서 세션 ID 추출
     const cookies = client.handshake.headers?.cookie;
     const sessionId = extractSessionIdFromCookie(cookies);
-
-    console.log('소켓의 쿠키 sessionId', sessionId);
 
     client.join(sessionId);
 

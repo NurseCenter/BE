@@ -227,7 +227,7 @@ export class MeController {
   @Get('comments')
   @HttpCode(200)
   @ApiOperation({ summary: '본인 댓글 및 답글 전체 조회' })
-  @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', example: 1 })
+  @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', required: false, example: 1 })
   @ApiQuery({ name: 'limit', type: Number, description: '페이지당 댓글 수', required: false, example: 10 })
   @ApiQuery({
     name: 'sort',
@@ -241,6 +241,29 @@ export class MeController {
     status: 200,
     description: '댓글 및 답글이 성공적으로 조회되었습니다.',
     schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', description: '댓글 또는 답글 타입' },
+              commentId: { type: 'number', description: '댓글 ID' },
+              replyId: { type: 'number', description: '답글 ID' },
+              content: { type: 'string', description: '댓글 또는 답글 내용' },
+              createdAt: { type: 'string', format: 'date-time', description: '작성 날짜' },
+              postId: { type: 'number', description: '게시물 ID' },
+              boardType: { type: 'string', description: '게시판 타입' },
+              title: { type: 'string', description: '게시물 제목' },
+              numberOfCommentsAndReplies: { type: 'number', description: '해당 게시물에 달린 댓글 및 답글 수' },
+            },
+          },
+        },
+        totalItems: { type: 'number', description: '총 아이템 수' },
+        totalPages: { type: 'number', description: '총 페이지 수' },
+        currentPage: { type: 'number', description: '현재 페이지 번호' },
+      },
       example: {
         items: [
           {
@@ -251,6 +274,7 @@ export class MeController {
             postId: 1,
             boardType: 'employment',
             title: '샘플 게시물 제목',
+            numberOfCommentsAndReplies: 123,
           },
           {
             type: 'reply',
@@ -261,6 +285,7 @@ export class MeController {
             postId: 1,
             boardType: 'employment',
             title: '샘플 게시물 제목',
+            numberOfCommentsAndReplies: 2,
           },
         ],
         totalItems: 2,

@@ -20,7 +20,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
 import { Request, Response } from 'express';
-import { ECommentType, EMembershipStatus } from 'src/users/enums';
+import { EMembershipStatus } from 'src/users/enums';
 import { SignInUserDto } from 'src/auth/dto';
 import {
   WithdrawalUserDto,
@@ -28,11 +28,12 @@ import {
   UserIdDto,
   SuspensionUserDto,
   ApprovalUserDto,
-  GetOneCommentDto,
+  DeleteCommentsDto,
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { EmailQueryDto } from './dto/email-query.dto';
-import { EEmailType } from './enums';
+import { EEmailType, ESearchUser } from './enums';
+import { SearchUserQueryDto } from './dto/search-user-query.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -254,14 +255,26 @@ export class AdminController {
   @Get('users')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 회원 조회' })
-  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'type', enum: ESearchUser, required: false, description: '검색할 타입 (회원 ID, 닉네임, 이메일)' })
+  @ApiQuery({ name: 'search', required: false, description: '검색어' })
   @ApiResponse({
     status: 200,
     description: '회원 목록 조회 성공',
     schema: {
       example: {
         items: [
+          {
+            userId: 34,
+            nickname: '마이콜',
+            email: 'mycall@example.com',
+            postCount: 1,
+            commentCount: 0,
+            createdAt: '2024-10-16T05:09:11.818Z',
+            managementStatus: '해당없음',
+            managementReason: '없음',
+          },
           {
             userId: 123,
             nickname: 'user_nickname',
@@ -271,6 +284,16 @@ export class AdminController {
             createdAt: '2024-01-01T00:00:00.000Z',
             managementStatus: '정지',
             managementReason: '정지된 사유',
+          },
+          {
+            userId: 16,
+            nickname: '박지민',
+            email: 'user4@example.com',
+            postCount: 0,
+            commentCount: 0,
+            createdAt: '2024-01-05T04:00:00.000Z',
+            managementStatus: '탈퇴',
+            managementReason: '허락없이 광고글을 여러 번 기재하여 주의 주었지만 무시함.',
           },
         ],
         totalItems: 100,
@@ -286,9 +309,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async getAllUsers(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<IUserList>> {
-    const { page, limit } = query;
-    const result = await this.adminService.fetchAllUsersByAdmin(page, limit);
+  async getAllUsers(@Query() query: PaginationQueryDto & SearchUserQueryDto): Promise<IPaginatedResponse<IUserList>> {
+    const { page = 1, limit = 10, type, search } = query;
+    const result = await this.adminService.fetchAllUsersByAdmin(Number(page), Number(limit), type, search);
     return result;
   }
 
@@ -331,6 +354,28 @@ export class AdminController {
     status: 200,
     description: '정회원 승인 대기자 목록 조회 성공',
     schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              userId: { type: 'number', description: '사용자 ID' },
+              nickname: { type: 'string', description: '사용자 닉네임' },
+              email: { type: 'string', description: '사용자 이메일' },
+              createdAt: { type: 'string', format: 'date-time', description: '계정 생성 일자' },
+              studentStatus: { type: 'string', description: '학생 상태' },
+              membershipStatus: { type: 'string', description: '회원 상태' },
+              certificationDocumentUrl: { type: 'string', format: 'uri', description: '인증 문서 URL' },
+              status: { type: 'string', description: '승인 대기, 승인 완료, 승인 거절' },
+            },
+          },
+        },
+        totalItems: { type: 'number', description: '총 아이템 수' },
+        totalPages: { type: 'number', description: '총 페이지 수' },
+        currentPage: { type: 'number', description: '현재 페이지 번호' },
+      },
       example: {
         items: [
           {
@@ -338,8 +383,10 @@ export class AdminController {
             nickname: 'user_nickname',
             email: 'user@example.com',
             createdAt: '2024-01-01T00:00:00.000Z',
+            studentStatus: 'current_student',
             membershipStatus: 'email_verified',
             certificationDocumentUrl: 'http://example.com/document',
+            status: '승인거절',
           },
         ],
         totalItems: 50,
@@ -361,6 +408,7 @@ export class AdminController {
   }
 
   // 관리자의 정회원 승인 및 거절 처리
+  @UseGuards(AdminGuard)
   @Post('user/approval')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 승인 처리' })
@@ -386,6 +434,7 @@ export class AdminController {
   }
 
   // 관리자의 정회원 거절 처리
+  @UseGuards(AdminGuard)
   @Post('user/rejection')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '회원 가입 거절 처리' })
@@ -423,7 +472,7 @@ export class AdminController {
   @Get('posts')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
-  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
   @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
   @ApiResponse({
@@ -459,17 +508,26 @@ export class AdminController {
     return this.adminService.getAllPosts(page, limit, search);
   }
 
-  // 관리자 특정 게시물 삭제
+  // 관리자 게시물 삭제
   @UseGuards(AdminGuard)
-  @Delete('posts/:postId')
+  @Delete('posts')
   @HttpCode(200)
-  @ApiOperation({ summary: '특정 게시물 삭제' })
-  @ApiParam({ name: 'postId', type: Number, description: '게시물 ID' })
+  @ApiOperation({ summary: '1개 이상의 게시물 삭제' })
+  @ApiBody({
+    type: [Number],
+    description: '삭제할 게시물 ID 배열',
+    schema: {
+      example: { postIds: [1, 200, 342] },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: '게시물 삭제 성공',
     schema: {
-      example: { message: '게시물이 성공적으로 삭제되었습니다.' },
+      example: {
+        message:
+          '총 2개 게시물이 삭제되었습니다. 게시물 3번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.',
+      },
     },
   })
   @ApiResponse({
@@ -479,9 +537,16 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deletePost(@Param('postId') postId: number): Promise<{ message: string; postId: number }> {
-    await this.adminService.deletePost(postId);
-    return { message: '게시물이 성공적으로 삭제되었습니다.', postId };
+  async deletePosts(@Body('postIds') postIds: number[]): Promise<{ message: string }> {
+    const { affected, alreadyDeletedPostIds } = await this.adminService.deletePosts(postIds);
+
+    let message = `총 ${affected}개 게시물이 삭제되었습니다.`;
+
+    if (alreadyDeletedPostIds.length > 0) {
+      message += `게시물 ${alreadyDeletedPostIds.join(', ')}번은 존재하지 않는 게시물 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    return { message };
   }
 
   // 관리자 댓글 및 답글 전체 조회
@@ -504,6 +569,7 @@ export class AdminController {
             category: 'notice',
             postTitle: '간호학과 실습 병원 변경 안내',
             content: '유저41번이 남긴 답글이다',
+            nickname: "졸린루피",
             createdAt: '2024-09-23T05:23:22.541Z',
           },
           {
@@ -513,6 +579,7 @@ export class AdminController {
             category: 'job',
             postTitle: '제목 수정할게요. 되는지 보자',
             content: '유저41번이 남긴 댓글',
+            nickname: "인간",
             createdAt: '2024-09-23T05:21:23.690Z',
           },
         ],
@@ -534,19 +601,49 @@ export class AdminController {
     return await this.adminService.findAllCommentsAndReplies(page, limit);
   }
 
-  // 관리자 특정 댓글 혹은 답글 삭제
-  // 댓글 혹은 답글의 종류, ID 값을 넘겨주면 삭제함.
+  // 관리자 여러 댓글 혹은 답글 삭제
   @UseGuards(AdminGuard)
   @Delete('comments')
   @HttpCode(200)
-  @ApiOperation({ summary: '특정 댓글 또는 답글 삭제' })
-  @ApiQuery({ name: 'type', type: String, description: '댓글 또는 답글 타입', enum: ECommentType })
-  @ApiQuery({ name: 'commentId', type: Number, description: '댓글 또는 답글 ID' })
+  @ApiOperation({ summary: '1개 이상의 댓글 또는 답글 삭제' })
+  @ApiBody({
+    description: '삭제할 댓글 또는 답글 목록',
+    type: [DeleteCommentsDto],
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            description: '삭제할 타입: comment(댓글) 또는 reply(답글)',
+            enum: ['comment', 'reply'],
+          },
+          commentId: {
+            type: 'number',
+            description: '삭제할 댓글 또는 답글의 ID',
+            example: 13,
+          },
+        },
+        required: ['type', 'commentId'],
+      },
+      example: [
+        { type: 'comment', commentId: 13 },
+        { type: 'reply', commentId: 35 },
+        { type: 'comment', commentId: 42 },
+        { type: 'reply', commentId: 56 },
+        { type: 'comment', commentId: 78 },
+      ],
+    },
+  })
   @ApiResponse({
     status: 200,
     description: '댓글 또는 답글 삭제 성공',
     schema: {
-      example: { message: '댓글이 성공적으로 삭제되었습니다.', type: 'reply', commentId: 128 },
+      example: {
+        message:
+          '총 5개 댓글이 삭제되었습니다. (댓글 3개, 답글 2개) 댓글 2, 3번은 존재하지 않는 댓글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다. 답글 5번은 존재하지 않는 답글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.',
+      },
     },
   })
   @ApiResponse({
@@ -556,33 +653,90 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async deleteComment(
-    @Query() getOneCommentDto: GetOneCommentDto,
-  ): Promise<{ message: string; type: ECommentType; commentId: number }> {
-    const { type, commentId } = getOneCommentDto;
-    await this.adminService.deleteCommentOrReplyById(type, commentId);
-    return { message: '댓글이 성공적으로 삭제되었습니다.', type, commentId };
+  async deleteComments(@Body() deleteCommentsDto: DeleteCommentsDto[]): Promise<{ message: string }> {
+    const { total, numberOfdeletedComments, numberOfdeletedReplies, alreadyDeletedComments, alreadyDeletedReplies } =
+      await this.adminService.deleteCommentsOrReplies(deleteCommentsDto);
+
+    let message = `총 ${total}개 댓글이 삭제되었습니다. (댓글 ${numberOfdeletedComments}, 답글 ${numberOfdeletedReplies})`;
+
+    if (alreadyDeletedComments.length > 0) {
+      message += `\n댓글 ${alreadyDeletedComments.join(', ')}는 존재하지 않는 댓글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    if (alreadyDeletedReplies.length > 0) {
+      message += `\n답글 ${alreadyDeletedReplies.join(', ')}는 존재하지 않는 답글 ID이거나 이미 삭제되었기 때문에 삭제되지 않았습니다.`;
+    }
+
+    return { message };
   }
 
   // 관리자 이메일 발송
+  @UseGuards(AdminGuard)
   @Post('email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '이메일 발송' })
+  @ApiOperation({ summary: '관리자의 이메일 발송' })
   @ApiBody({
     description: '이메일 발송을 위한 정보',
     type: EmailQueryDto,
+    schema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'number',
+          description: '이메일을 받을 회원의 ID',
+        }
+      },
+      required: ['userId'],
+      example: {
+        userId: 123,
+        reason: '가입 거부 사유를 전달합니다.',
+      },
+    },
+  })
+  @ApiQuery({
+    name: 'type',
+    required: true,
+    description: '전송할 이메일 유형',
+    enum: EEmailType,
   })
   @ApiResponse({
     status: 200,
     description: '이메일 발송 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: '이메일 발송 결과 메시지',
+        },
+        email: {
+          type: 'string',
+          description: '발송된 이메일 주소',
+        },
+      },
+      example: {
+        message: '이메일이 성공적으로 발송되었습니다.',
+        email: 'user@example.com',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: '해당 회원이 존재하지 않음',
+    description: '해당 회원이 존재하지 않습니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: '에러 메시지',
+        },
+      },
+      example: { message: '해당 회원이 존재하지 않습니다.' },
+    },
   })
   async handleEmailSending(
     @Query('type') emailType: EEmailType,
-    @Body() { userId }: { userId: number },
+    @Body('userId') userId: number,
   ): Promise<{ message: string; email: string }> {
     switch (emailType) {
       case 'rejection':
@@ -596,5 +750,44 @@ export class AdminController {
       default:
         throw new NotFoundException('지원하지 않는 이메일 유형입니다.');
     }
+  }
+
+  @Post('check-password')
+  @ApiOperation({ summary: '관리자 페이지 비밀번호 확인' })
+  @ApiBody({
+    description: '비밀번호 확인을 위한 요청 본문',
+    type: String,
+    schema: {
+      type: 'object',
+      properties: {
+        password: {
+          type: 'string',
+          example: 'yourPassword',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '비밀번호가 일치하는 경우 성공 메시지 반환',
+    schema: {
+      example: {
+        message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치합니다.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: '비밀번호가 일치하지 않는 경우 오류 반환',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치하지 않습니다.',
+      },
+    },
+  })
+  async postCheckPassword(@Body('password') plainPassword: string) {
+    await this.adminService.checkAdminPagePassword(plainPassword);
+    return { message: '입력한 비밀번호가 관리자 페이지 비밀번호와 일치합니다.' };
   }
 }

@@ -11,7 +11,7 @@ export class AppService {
     // console.log("now", now, "type of now", typeof now);
     // console.log("nowInSeoul", nowInSeoul, "type of nowInSeoul", typeof nowInSeoul);
 
-    const message = `Hello World!, Date and time now in Seoul: ${nowInSeoul}, UTC: ${now.toISOString()}`;
+    const message = `😝 Welcome To Caugannies Server!, Date and time now in Seoul: ${nowInSeoul}, UTC: ${now.toISOString()}`;
 
     return { message };
   }

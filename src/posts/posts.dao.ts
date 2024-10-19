@@ -97,12 +97,15 @@ export class PostsDAO {
       .where('post.deletedAt IS NULL');
 
     if (boardType !== 'all') {
-      query.where('post.boardType = :boardType', { boardType });
+      query.andWhere('post.boardType = :boardType', { boardType });
     }
 
     if (search) {
-      query.andWhere('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
+      query.andWhere('(post.title LIKE :search OR post.content LIKE :search)', { search: `%${search}%` });
     }
+
+    // console.log(query.getQuery());
+    // console.log(query.getParameters());
 
     sortType = Object.values(ESortType).includes(sortType) ? sortType : ESortType.DATE;
     sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
@@ -139,6 +142,7 @@ export class PostsDAO {
 
     return { posts: convertedPosts, total };
   }
+
   // 특정 게시글 조회 메소드
   async findOnePostByPostId(postId: number): Promise<PostsEntity> {
     const post = await this.postsRepository
@@ -283,6 +287,27 @@ export class PostsDAO {
   // 특정 게시물 삭제
   async deletePost(postId: number): Promise<DeleteResult> {
     return this.postsRepository.softDelete(postId);
+  }
+
+  // 여러 게시물 삭제
+  async deletePosts(postIds: number[]): Promise<{ affected: number; alreadyDeletedPostIds: number[] }> {
+    const alreadyDeletedPostIds: number[] = [];
+
+    const posts = await this.findPostsByIds(postIds);
+
+    for (const postId of postIds) {
+      const post = posts.find((post) => post.postId === postId);
+
+      if (!post || post.deletedAt !== null) {
+        alreadyDeletedPostIds.push(postId);
+      } else {
+        await this.postsRepository.softDelete(postId);
+      }
+    }
+
+    const affectedCount = postIds.length - alreadyDeletedPostIds.length;
+
+    return { affected: affectedCount, alreadyDeletedPostIds };
   }
 
   // 게시판 카테고리별 게시물 수 조회

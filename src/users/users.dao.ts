@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/auth/dto';
 import { EMembershipStatus } from './enums';
+import { ESearchUser } from 'src/admin/enums';
 
 @Injectable()
 export class UsersDAO {
@@ -67,7 +68,12 @@ export class UsersDAO {
   }
 
   // 페이지네이션 회원 조회
-  async findUsersWithDetails(page: number = 1, limit: number = 10): Promise<[any[], number]> {
+  async findUsersWithDetails(
+    page: number = 1,
+    limit: number = 10,
+    type?: ESearchUser,
+    search?: string,
+  ): Promise<[any[], number]> {
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'posts')
@@ -80,12 +86,28 @@ export class UsersDAO {
         'COUNT(comments.commentId) AS commentCount', // 댓글 수
         'user.createdAt', // 가입날짜
       ])
+      .withDeleted() // 탈퇴한 회원도 포함
       .groupBy('user.userId')
       .orderBy('user.userId', 'DESC') // 1) userId 기준 내림차순
       .addOrderBy('user.createdAt', 'DESC'); // 2) 가입일 기준 내림차순 (userId가 같은 경우)
 
+    // 검색어가 있을 경우
+    if (type && search) {
+      switch (type) {
+        case ESearchUser.USER_ID:
+          queryBuilder.andWhere('user.userId = :search', { search });
+          break;
+        case ESearchUser.NICKNAME:
+          queryBuilder.andWhere('user.nickname LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchUser.EMAIL:
+          queryBuilder.andWhere('user.email LIKE :search', { search: `%${search}%` });
+          break;
+      }
+    }
+
     const allUsers = await queryBuilder.getRawMany();
-    const total = await this.countTotalUsers();
+    const total = allUsers.length;
 
     // 페이지네이션 적용
     const startIndex = (page - 1) * limit;

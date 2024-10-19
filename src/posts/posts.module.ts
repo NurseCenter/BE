@@ -10,7 +10,6 @@ import { PostsMetricsService } from './metrics/posts-metrics.service';
 import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { PostsDAO } from './posts.dao';
 import { DataAccessModule } from 'src/common/data-access.module';
-import { FileUploader } from '../files/file-uploader';
 import { PostsMetricsDAO } from './metrics/posts-metrics-dao';
 import { FilesEntity } from 'src/files/entities/files.entity';
 import { FilesModule } from 'src/files/files.module';
@@ -22,7 +21,7 @@ import { FilesModule } from 'src/files/files.module';
     DataAccessModule,
   ],
   controllers: [PostsController],
-  providers: [PostsService, PostsMetricsService, PostsDAO, PostsMetricsDAO, FileUploader],
-  exports: [PostsModule, PostsMetricsService, PostsService],
+  providers: [PostsService, PostsMetricsService, PostsDAO, PostsMetricsDAO],
+  exports: [PostsDAO, PostsMetricsService, PostsService],
 })
 export class PostsModule {}

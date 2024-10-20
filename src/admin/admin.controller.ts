@@ -569,7 +569,7 @@ export class AdminController {
             category: 'notice',
             postTitle: '간호학과 실습 병원 변경 안내',
             content: '유저41번이 남긴 답글이다',
-            nickname: "졸린루피",
+            nickname: '졸린루피',
             createdAt: '2024-09-23T05:23:22.541Z',
           },
           {
@@ -579,7 +579,7 @@ export class AdminController {
             category: 'job',
             postTitle: '제목 수정할게요. 되는지 보자',
             content: '유저41번이 남긴 댓글',
-            nickname: "인간",
+            nickname: '인간',
             createdAt: '2024-09-23T05:21:23.690Z',
           },
         ],
@@ -684,7 +684,7 @@ export class AdminController {
         userId: {
           type: 'number',
           description: '이메일을 받을 회원의 ID',
-        }
+        },
       },
       required: ['userId'],
       example: {

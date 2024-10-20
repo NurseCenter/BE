@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -14,11 +13,11 @@ import { getExtensionFromMime } from 'src/common/utils';
 import { FilesDAO } from './files.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { FilesEntity } from './entities/files.entity';
+import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class FilesService {
   private s3Client: S3Client;
-  private readonly logger = new Logger(FilesService.name);
   private bucket = process.env.S3_BUCKET_NAME;
 
   constructor(
@@ -94,11 +93,11 @@ export class FilesService {
       const fileType = this.extractFileTypeFromUrl(url);
 
       if (!fileType) {
-        this.logger.warn(`잘못된 fileType: ${fileType} - 저장되지 않습니다.`);
+        winstonLogger.warn(`잘못된 fileType: ${fileType} - 저장되지 않습니다.`);
       }
 
       if (!this.isValidUrl(url)) {
-        this.logger.warn(`잘못된 URL: ${url}`);
+        winstonLogger.warn(`잘못된 URL: ${url}`);
         return null;
       }
 
@@ -134,7 +133,7 @@ export class FilesService {
       const command: DeleteObjectCommand = new DeleteObjectCommand(params);
       await this.s3Client.send(command);
     } catch (error) {
-      this.logger.error(`파일 삭제 중 오류 발생: ${error.message}`);
+      winstonLogger.error(`파일 삭제 중 오류 발생: ${error.message}`);
       throw new InternalServerErrorException('파일 삭제 중 오류가 발생했습니다.');
     }
   }
@@ -145,13 +144,13 @@ export class FilesService {
       const extension = url.split('.').pop();
 
       if (!extension) {
-        this.logger.error('해당 URL에 확장자가 없습니다.');
+        winstonLogger.error('해당 URL에 확장자가 없습니다.');
         return null;
       }
 
       return extension.toLowerCase();
     } catch (error) {
-      this.logger.error(`파일 URL 처리 중 오류: ${error.message}`);
+      winstonLogger.error(`파일 URL 처리 중 오류: ${error.message}`);
 
       throw new BadRequestException(`파일 URL을 처리하는 중 오류가 발생했습니다: ${error.message}`);
     }

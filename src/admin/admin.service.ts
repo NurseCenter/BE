@@ -454,7 +454,6 @@ export class AdminService {
         type: ECommentType.COMMENT, // 댓글 표시
         postId: post.postId || null,
         category: post.boardType || null, // 게시물 카테고리
-        
         postTitle: post.title || null, // 게시물 제목
         content: comment.content, // 댓글 내용
         nickname: user.nickname, // 작성자 닉네임

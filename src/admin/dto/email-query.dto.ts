@@ -6,7 +6,7 @@ export class EmailQueryDto {
   @ApiProperty({
     description: '발송할 이메일 유형',
     enum: EEmailType,
-    example: EEmailType.REJECTION, 
+    example: EEmailType.REJECTION,
   })
   @IsNotEmpty()
   @IsEnum(EEmailType)

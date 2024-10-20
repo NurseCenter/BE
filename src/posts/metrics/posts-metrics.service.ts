@@ -1,14 +1,14 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostsMetricsDAO } from './posts-metrics-dao';
 import { PostsDAO } from '../posts.dao';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PostsEntity } from '../entities/base-posts.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class PostsMetricsService {
-  private readonly logger = new Logger(PostsMetricsService.name);
 
   constructor(
     private readonly postsMetricsDAO: PostsMetricsDAO,
@@ -144,7 +144,7 @@ export class PostsMetricsService {
   @Cron(CronExpression.EVERY_MINUTE)
   async syncViewCountEveryMinute(): Promise<void> {
     const startTime = performance.now();
-    this.logger.log('조회수 동기화 진행중');
+    winstonLogger.log('조회수 동기화 진행중');
     try {
       const keys = await this.postsMetricsDAO.getAllViewCountKeys();
       for (const key of keys) {
@@ -152,7 +152,7 @@ export class PostsMetricsService {
         const post = await this.postsDAO.findOnePostByPostId(postId);
 
         if (!post) {
-          this.logger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`);
+          winstonLogger.warn(`게시물 ID ${postId}가 존재하지 않습니다. 동기화를 건너뜁니다.`);
           continue;
         }
 
@@ -166,9 +166,9 @@ export class PostsMetricsService {
         await this.postsMetricsDAO.deleteViewCountKey(key);
       }
       const endTime = performance.now();
-      this.logger.log(`동기화 작업 완료 (총 시간: ${(endTime - startTime).toFixed(2)}ms)`);
+      winstonLogger.log(`동기화 작업 완료 (총 시간: ${(endTime - startTime).toFixed(2)}ms)`);
     } catch (error) {
-      this.logger.error('조회수 동기화 작업 중 오류 발생: ', error);
+      winstonLogger.error('조회수 동기화 작업 중 오류 발생: ', error);
     }
   }
 }

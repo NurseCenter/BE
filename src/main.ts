@@ -14,6 +14,7 @@ import { DatabaseExceptionFilter } from './common/filters/database-exception.fil
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { getAllowedOrigins } from './config/cors.config';
 import { ConversionUtil } from './common/utils';
+import { winstonLogger } from './config/logger.config';
 
 // NODE_ENV 값에 따라 .env 파일을 다르게 읽음
 dotenv.config({
@@ -26,7 +27,10 @@ dotenv.config({
 
 async function bootstrap() {
   ConfigModule.forRoot({ isGlobal: true });
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    logger: winstonLogger,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -75,7 +79,7 @@ async function bootstrap() {
 
   const PORT = ConversionUtil.stringToNumber(process.env.PORT);
 
-  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
+  winstonLogger.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
 
   await app.listen(PORT);
 }

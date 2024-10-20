@@ -34,6 +34,7 @@ import { RejectUserDto } from './dto/reject-user.dto';
 import { EmailQueryDto } from './dto/email-query.dto';
 import { EEmailType, ESearchUser } from './enums';
 import { SearchUserQueryDto } from './dto/search-user-query.dto';
+import { ESearchPostByAdmin } from './enums/search-post-type.enum';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -474,6 +475,7 @@ export class AdminController {
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
   @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({ name: 'type', enum: ESearchPostByAdmin, required: false, description: '검색할 타입 (게시물 ID, 작성자 닉네임, 게시물 제목, 게시물 내용)' })
   @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
   @ApiResponse({
     status: 200,

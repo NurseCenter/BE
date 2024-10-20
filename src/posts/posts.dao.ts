@@ -42,6 +42,22 @@ export class PostsDAO {
     return null;
   }
 
+  // 특정 게시물 ID로 게시물 엔티티 조회 (삭제된 게시물 포함)
+  async findPostEntityByPostIdWithDeleted(postId: number): Promise<PostsEntity | null> {
+    const post = await this.postsRepository.findOne({ where: { postId }, withDeleted: true });
+
+    if (post) {
+      return {
+        ...post,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        deletedAt: post.deletedAt ? post.deletedAt : null,
+      };
+    }
+
+    return null;
+  }
+
   // 전체 게시물 조회
   async findAllPostsWithoutConditions(): Promise<PostsEntity[]> {
     const posts = await this.postsRepository.find();

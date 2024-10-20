@@ -457,12 +457,16 @@ export class AdminService {
 
     // 댓글과 답글을 합침
     const combinedPromises = comments.map(async (comment) => {
+      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.postId);
+
+      // console.log("post", post)
+
       return {
         id: comment.commentId, // 댓글 ID
         type: ECommentType.COMMENT, // 댓글 표시
-        postId: comment.post.postId || null,
-        category: comment.post.boardType || null, // 게시물 카테고리
-        postTitle: comment.post.title || null, // 게시물 제목
+        postId: post?.postId || null, // 게시물 ID
+        category: post?.boardType || null, // 게시물 카테고리
+        postTitle: post?.title || null, // 게시물 제목
         content: comment.content, // 댓글 내용
         nickname: comment.user.nickname, // 작성자 닉네임
         createdAt: new Date(comment.createdAt), // 작성일
@@ -471,14 +475,14 @@ export class AdminService {
 
     const replyPromises = replies.map(async (reply) => {
       const comment = await this.commentsDAO.findCommentById(reply.commentId);
-      const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
+      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.postId);
 
       return {
         id: reply.replyId, // 답글 ID
         type: ECommentType.REPLY, // 답글 표시
-        postId: post.postId || null,
-        category: post.boardType || null, // 게시물 카테고리
-        postTitle: post.title || null, // 게시물 제목
+        postId: post?.postId || null, // 게시물 ID
+        category: post?.boardType || null, // 게시물 카테고리
+        postTitle: post?.title || null, // 게시물 제목
         content: reply.content, // 답글 내용
         nickname: reply.user.nickname, // 작성자 닉네임
         createdAt: new Date(reply.createdAt), // 작성일

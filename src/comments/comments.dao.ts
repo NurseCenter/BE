@@ -303,6 +303,7 @@ export class CommentsDAO {
         'comment.content', // 댓글 내용
         'comment.createdAt', // 작성일
         'commentUser.nickname', // 작성자 닉네임
+        'post.postId', // 게시물 ID
         'post.title', // 게시물 제목
         'post.boardType', // 게시물 카테고리
       ])

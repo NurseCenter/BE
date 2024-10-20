@@ -173,7 +173,7 @@ export class AuthService {
   // 특정 세션 강제 종료
   async forceSignOut(sessionId: string): Promise<void> {
     const keyToDelete = `sess:${sessionId}`;
-    console.log('keyToDelete', keyToDelete);
+    // console.log('keyToDelete', keyToDelete);
 
     return new Promise((resolve, reject) => {
       this.redisClient.del(keyToDelete, (err) => {

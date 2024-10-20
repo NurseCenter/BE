@@ -7,6 +7,7 @@ import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentWithRepliesDto } from './dto/comment-with-replies.dto';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
+import { ESearchCommentByAdmin } from 'src/admin/enums';
 
 @Injectable()
 export class CommentsDAO {
@@ -256,35 +257,52 @@ export class CommentsDAO {
   }
 
   // 관리자 모든 댓글 조회
-  async findAllComments(): Promise<any[]> {
-    return this.commentsRepository
+  async findAllComments(type: ESearchCommentByAdmin, search: string): Promise<any[]> {
+    const queryBuilder = this.commentsRepository
       .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'user')
       .leftJoinAndSelect('comment.post', 'post')
+      .leftJoinAndSelect('comment.user', 'commentUser') // 댓글 작성자
       .select([
         'comment.commentId', // 댓글 ID (렌더링 X)
         'comment.content', // 댓글 내용
         'comment.createdAt', // 작성일
-        'user.nickname', // 작성자 닉네임,
+        'commentUser.nickname', // 작성자 닉네임,
+        'post.postId', // 원 게시물 ID
         'post.title', // 게시물 제목
         'post.boardType', // 게시물 카테고리
       ])
-      .where('comment.deletedAt IS NULL')
-      .andWhere('post.deletedAt IS NULL') // 원 게시물이 삭제되었으면 해당 댓글도 안 나오게 함.
-      .getMany();
+      .where('comment.deletedAt IS NULL');
+
+    if (type && search) {
+      switch (type) {
+        case ESearchCommentByAdmin.COMMENT_ID:
+          queryBuilder.andWhere('comment.commentId = :search', { search });
+          break;
+        case ESearchCommentByAdmin.COMMENT_CONTENT:
+          queryBuilder.andWhere('comment.content LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchCommentByAdmin.COMMENT_AUTHOR:
+          queryBuilder.andWhere('commentUser.nickname LIKE :search', { search: `%${search}%` });
+          break;
+      }
+    }
+
+    const results = await queryBuilder.getMany();
+    // console.log('댓글 조회 결과:', results);
+    return results;
   }
 
   // 관리자 특정 댓글 조회
   async findCommentByIdByAdmin(id: number): Promise<any> {
     return this.commentsRepository
       .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('comment.user', 'commentUser') // 댓글 작성자
       .leftJoinAndSelect('comment.post', 'post')
       .select([
         'comment.commentId', // 댓글 ID
         'comment.content', // 댓글 내용
         'comment.createdAt', // 작성일
-        'user.nickname', // 작성자 닉네임
+        'commentUser.nickname', // 작성자 닉네임
         'post.title', // 게시물 제목
         'post.boardType', // 게시물 카테고리
       ])

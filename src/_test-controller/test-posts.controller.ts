@@ -178,8 +178,6 @@ export class TestPostsController {
     @Body() createPostDto: CreatePostDto,
   ): Promise<IPostResponse> {
     try {
-      console.log('컨트롤러의 boardType: ', boardType);
-
       const result = await this.testPostsService.createPost(boardType, createPostDto);
       return result;
     } catch (err) {

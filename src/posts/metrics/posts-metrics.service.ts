@@ -9,7 +9,6 @@ import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class PostsMetricsService {
-
   constructor(
     private readonly postsMetricsDAO: PostsMetricsDAO,
     private readonly postsDAO: PostsDAO,

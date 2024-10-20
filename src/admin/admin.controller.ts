@@ -18,7 +18,7 @@ import { AdminService } from './admin.service';
 import { IApprovalUserList, IPostList, IUserInfo, IUserList } from './interfaces';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IPaginatedResponse } from 'src/common/interfaces';
-import { PaginationQueryDto, SearchQueryDto } from 'src/common/dto';
+import { PaginationQueryDto } from 'src/common/dto';
 import { Request, Response } from 'express';
 import { EMembershipStatus } from 'src/users/enums';
 import { SignInUserDto } from 'src/auth/dto';
@@ -29,12 +29,13 @@ import {
   SuspensionUserDto,
   ApprovalUserDto,
   DeleteCommentsDto,
+  SearchPostQueryDto,
+  SearchCommentQueryDto,
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { EmailQueryDto } from './dto/email-query.dto';
-import { EEmailType, ESearchUser } from './enums';
+import { EEmailType, ESearchCommentByAdmin, ESearchPostByAdmin, ESearchUser } from './enums';
 import { SearchUserQueryDto } from './dto/search-user-query.dto';
-import { ESearchPostByAdmin } from './enums/search-post-type.enum';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -475,7 +476,12 @@ export class AdminController {
   @ApiOperation({ summary: '전체 게시물 조회 및 검색' })
   @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
-  @ApiQuery({ name: 'type', enum: ESearchPostByAdmin, required: false, description: '검색할 타입 (게시물 ID, 작성자 닉네임, 게시물 제목, 게시물 내용)' })
+  @ApiQuery({
+    name: 'type',
+    enum: ESearchPostByAdmin,
+    required: false,
+    description: '검색할 타입 (게시물 ID, 작성자 닉네임, 게시물 제목, 게시물 내용)',
+  })
   @ApiQuery({ name: 'search', type: String, required: false, description: '검색어' })
   @ApiResponse({
     status: 200,
@@ -505,9 +511,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async getAllPosts(@Query() query: SearchQueryDto): Promise<IPaginatedResponse<IPostList>> {
-    const { page, limit, search } = query;
-    return this.adminService.getAllPosts(page, limit, search);
+  async getAllPosts(@Query() query: PaginationQueryDto & SearchPostQueryDto): Promise<IPaginatedResponse<IPostList>> {
+    const { page = 1, limit = 10, type, search } = query;
+    return this.adminService.getAllPosts(Number(page), Number(limit), type, search);
   }
 
   // 관리자 게시물 삭제
@@ -556,8 +562,15 @@ export class AdminController {
   @Get('comments')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '전체 댓글 및 답글 조회' })
-  @ApiQuery({ name: 'page', type: Number, required: true, description: '페이지 번호' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: '페이지 번호' })
   @ApiQuery({ name: 'limit', type: Number, required: false, description: '페이지당 항목 수' })
+  @ApiQuery({
+    name: 'type',
+    enum: ESearchCommentByAdmin,
+    required: false,
+    description: '검색할 타입 (댓글 ID, 작성자 닉네임, 원 게시물 제목, 댓글 내용)',
+  })
+  @ApiQuery({ name: 'search', required: false, description: '검색어' })
   @ApiResponse({
     status: 200,
     description: '댓글 목록 조회 성공',
@@ -598,9 +611,9 @@ export class AdminController {
       example: { message: '잘못된 요청입니다.' },
     },
   })
-  async getAllComments(@Query() query: PaginationQueryDto): Promise<IPaginatedResponse<any>> {
-    const { page, limit } = query;
-    return await this.adminService.findAllCommentsAndReplies(page, limit);
+  async getAllComments(@Query() query: PaginationQueryDto & SearchCommentQueryDto): Promise<IPaginatedResponse<any>> {
+    const { page = 1, limit = 10, type, search } = query;
+    return await this.adminService.findAllCommentsAndReplies(Number(page), Number(limit), type, search);
   }
 
   // 관리자 여러 댓글 혹은 답글 삭제

@@ -60,7 +60,7 @@ import { TestControllerModule } from './_test-controller/test-controller.module'
   providers: [AppService, SessionConfigService],
 })
 export class AppModule {
-// export class AppModule implements NestModule {
+  // export class AppModule implements NestModule {
   // configure(consumer: MiddlewareConsumer) {
   //   consumer.apply(LoggerMiddleware).forRoutes('*');
   // }

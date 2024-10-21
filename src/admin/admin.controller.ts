@@ -33,7 +33,6 @@ import {
   SearchCommentQueryDto,
 } from './dto';
 import { RejectUserDto } from './dto/reject-user.dto';
-import { EmailQueryDto } from './dto/email-query.dto';
 import { EEmailType, ESearchCommentByAdmin, ESearchPostByAdmin, ESearchUser } from './enums';
 import { SearchUserQueryDto } from './dto/search-user-query.dto';
 
@@ -692,7 +691,6 @@ export class AdminController {
   @ApiOperation({ summary: '관리자의 이메일 발송' })
   @ApiBody({
     description: '이메일 발송을 위한 정보',
-    type: EmailQueryDto,
     schema: {
       type: 'object',
       properties: {
@@ -703,16 +701,16 @@ export class AdminController {
       },
       required: ['userId'],
       example: {
-        userId: 123,
-        reason: '가입 거부 사유를 전달합니다.',
+        userId: 123
       },
     },
   })
   @ApiQuery({
     name: 'type',
     required: true,
-    description: '전송할 이메일 유형',
+    description: '전송할 이메일 유형. 가능한 값은 rejection(정회원 승인 거절), withdrawal(회원 탈퇴), suspension(회원 활동 정지), approval(정회원 승인)',
     enum: EEmailType,
+    example: EEmailType.REJECTION,
   })
   @ApiResponse({
     status: 200,

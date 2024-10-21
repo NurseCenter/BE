@@ -12,7 +12,7 @@ export class RegularMemberGuard implements CanActivate {
     const userId = request?.user?.userId;
 
     if (!userId) {
-      throw new NotFoundException('회원 ID가 없습니다.');
+      throw new NotFoundException('회원 ID가 없습니다. 로그인이 필요합니다.');
     }
 
     const user = await this.usersDAO.findUserByUserId(userId);

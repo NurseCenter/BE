@@ -701,14 +701,15 @@ export class AdminController {
       },
       required: ['userId'],
       example: {
-        userId: 123
+        userId: 123,
       },
     },
   })
   @ApiQuery({
     name: 'type',
     required: true,
-    description: '전송할 이메일 유형. 가능한 값은 rejection(정회원 승인 거절), withdrawal(회원 탈퇴), suspension(회원 활동 정지), approval(정회원 승인)',
+    description:
+      '전송할 이메일 유형. 가능한 값은 rejection(정회원 승인 거절), withdrawal(회원 탈퇴), suspension(회원 활동 정지), approval(정회원 승인)',
     enum: EEmailType,
     example: EEmailType.REJECTION,
   })

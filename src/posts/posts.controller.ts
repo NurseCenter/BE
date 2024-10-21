@@ -452,15 +452,16 @@ export class PostsController {
     },
   })
   async updatePost(
-    @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
+    @Param('boardType') boardType: EBoardType,
     @Body() updatePostDto: UpdatePostDto,
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse | { message: string }> {
     try {
-      const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
+      const result = await this.postsService.updatePost(postId, boardType, updatePostDto, sessionUser);
       return result;
     } catch (err) {
+      console.error(err);
       throw err;
     }
   }

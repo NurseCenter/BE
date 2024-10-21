@@ -107,7 +107,7 @@ export class PostsService {
       content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
-      fileUrls: fileUrls ? `첨부파일 ${fileUrls.length}개` : `첨부파일 없음`
+      fileUrls: fileUrls ? `첨부파일 ${fileUrls.length}개` : `첨부파일 없음`,
     };
   }
 
@@ -149,8 +149,8 @@ export class PostsService {
 
   // 게시글 수정
   async updatePost(
-    boardType: EBoardType,
     postId: number,
+    boardType: EBoardType,
     updatePostDto: UpdatePostDto,
     sessionUser: IUser,
   ): Promise<IPostResponse | { message: string }> {

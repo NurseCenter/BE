@@ -27,10 +27,10 @@ export class SessionController {
     schema: { example: { error: '세션 모니터링 중 오류가 발생했습니다.' } },
   })
   @Post('monitor')
-  async monitorSession(@Req() req: Request, @Res() res: Response): Promise<void> {
+  async monitorSession(@Req() req: Request, @Res() res: Response): Promise<any> {
     try {
       const cookie = req.headers?.cookie;
-      let sessionId;
+      let sessionId: string;
 
       if (cookie) {
         // 쿠키에서 sessionId 추출
@@ -38,7 +38,7 @@ export class SessionController {
       }
 
       if (!sessionId) {
-        res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
+        return res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
       }
 
       // 세션 모니터링 시작

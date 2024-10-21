@@ -319,7 +319,7 @@ export class PostsController {
     },
   })
   async createPost(
-    @Param() boardType: EBoardType,
+    @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse> {

@@ -54,10 +54,14 @@ async function bootstrap() {
 
   // 환경변수 설정
   const sessionConfigService = app.get(SessionConfigService);
-  const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(cookieParser());
-  app.use(session(sessionOptions));
+  app.use((req, res, next) => {
+    const autoLogin = req.query.autoLogin === 'true';
+    const sessionOptions = sessionConfigService.createSessionOptions(autoLogin);
+    session(sessionOptions)(req, res, next);
+  });
+
   app.use(passport.initialize());
   app.use(passport.session());
 

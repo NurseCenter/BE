@@ -93,7 +93,9 @@ export class PostsService {
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
-    await this.filesService.uploadFiles(fileUrls, createdPost.postId);
+    if (fileUrls) {
+      await this.filesService.uploadFiles(fileUrls, createdPost.postId);
+    }
 
     const summaryContent = summarizeContent(content);
 
@@ -105,6 +107,7 @@ export class PostsService {
       content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
+      fileUrls: fileUrls ? `첨부파일 ${fileUrls.length}개` : `첨부파일 없음`
     };
   }
 

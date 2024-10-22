@@ -1,7 +1,8 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { SessionGateway } from './session.gateway';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import Redis from 'ioredis';
+import { sendCookieOptions } from 'src/auth/services';
 
 @Injectable()
 export class SessionService {
@@ -36,13 +37,36 @@ export class SessionService {
   }
 
   // 세션 연장
-  async extendSession(req: Request): Promise<void> {
+  async extendSession(req: Request, res: Response): Promise<void> {
     const sessionId = req.sessionID;
     const newExpiryTime = 2 * 60 * 60; // 2시간
 
     try {
       // Redis에서 세션의 만료 시간 갱신
       await this.redisClient.expire(`session:${sessionId}`, newExpiryTime);
+
+      console.log('!!!!!!!!!! Cookie:', req.session.cookie);
+      console.log('!!!!!!!!!! Cookie 만료 시간:', req.session.cookie.expires);
+
+      // const expires = req.session.cookie.expires.getTime()
+
+      // // 쿠키의 expires 시간 갱신
+      // req.session.cookie.expires = new Date(expires + newExpiryTime * 1000);
+
+      // console.log('!!!!!!!!!! Cookie 만료 시간 갱신후:', req.session.cookie.expires);
+
+      console.log("req.sessionId", req.sessionID); 
+          // 쿠키 옵션 가져오기
+    const cookieOptions = sendCookieOptions();
+
+    // connect.sid 쿠키 재발급
+    res.cookie('connect.sid', `s%3A${req.sessionID}`, {
+      ...cookieOptions,
+      maxAge: newExpiryTime * 1000, // 2시간으로 설정
+    });
+
+      // 소켓의 시간 연장
+      await this.redisClient.expire(`socket:s%3A${sessionId}`, 7200);
     } catch (error) {
       console.error('세션 연장 중 오류 발생:', error);
       throw new InternalServerErrorException('세션 연장에 실패했습니다.');

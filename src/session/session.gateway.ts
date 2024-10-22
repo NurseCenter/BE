@@ -35,8 +35,7 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
   }
 
   sendSessionExpiryWarning(sessionId: string) {
-    // Redis에서 소켓 ID를 가져와서,
-    // 소켓이 존재하면 알림을 보내야함.
+    // Redis에서 소켓 ID를 가져와서, 소켓이 존재하면 알림을 보내야함.
     this.redisClient.get(`socket:${sessionId}`, (err, socketId) => {
       if (err) {
         console.error('Redis에서 소켓 ID를 가져오는 중 오류 발생:', err);
@@ -44,12 +43,29 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
       }
 
       if (socketId) {
-        this.server
-          .to(socketId)
-          .emit('sessionExpiryWarning', { message: '세션이 10초 후 만료됩니다. 연장하시겠습니까?' });
+        const message =
+          process.env.NODE_ENV === 'production'
+            ? '세션이 30분 후 만료됩니다. 연장하시겠습니까?'
+            : '세션이 10초 후 만료됩니다. 연장하시겠습니까?';
+
+        this.server.to(socketId).emit('sessionExpiryWarning', { message });
       } else {
         console.log(`세션 ${sessionId}에 연결된 클라이언트가 없습니다.`);
       }
     });
+  }
+
+  async deleteSocket(sessionId: string): Promise<void> {
+    const socketId = await this.redisClient.get(`socket:s%3A${encodeURIComponent(sessionId)}`);
+
+    if (socketId) {
+      const socket = this.server.sockets.sockets.get(socketId);
+
+      if (socket) {
+        socket.disconnect(true);
+      }
+
+      await this.redisClient.del(`socket:s%3A${sessionId}`);
+    }
   }
 }

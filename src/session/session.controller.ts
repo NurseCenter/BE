@@ -64,7 +64,7 @@ export class SessionController {
   })
   async extendSession(@Req() req: Request, @Res() res: Response): Promise<void> {
     try {
-      await this.sessionService.extendSession(req);
+      await this.sessionService.extendSession(req, res);
       res.status(200).json({ message: '세션이 갱신되었습니다.' });
     } catch (error) {
       res.status(500).json({ error: '세션 갱신 중 오류가 발생했습니다.' });

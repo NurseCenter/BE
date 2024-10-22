@@ -1,5 +1,6 @@
-import { IsArray, IsOptional, IsString, Length } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { EBoardType } from '../enum/board-type.enum';
 
 export class UpdatePostDto {
   @IsOptional()
@@ -12,6 +13,11 @@ export class UpdatePostDto {
   @IsString()
   @ApiProperty({ description: '게시글 내용', required: false })
   content?: string;
+
+  @IsOptional()
+  @IsEnum(EBoardType)
+  @ApiProperty({ description: '변경 후 게시판 카테고리', required: false })
+  afterBoardType?: EBoardType;
 
   @IsArray()
   @IsOptional()

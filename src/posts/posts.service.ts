@@ -155,7 +155,7 @@ export class PostsService {
     sessionUser: IUser,
   ): Promise<IPostResponse | { message: string }> {
     const { userId } = sessionUser;
-    const { title, content, fileUrls } = updatePostDto;
+    const { title, content, afterBoardType, fileUrls } = updatePostDto;
 
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
@@ -185,8 +185,8 @@ export class PostsService {
     }
 
     // 카테고리 변경
-    if (boardType !== null && boardType !== undefined && post.boardType !== boardType) {
-      post.boardType = boardType;
+    if (afterBoardType !== null && afterBoardType !== undefined && post.boardType !== afterBoardType) {
+      post.boardType = afterBoardType;
       boardTypeChanged = true;
     }
 

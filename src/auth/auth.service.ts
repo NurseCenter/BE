@@ -134,7 +134,6 @@ export class AuthService {
     const sessionId = req.sessionID;
     const userId = req.session?.passport?.user?.userId;
     const keyToDelete = `sess:${sessionId}`;
-    console.log('로그아웃 세션 ID', sessionId);
 
     if (!userId) {
       throw new NotFoundException('회원 ID가 없습니다.');

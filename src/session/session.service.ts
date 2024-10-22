@@ -45,25 +45,16 @@ export class SessionService {
       // Redis에서 세션의 만료 시간 갱신
       await this.redisClient.expire(`session:${sessionId}`, newExpiryTime);
 
-      console.log('!!!!!!!!!! Cookie:', req.session.cookie);
-      console.log('!!!!!!!!!! Cookie 만료 시간:', req.session.cookie.expires);
+      const cookieValue = req.cookies['connect.sid'];
 
-      // const expires = req.session.cookie.expires.getTime()
+      // 쿠키 옵션 가져오기
+      const cookieOptions = sendCookieOptions();
 
-      // // 쿠키의 expires 시간 갱신
-      // req.session.cookie.expires = new Date(expires + newExpiryTime * 1000);
-
-      // console.log('!!!!!!!!!! Cookie 만료 시간 갱신후:', req.session.cookie.expires);
-
-      console.log("req.sessionId", req.sessionID); 
-          // 쿠키 옵션 가져오기
-    const cookieOptions = sendCookieOptions();
-
-    // connect.sid 쿠키 재발급
-    res.cookie('connect.sid', `s%3A${req.sessionID}`, {
-      ...cookieOptions,
-      maxAge: newExpiryTime * 1000, // 2시간으로 설정
-    });
+      // connect.sid 쿠키 재발급
+      res.cookie('connect.sid', cookieValue, {
+        ...cookieOptions,
+        maxAge: newExpiryTime * 1000, // 2시간
+      });
 
       // 소켓의 시간 연장
       await this.redisClient.expire(`socket:s%3A${sessionId}`, 7200);

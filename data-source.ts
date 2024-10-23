@@ -23,7 +23,7 @@ const AppDataSource = new DataSource({
     configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_PASSWORD' : 'AWS_DB_PASSWORD'
   ),
   database: configService.get<string>(
-    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_DATABASE' : ''
+    configService.get<string>('NODE_ENV') === 'development' ? 'LOCAL_DB_DATABASE' : 'AWS_DB_DATABASE'
   ),
   logging: configService.get<boolean>('TYPEORM_LOGGING'),
   synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),

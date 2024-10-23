@@ -16,8 +16,7 @@ import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 import { formattingPhoneNumber } from 'src/common/utils/phone-number-utils';
 import { InvalidPhoneNumberException } from 'src/common/exceptions/twilio-sms.exceptions';
-import clearAutoLoginCookieOptions from './cookie-options/clear-auto-login-cookie-options';
-import { sendAutoLoginCookieOptions } from './cookie-options/auto-login-cookie-options';
+import { SessionGateway } from 'src/session/session.gateway';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +31,7 @@ export class AuthService {
     private readonly usersDAO: UsersDAO,
     private readonly suspendedUsersDAO: SuspendedUsersDAO,
     private readonly rejectedUsersDAO: RejectedUsersDAO,
+    private readonly sessionGateway: SessionGateway,
   ) {}
 
   // 회원가입
@@ -57,11 +57,6 @@ export class AuthService {
   // 로그인
   async signIn(signInUserDto: SignInUserDto, req: Request, res: Response, autoLogin: boolean) {
     const { email, password } = signInUserDto;
-
-    // 일반 로그인 요청, 자동 로그인 쿠키가 존재할 경우 삭제
-    if (!autoLogin && req?.cookies?.autoLogin) {
-      res.clearCookie('autoLogin', clearAutoLoginCookieOptions());
-    }
 
     // 1. 이메일로 회원 찾기
     const user = await this.usersDAO.findUserByEmail(email);
@@ -117,11 +112,6 @@ export class AuthService {
         ? '임시 비밀번호로 로그인되었습니다. 새 비밀번호를 설정해 주세요.'
         : '로그인이 완료되었습니다.';
 
-      // 자동 로그인 여부 판단 후 쿠키 설정
-      if (autoLogin) {
-        res.cookie('autoLogin', 'true', sendAutoLoginCookieOptions());
-      }
-
       // 10. 응답 전송
       return res.status(200).json({
         message,
@@ -144,7 +134,6 @@ export class AuthService {
     const sessionId = req.sessionID;
     const userId = req.session?.passport?.user?.userId;
     const keyToDelete = `sess:${sessionId}`;
-    // console.log('로그아웃 세션 ID', sessionId);
 
     if (!userId) {
       throw new NotFoundException('회원 ID가 없습니다.');
@@ -156,14 +145,26 @@ export class AuthService {
       await delAsync(keyToDelete);
 
       // 사용자 세션 목록에서 현재 세션 ID 삭제
-      await this.redisClient.lrem(`user:${userId}:sessions`, 0, sessionId);
+      const removedCount = await this.redisClient.lrem(`user:${userId}:sessions`, 0, sessionId);
 
       // 세션 제거
       const destroyAsync = promisify(req.session.destroy).bind(req.session);
       await destroyAsync();
 
+      // 소켓 삭제
+      await this.sessionGateway.deleteSocket(sessionId);
+
       // 쿠키 삭제
       res.clearCookie('connect.sid', clearCookieOptions());
+
+      // 제거된 세션이 해당 목록에 있는 유일한 세션이라면
+      // Redis에서 특정 사용자 세션 내역 목록을 다 지워야함.
+      if (removedCount > 0) {
+        const remainingSessions = await this.redisClient.lrange(`user:${userId}:sessions`, 0, -1);
+        if (remainingSessions.length === 0) {
+          await this.redisClient.del(`users:${userId}`);
+        }
+      }
     } catch (error) {
       console.error('로그아웃 처리 중 오류: ', error);
       throw error;
@@ -173,7 +174,7 @@ export class AuthService {
   // 특정 세션 강제 종료
   async forceSignOut(sessionId: string): Promise<void> {
     const keyToDelete = `sess:${sessionId}`;
-    console.log('keyToDelete', keyToDelete);
+    // console.log('keyToDelete', keyToDelete);
 
     return new Promise((resolve, reject) => {
       this.redisClient.del(keyToDelete, (err) => {

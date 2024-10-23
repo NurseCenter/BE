@@ -8,7 +8,7 @@ import {
 import { SuspensionUserDto } from './dto/suspension-user.dto';
 import { AuthPasswordService, AuthSignInService, AuthUserService } from 'src/auth/services';
 import { UsersDAO } from 'src/users/users.dao';
-import { EmanagementStatus, ESearchUser } from './enums';
+import { EmanagementStatus, ESearchCommentByAdmin, ESearchUser } from './enums';
 import { ECommentType, EMembershipStatus } from 'src/users/enums';
 import { ApprovalUserDto, DeleteCommentsDto } from './dto';
 import { IPaginatedResponse } from 'src/common/interfaces';
@@ -26,6 +26,7 @@ import { EmailService } from 'src/email/email.service';
 import { formatSuspensionEndDate } from 'src/common/utils/format-suspension-end-date.utils';
 import { calculateSuspensionEndDate } from 'src/common/utils/calculate-suspension-end-date.utils';
 import { PostsService } from 'src/posts/posts.service';
+import { ESearchPostByAdmin } from './enums/search-post-type.enum';
 
 @Injectable()
 export class AdminService {
@@ -395,8 +396,13 @@ export class AdminService {
   }
 
   // 게시물 관리 페이지 데이터 조회
-  async getAllPosts(page: number, limit: number, search: string): Promise<IPaginatedResponse<IPostList>> {
-    const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, search);
+  async getAllPosts(
+    page: number,
+    limit: number,
+    type: ESearchPostByAdmin,
+    search: string,
+  ): Promise<IPaginatedResponse<IPostList>> {
+    const [posts, total] = await this.postsDAO.findAllPostsByAdmin(page, limit, type, search);
 
     const items = await Promise.all(
       posts.map(async (post) => {
@@ -435,46 +441,50 @@ export class AdminService {
   }
 
   // 댓글 및 답글 조회
-  async findAllCommentsAndReplies(page: number = 1, limit: number = 10): Promise<IPaginatedResponse<any>> {
+  async findAllCommentsAndReplies(
+    page: number = 1,
+    limit: number = 10,
+    type: ESearchCommentByAdmin,
+    search: string,
+  ): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
     // 댓글과 답글을 모두 조회
     const [comments, replies] = await Promise.all([
-      this.commentsDAO.findAllComments(),
-      this.repliesDAO.findAllReplies(),
+      this.commentsDAO.findAllComments(type, search),
+      this.repliesDAO.findAllReplies(type, search),
     ]);
 
     // 댓글과 답글을 합침
     const combinedPromises = comments.map(async (comment) => {
-      const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
-      const user = await this.usersDAO.findUserByUserId(comment.userId);
+      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.postId);
+
+      // console.log("post", post)
 
       return {
         id: comment.commentId, // 댓글 ID
         type: ECommentType.COMMENT, // 댓글 표시
-        postId: post.postId || null,
-        category: post.boardType || null, // 게시물 카테고리
-        
-        postTitle: post.title || null, // 게시물 제목
+        postId: post?.postId || null, // 게시물 ID
+        category: post?.boardType || null, // 게시물 카테고리
+        postTitle: post?.title || null, // 게시물 제목
         content: comment.content, // 댓글 내용
-        nickname: user.nickname, // 작성자 닉네임
+        nickname: comment.user.nickname, // 작성자 닉네임
         createdAt: new Date(comment.createdAt), // 작성일
       };
     });
 
     const replyPromises = replies.map(async (reply) => {
       const comment = await this.commentsDAO.findCommentById(reply.commentId);
-      const post = await this.postsDAO.findPostEntityByPostId(comment.postId);
-      const user = await this.usersDAO.findUserByUserId(comment.userId);
+      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.postId);
 
       return {
         id: reply.replyId, // 답글 ID
         type: ECommentType.REPLY, // 답글 표시
-        postId: post.postId || null,
-        category: post.boardType || null, // 게시물 카테고리
-        postTitle: post.title || null, // 게시물 제목
+        postId: post?.postId || null, // 게시물 ID
+        category: post?.boardType || null, // 게시물 카테고리
+        postTitle: post?.title || null, // 게시물 제목
         content: reply.content, // 답글 내용
-        nickname: user.nickname, // 작성자 닉네임
+        nickname: reply.user.nickname, // 작성자 닉네임
         createdAt: new Date(reply.createdAt), // 작성일
       };
     });

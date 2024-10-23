@@ -29,8 +29,6 @@ export class TestPostsService {
 
   // 게시물 생성
   async createPost(boardType: EBoardType, createPostDto: CreatePostDto): Promise<IPostResponse> {
-    console.log('boardType: ', boardType);
-
     const { title, content, fileUrls, hospitalNames } = createPostDto;
     const userId = 10041004;
 

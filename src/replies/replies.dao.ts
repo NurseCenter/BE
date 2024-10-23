@@ -4,6 +4,7 @@ import { DeleteResult, Repository } from 'typeorm';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { CreateCommentDto } from 'src/comments/dto/create-comment.dto';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
+import { ESearchCommentByAdmin } from 'src/admin/enums';
 
 @Injectable()
 export class RepliesDAO {
@@ -60,18 +61,35 @@ export class RepliesDAO {
   }
 
   // 관리자페이지 모든 답글 조회
-  async findAllReplies(): Promise<any[]> {
-    return this.repliesRepository
+  async findAllReplies(type: ESearchCommentByAdmin, search: string): Promise<any[]> {
+    const queryBuilder = this.repliesRepository
       .createQueryBuilder('reply')
-      .leftJoinAndSelect('reply.user', 'user')
+      .leftJoinAndSelect('reply.user', 'replyUser')
       .select([
         'reply.replyId', // 답글 ID
         'reply.content', // 답글 내용
         'reply.createdAt', // 작성일
-        'user.nickname', // 작성자 닉네임
+        'replyUser.nickname', // 답글 작성자 닉네임
       ])
-      .where('reply.deletedAt IS NULL')
-      .getMany();
+      .where('reply.deletedAt IS NULL');
+
+    if (type && search) {
+      switch (type) {
+        case ESearchCommentByAdmin.COMMENT_ID:
+          queryBuilder.andWhere('reply.replyId = :search', { search });
+          break;
+        case ESearchCommentByAdmin.COMMENT_CONTENT:
+          queryBuilder.andWhere('reply.content LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchCommentByAdmin.COMMENT_AUTHOR:
+          queryBuilder.andWhere('replyUser.nickname LIKE :search', { search: `%${search}%` });
+          break;
+      }
+    }
+
+    const results = await queryBuilder.getMany();
+    // console.log('댓글 조회 결과:', results);
+    return results;
   }
 
   // 특정 답글 조회

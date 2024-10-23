@@ -1,8 +1,8 @@
-import { IsArray, IsOptional, IsString, Length } from 'class-validator';
-import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { BasePostDto } from './base-post.dto';
+import { IsArray, IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { EBoardType } from '../enum/board-type.enum';
 
-export class UpdatePostDto extends OmitType(BasePostDto, ['postId'] as const) {
+export class UpdatePostDto {
   @IsOptional()
   @Length(1, 50)
   @IsString()
@@ -13,6 +13,11 @@ export class UpdatePostDto extends OmitType(BasePostDto, ['postId'] as const) {
   @IsString()
   @ApiProperty({ description: '게시글 내용', required: false })
   content?: string;
+
+  @IsOptional()
+  @IsEnum(EBoardType)
+  @ApiProperty({ description: '변경 후 게시판 카테고리', required: false })
+  afterBoardType?: EBoardType;
 
   @IsArray()
   @IsOptional()

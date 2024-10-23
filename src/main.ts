@@ -14,6 +14,7 @@ import { DatabaseExceptionFilter } from './common/filters/database-exception.fil
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { getAllowedOrigins } from './config/cors.config';
 import { ConversionUtil } from './common/utils';
+import { winstonLogger } from './config/logger.config';
 
 // NODE_ENV 값에 따라 .env 파일을 다르게 읽음
 dotenv.config({
@@ -26,7 +27,11 @@ dotenv.config({
 
 async function bootstrap() {
   ConfigModule.forRoot({ isGlobal: true });
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    logger: winstonLogger,
+  });
 
   // 리버스 프록시를 신뢰하도록 설정
   app.set('trust proxy', 1);
@@ -54,9 +59,19 @@ async function bootstrap() {
 
   // 환경변수 설정
   const sessionConfigService = app.get(SessionConfigService);
-  const sessionOptions = sessionConfigService.createSessionOptions();
 
   app.use(cookieParser());
+  app.use((req, res, next) => {
+    const autoLogin = req.query.autoLogin === 'true';
+    const sessionOptions = sessionConfigService.createSessionOptions(autoLogin);
+    session(sessionOptions)(req, res, next);
+  });
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
+  app.setViewEngine('ejs');
 
   const allowedOrigins = getAllowedOrigins(process.env.NODE_ENV);
 
@@ -71,16 +86,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use(session(sessionOptions));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  app.setBaseViewsDir(join(__dirname, '..', 'src', 'views'));
-  app.setViewEngine('ejs');
-
   const PORT = ConversionUtil.stringToNumber(process.env.PORT);
 
-  console.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
+  winstonLogger.log(`◆◆◆◆◆[ ${PORT}번 포트에서 실행중입니다. ]◆◆◆◆◆`);
 
   await app.listen(PORT);
 }

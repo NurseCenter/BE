@@ -8,6 +8,6 @@ import { SessionGateway } from './session.gateway';
   imports: [RedisModule],
   controllers: [SessionController],
   providers: [SessionService, SessionGateway],
-  exports: [SessionService],
+  exports: [SessionService, SessionGateway],
 })
 export class SessionModule {}

@@ -1,7 +1,7 @@
 import { CookieOptions } from 'express';
 
 const commonOptions = {
-  // domain: process.env.COOKIE_DOMAIN,
+  domain: process.env.COOKIE_DOMAIN,
   httpOnly: true,
 };
 
@@ -10,7 +10,6 @@ const sendCookieOptions = (): CookieOptions => {
   if (process.env.NODE_ENV === 'production') {
     return {
       ...commonOptions,
-      domain: '.caugannies.com',
       secure: true,
       sameSite: 'none',
       maxAge: 2 * 60 * 60 * 1000, // 2시간 (세션 유효기간)
@@ -19,7 +18,6 @@ const sendCookieOptions = (): CookieOptions => {
   } else {
     return {
       ...commonOptions,
-      domain: '.localhost',
       secure: false,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24시간

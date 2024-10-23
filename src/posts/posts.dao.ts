@@ -6,6 +6,7 @@ import { GetPostsQueryDto } from './dto/get-posts-query.dto';
 import { ESortType, ESortOrder } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
+import { ESearchPostByAdmin } from 'src/admin/enums';
 
 @Injectable()
 export class PostsDAO {
@@ -28,6 +29,22 @@ export class PostsDAO {
   // 특정 게시물 ID로 게시물 엔티티 조회
   async findPostEntityByPostId(postId: number): Promise<PostsEntity | null> {
     const post = await this.postsRepository.findOne({ where: { postId } });
+
+    if (post) {
+      return {
+        ...post,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        deletedAt: post.deletedAt ? post.deletedAt : null,
+      };
+    }
+
+    return null;
+  }
+
+  // 특정 게시물 ID로 게시물 엔티티 조회 (삭제된 게시물 포함)
+  async findPostEntityByPostIdWithDeleted(postId: number): Promise<PostsEntity | null> {
+    const post = await this.postsRepository.findOne({ where: { postId }, withDeleted: true });
 
     if (post) {
       return {
@@ -237,7 +254,12 @@ export class PostsDAO {
   }
 
   // 게시물 관리 페이지 데이터 조회 및 검색
-  async findAllPostsByAdmin(page: number, limit: number, search?: string): Promise<[PostsEntity[], number]> {
+  async findAllPostsByAdmin(
+    page: number,
+    limit: number,
+    type?: ESearchPostByAdmin,
+    search?: string,
+  ): Promise<[PostsEntity[], number]> {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.postsRepository
@@ -257,8 +279,21 @@ export class PostsDAO {
       .take(limit);
 
     // 검색어 있을 경우
-    if (search) {
-      queryBuilder.andWhere('post.title LIKE :search OR post.content LIKE :search', { search: `%${search}%` });
+    if (type && search) {
+      switch (type) {
+        case ESearchPostByAdmin.POST_ID:
+          queryBuilder.andWhere('post.postId = :search', { search });
+          break;
+        case ESearchPostByAdmin.POST_TITLE:
+          queryBuilder.andWhere('post.title LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchPostByAdmin.POST_CONTENT:
+          queryBuilder.andWhere('post.content LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchPostByAdmin.POST_AUTHOR:
+          queryBuilder.andWhere('user.nickname LIKE :search', { search: `%${search}%` });
+          break;
+      }
     }
 
     const [posts, total] = await Promise.all([queryBuilder.getMany(), this.countTotalPosts(search)]);

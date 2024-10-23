@@ -5,3 +5,6 @@ export * from './cancel-withdrawal-user.dto';
 export * from './get-one-comment.dto';
 export * from './userId-dto';
 export * from './delete-comments.dto';
+export * from './search-post-query.dto';
+export * from './search-comment-query.dto';
+export * from './search-user-query.dto';

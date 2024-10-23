@@ -319,7 +319,7 @@ export class PostsController {
     },
   })
   async createPost(
-    @Param() boardType: EBoardType,
+    @Param('boardType') boardType: EBoardType,
     @Body() createPostDto: CreatePostDto,
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse> {
@@ -383,6 +383,14 @@ export class PostsController {
           hospitalNames: ['서울대학교병원', '아주대학교병원', '연세의료원'],
         },
       },
+      '제목, 내용, 카테고리 포함': {
+        summary: '제목, 내용, 카테고리가 포함된 게시글',
+        value: {
+          title: '수정된 게시글 제목',
+          content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
+          afterBoardType: 'employment',
+        },
+      },
       '제목, 내용, 첨부파일, 병원명 포함': {
         summary: '첨부파일을 포함한 게시글',
         value: {
@@ -403,11 +411,13 @@ export class PostsController {
     schema: {
       example: {
         postId: 2,
+        category: 'employment',
         userId: 35,
         title: '새 게시글 제목',
         content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
+        updatedAt: '2024-10-22T09:35:01.805Z',
       },
     },
   })
@@ -452,15 +462,16 @@ export class PostsController {
     },
   })
   async updatePost(
-    @Param('boardType') boardType: EBoardType,
     @Param('postId') postId: number,
+    @Param('boardType') boardType: EBoardType,
     @Body() updatePostDto: UpdatePostDto,
     @SessionUser() sessionUser: IUser,
   ): Promise<IPostResponse | { message: string }> {
     try {
-      const result = await this.postsService.updatePost(boardType, postId, updatePostDto, sessionUser);
+      const result = await this.postsService.updatePost(postId, boardType, updatePostDto, sessionUser);
       return result;
     } catch (err) {
+      console.error(err);
       throw err;
     }
   }

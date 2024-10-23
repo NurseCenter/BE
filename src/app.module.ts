@@ -24,6 +24,7 @@ import { FilesModule } from './files/files.module';
 import { KakaoMessageModule } from './kakao-message/kakao-message.module';
 import { SessionModule } from './session/session.module';
 import { TestControllerModule } from './_test-controller/test-controller.module';
+// import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -58,4 +59,9 @@ import { TestControllerModule } from './_test-controller/test-controller.module'
   controllers: [AppController],
   providers: [AppService, SessionConfigService],
 })
-export class AppModule {}
+export class AppModule {
+  // export class AppModule implements NestModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(LoggerMiddleware).forRoutes('*');
+  // }
+}

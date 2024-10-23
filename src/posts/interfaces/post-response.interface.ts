@@ -9,4 +9,5 @@ export interface IPostResponse {
   hospitalNames?: string[]; // 게시물과 관련된 병원 이름 (배열)
   createdAt: Date; // 작성일
   updatedAt?: Date; // 수정일 (업데이트 유무 렌더링 목적)
+  fileUrls?: string; // 첨부파일 개수
 }

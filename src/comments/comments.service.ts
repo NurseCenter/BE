@@ -62,10 +62,15 @@ export class CommentsService {
     const { page = 1, limit = 10 } = paginationQueryDto;
     const result = await this.commentsDAO.findCommentsWithReplies(postId, page, limit);
 
+    // 삭제된 댓글 중 답글 없는 것만 제외
+    const filteredComments = result.comments.filter(
+      (comment) => !(comment.deletedAt !== null && comment.replies.length === 0),
+    );
+
     return {
-      items: result.comments,
-      totalItems: result.total,
-      totalPages: Math.ceil(result.total / limit),
+      items: filteredComments,
+      totalItems: filteredComments.length,
+      totalPages: Math.ceil(filteredComments.length / limit),
       currentPage: page,
     };
   }

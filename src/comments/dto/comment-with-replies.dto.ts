@@ -7,6 +7,7 @@ export class CommentWithRepliesDto {
   boardType: string; // 게시물 카테고리
   createdAt: Date; // 댓글 작성일
   updatedAt: Date; // 댓글 수정일
+  deletedAt?: Date | null; // 댓글 삭제일
   userId: number; // 작성자 ID
   nickname: string; // 작성자 닉네임
   replies: ReplyInCommentDto[]; // 해당 댓글의 답글들

@@ -15,6 +15,7 @@ import { IPaginatedResponse } from 'src/common/interfaces';
 import { IUserInfoResponse } from './interfaces';
 import { PostsEntity } from 'src/posts/entities/base-posts.entity';
 import { PostsService } from 'src/posts/posts.service';
+import { EPostsBaseSortType } from 'src/common/enums';
 
 @Injectable()
 export class UsersService {
@@ -105,7 +106,7 @@ export class UsersService {
     sessionUser: IUser,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<PostsEntity>> {
     const { userId } = sessionUser;
 
@@ -140,7 +141,7 @@ export class UsersService {
     userId: number,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<any>> {
     const skip = (page - 1) * limit;
 
@@ -223,7 +224,7 @@ export class UsersService {
     sessionUser: IUser,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<any>> {
     const { userId } = sessionUser;
     const user = await this.usersDAO.findUserByUserId(userId);

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DeleteResult } from 'typeorm';
 import { PostsEntity } from './entities/base-posts.entity';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
-import { ESortType, ESortOrder } from 'src/common/enums';
+import { ESortType, ESortOrder, EPostsBaseSortType } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { ESearchPostByAdmin } from 'src/admin/enums';
@@ -211,7 +211,7 @@ export class PostsDAO {
     userId: number,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<PostsEntity>> {
     const skip = (page - 1) * limit;
     const queryBuilder = this.postsRepository
@@ -231,10 +231,18 @@ export class PostsDAO {
       .take(limit);
 
     // 정렬 기준
-    if (sort === 'latest') {
-      queryBuilder.orderBy('post.createdAt', 'DESC');
+    if (sort === 'viewCounts') {
+      // 조회순
+      queryBuilder.orderBy('post.viewCounts', 'DESC');
     } else if (sort === 'popular') {
+      // 공감순
       queryBuilder.orderBy('post.likeCounts', 'DESC');
+    } else if (sort === 'oldest') {
+      // 작성순
+      queryBuilder.orderBy('post.createdAt', 'ASC');
+    } else {
+      // 최신순
+      queryBuilder.orderBy('post.createdAt', 'DESC');
     }
 
     const [items, total] = await queryBuilder.getManyAndCount();

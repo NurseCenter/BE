@@ -169,7 +169,7 @@ export class MeController {
   @ApiQuery({
     name: 'sort',
     type: String,
-    enum: ['latest', 'popular'],
+    enum: ['latest (최신순)', 'popular (인기순)', 'viewCounts (조회순)', 'oldest (작성순)'],
     description: '정렬 기준',
     required: false,
     example: 'latest',
@@ -232,8 +232,8 @@ export class MeController {
   @ApiQuery({
     name: 'sort',
     type: String,
-    enum: ['latest', 'popular'],
-    description: '정렬 기준',
+    enum: ['latest (최신순)', 'popular (인기순)', 'viewCounts (조회순)', 'oldest (작성순)'],
+    description: '원 게시물을 기준으로 정렬할 수 있는 필터 종류',
     required: false,
     example: 'latest',
   })
@@ -325,6 +325,16 @@ export class MeController {
   @Get('scraps')
   @HttpCode(200)
   @ApiOperation({ summary: '내가 스크랩한 게시물 조회' })
+  @ApiQuery({ name: 'page', type: Number, description: '페이지 번호', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', type: Number, description: '페이지당 댓글 수', required: false, example: 10 })
+  @ApiQuery({
+    name: 'sort',
+    type: String,
+    enum: ['latest (최신순)', 'popular (인기순)', 'viewCounts (조회순)', 'oldest (작성순)'],
+    description: '원 게시물을 기준으로 정렬할 수 있는 필터 종류',
+    required: false,
+    example: 'latest',
+  })
   @ApiResponse({
     status: 200,
     description: '스크랩한 게시물 목록',

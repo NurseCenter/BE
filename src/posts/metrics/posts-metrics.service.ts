@@ -62,7 +62,9 @@ export class PostsMetricsService {
   // 스크랩 수 감소 (MySQL)
   async decrementScrapCountInMySQL(postId: number): Promise<string> {
     const post = await this.postsDAO.findOnePostByPostId(postId);
-    post.scrapCounts -= 1;
+    if (post.scrapCounts > 0) {
+      post.scrapCounts -= 1;
+    }
     this.postsDAO.savePost(post);
     return `${postId}번 게시물의 좋아요수: ${post.scrapCounts}`;
   }

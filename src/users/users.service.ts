@@ -150,16 +150,18 @@ export class UsersService {
     const [replies, repliesCount] = await this.repliesDAO.findRepliesByUserIdWithPagination(userId, 0, 0);
 
     const postIds = [
-      ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.commentId))),
+      ...new Set(comments.map((comment) => comment.postId).concat(replies.map((reply) => reply.postId))),
     ];
     const posts = await this.postsDAO.findPostsByIds(postIds);
+
+    const postMap = new Map(posts.map((post) => [post.postId, post]));
 
     const combinedResults: ICombinedResult[] = [];
 
     // 댓글 결과 조합
     await Promise.all(
       comments.map(async (comment) => {
-        const post = posts.find((p) => p.postId === comment.postId);
+        const post = postMap.get(comment.postId);
         const total = await this.postsService.getNumberOfCommentsAndReplies(comment.postId);
 
         combinedResults.push({
@@ -171,6 +173,7 @@ export class UsersService {
           boardType: post?.boardType,
           title: post?.title,
           numberOfCommentsAndReplies: total,
+          postCreatedAt: post?.createdAt,
         });
       }),
     );
@@ -178,7 +181,7 @@ export class UsersService {
     // 답글 결과 조합
     await Promise.all(
       replies.map(async (reply) => {
-        const post = posts.find((p) => p.postId === reply.postId);
+        const post = postMap.get(reply.postId);
         const total = await this.postsService.getNumberOfCommentsAndReplies(reply.postId);
 
         combinedResults.push({
@@ -191,21 +194,48 @@ export class UsersService {
           boardType: post?.boardType || '정보없음',
           title: post?.title || '정보없음',
           numberOfCommentsAndReplies: total,
+          postCreatedAt: post?.createdAt,
         });
       }),
     );
 
-    // 최신순 정렬 (기본)
-    combinedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // 정렬 기준
+    switch (sort) {
+      case 'viewCounts':
+        // 조회순
+        combinedResults.sort((a, b) => {
+          const aPost = postMap.get(a.postId);
+          const bPost = postMap.get(b.postId);
+          return (bPost?.viewCounts || 0) - (aPost?.viewCounts || 0);
+        });
+        break;
 
-    // 인기순 정렬
-    // 댓글 혹은 답글이 달린 원 게시물의 좋아요수가 많은 순서대로 정렬이 됨.
-    if (sort === 'popular') {
-      combinedResults.sort((a, b) => {
-        const aPost = posts.find((post) => post.postId === (a.type === 'comment' ? a.postId : a.commentId));
-        const bPost = posts.find((post) => post.postId === (b.type === 'comment' ? b.postId : b.commentId));
-        return (bPost?.likeCounts || 0) - (aPost?.likeCounts || 0);
-      });
+      case 'popular':
+        // 공감순
+        combinedResults.sort((a, b) => {
+          const aPost = postMap.get(a.postId);
+          const bPost = postMap.get(b.postId);
+          return (bPost?.likeCounts || 0) - (aPost?.likeCounts || 0);
+        });
+        break;
+
+      case 'oldest':
+        // 작성순
+        combinedResults.sort((a, b) => {
+          const aPost = postMap.get(a.postId);
+          const bPost = postMap.get(b.postId);
+          return (new Date(aPost?.createdAt).getTime() || 0) - (new Date(bPost?.createdAt).getTime() || 0);
+        });
+        break;
+
+      default:
+        // 최신순
+        combinedResults.sort((a, b) => {
+          const aPost = postMap.get(a.postId);
+          const bPost = postMap.get(b.postId);
+          return (new Date(bPost?.createdAt).getTime() || 0) - (new Date(aPost?.createdAt).getTime() || 0);
+        });
+        break;
     }
 
     // 전체 결과에 대해 페이지네이션 적용

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DeleteResult } from 'typeorm';
 import { PostsEntity } from './entities/base-posts.entity';
 import { GetPostsQueryDto } from './dto/get-posts-query.dto';
-import { ESortType, ESortOrder } from 'src/common/enums';
+import { ESortType, EPostsBaseSortType } from 'src/common/enums';
 import { EBoardType } from './enum/board-type.enum';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { ESearchPostByAdmin } from 'src/admin/enums';
@@ -124,27 +124,19 @@ export class PostsDAO {
     // console.log(query.getQuery());
     // console.log(query.getParameters());
 
-    sortType = Object.values(ESortType).includes(sortType) ? sortType : ESortType.DATE;
-    sortOrder = Object.values(ESortOrder).includes(sortOrder) ? sortOrder : ESortOrder.DESC;
-
-    // 정렬 조건에 따른 쿼리 설정
-    const order = sortOrder === ESortOrder.ASC ? 'ASC' : 'DESC';
-
+    // 정렬
     switch (sortType) {
-      // Date → 작성일 기준
-      case ESortType.DATE:
-        query.orderBy('post.createdAt', order).addOrderBy('post.postId', order);
-        break;
-      // likes → 좋아요수 기준
       case ESortType.LIKES:
-        query
-          .orderBy('post.likeCounts', order)
-          .addOrderBy('post.createdAt', ESortOrder.DESC)
-          .addOrderBy('post.postId', ESortOrder.DESC);
+        query.orderBy('post.likeCounts', sortOrder);
+        break;
+      case ESortType.VIEWCOUNTS:
+        query.orderBy('post.viewCounts', sortOrder);
         break;
       default:
-        query.orderBy('post.createdAt', ESortOrder.DESC).addOrderBy('post.postId', ESortOrder.DESC);
+        query.orderBy('post.createdAt', sortOrder);
+        break;
     }
+    query.addOrderBy('post.postId', sortOrder);
 
     const [posts, total] = await query
       .skip((page - 1) * limit)
@@ -211,7 +203,7 @@ export class PostsDAO {
     userId: number,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<PostsEntity>> {
     const skip = (page - 1) * limit;
     const queryBuilder = this.postsRepository
@@ -231,10 +223,18 @@ export class PostsDAO {
       .take(limit);
 
     // 정렬 기준
-    if (sort === 'latest') {
-      queryBuilder.orderBy('post.createdAt', 'DESC');
+    if (sort === 'viewCounts') {
+      // 조회순
+      queryBuilder.orderBy('post.viewCounts', 'DESC');
     } else if (sort === 'popular') {
+      // 공감순
       queryBuilder.orderBy('post.likeCounts', 'DESC');
+    } else if (sort === 'oldest') {
+      // 작성순
+      queryBuilder.orderBy('post.createdAt', 'ASC');
+    } else {
+      // 최신순
+      queryBuilder.orderBy('post.createdAt', 'DESC');
     }
 
     const [items, total] = await queryBuilder.getManyAndCount();

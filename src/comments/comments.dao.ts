@@ -247,8 +247,10 @@ export class CommentsDAO {
   ): Promise<[CommentsEntity[], number]> {
     const [comments, count] = await this.commentsRepository
       .createQueryBuilder('comment')
+      .innerJoinAndSelect('comment.post', 'post')
       .where('comment.userId = :userId', { userId })
       .andWhere('comment.deletedAt IS NULL')
+      .andWhere('post.deletedAt IS NULL') // 삭제되지 않은 게시물의 댓글만 조회
       .skip(skip)
       .take(take)
       .getManyAndCount();

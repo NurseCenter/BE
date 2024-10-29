@@ -4,6 +4,7 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ScrapsEntity } from './entities/scraps.entity';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { IScrapedPostResponse } from './interfaces/scraped-post-response.interface';
+import { EPostsBaseSortType } from 'src/common/enums';
 // import { IScrapedPostResponse } from './interfaces/scraped-post-response.interface';
 
 @Injectable()
@@ -34,7 +35,7 @@ export class ScrapsDAO {
     userId: number,
     page: number,
     limit: number,
-    sort: 'latest' | 'popular',
+    sort: EPostsBaseSortType,
   ): Promise<IPaginatedResponse<any>> {
     const [items] = await this.scrapsRepository.findAndCount({
       where: {
@@ -49,8 +50,16 @@ export class ScrapsDAO {
 
     // 정렬 처리
     if (sort === 'popular') {
+      // 인기순
       filteredItems.sort((a, b) => b.post.likeCounts - a.post.likeCounts);
+    } else if (sort === 'viewCounts') {
+      // 조회순
+      filteredItems.sort((a, b) => b.post.viewCounts - a.post.viewCounts);
+    } else if (sort === 'oldest') {
+      // 작성순
+      filteredItems.sort((a, b) => a.post.createdAt.getTime() - b.post.createdAt.getTime());
     } else {
+      // 최신순 (기본)
       filteredItems.sort((a, b) => b.post.createdAt.getTime() - a.post.createdAt.getTime());
     }
 

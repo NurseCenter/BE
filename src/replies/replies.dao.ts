@@ -118,8 +118,10 @@ export class RepliesDAO {
   ): Promise<[RepliesEntity[], number]> {
     const [replies, count] = await this.repliesRepository
       .createQueryBuilder('reply')
+      .innerJoinAndSelect('reply.post', 'post')
       .where('reply.userId = :userId', { userId })
       .andWhere('reply.deletedAt IS NULL')
+      .andWhere('post.deletedAt IS NULL') // 삭제되지 않은 게시물의 댓글만 조회
       .skip(skip)
       .take(take)
       .getManyAndCount();

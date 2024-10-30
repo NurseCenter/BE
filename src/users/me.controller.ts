@@ -232,8 +232,8 @@ export class MeController {
   @ApiQuery({
     name: 'sort',
     type: String,
-    enum: ['latest (최신순)', 'popular (인기순)', 'viewCounts (조회순)', 'oldest (작성순)'],
-    description: '원 게시물을 기준으로 정렬할 수 있는 필터 종류',
+    enum: ['latest (최신순)', 'oldest (작성순)'],
+    description: '댓글 작성일 기준으로 정렬할 수 있는 필터 종류',
     required: false,
     example: 'latest',
   })

@@ -19,6 +19,7 @@ import { PaginationQueryDto } from 'src/common/dto';
 import { IReportedCommentResponse } from 'src/reports/interfaces/users';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
 import { IUser } from 'src/auth/interfaces';
+import { RepliesDAO } from 'src/replies/replies.dao';
 
 @Injectable()
 export class CommentsService {
@@ -26,6 +27,7 @@ export class CommentsService {
     private readonly reportedCommentsDAO: ReportedCommentsDAO,
     private readonly postsDAO: PostsDAO,
     private readonly commentsDAO: CommentsDAO,
+    private readonly repliesDAO: RepliesDAO,
   ) {}
 
   // 댓글 작성
@@ -60,17 +62,61 @@ export class CommentsService {
     paginationQueryDto: PaginationQueryDto,
   ): Promise<IPaginatedResponse<any>> {
     const { page = 1, limit = 10 } = paginationQueryDto;
-    const result = await this.commentsDAO.findCommentsWithReplies(postId, page, limit);
 
-    // 삭제된 댓글 중 답글 없는 것만 제외
-    const filteredComments = result.comments.filter(
-      (comment) => !(comment.deletedAt !== null && comment.replies.length === 0),
-    );
+    // 댓글 조회
+    const comments = await this.commentsDAO.findCommentsInOnePost(postId);
+
+    // 답글 조회
+    const replies = await this.repliesDAO.findRepliesByPostId(postId);
+
+    // 댓글과 각 댓글에 대한 답글 결합
+    const combinedResults = comments.map((comment) => {
+      const commentReplies = replies.filter((reply) => reply.commentId === comment.commentId);
+
+      return {
+        ...comment,
+        replies: commentReplies,
+      };
+    });
+
+    // 삭제된 댓글 중 답글 없는 것만 제외하고, 답글 있는 댓글은 내용을 '삭제된 댓글입니다.'로 변경
+    const filteredComments = combinedResults.filter((comment) => {
+      const hasReplies = comment?.replies?.length > 0;
+      if (comment.deletedAt !== null && !hasReplies) {
+        return false;
+      }
+      if (comment.deletedAt !== null && hasReplies) {
+        comment.content = '삭제된 댓글입니다.';
+      }
+      return true;
+    });
+
+    // 전체 댓글 수 (삭제된 댓글 제외)
+    const total = combinedResults.filter((comment) => comment.deletedAt === null).length;
+
+    // 페이지네이션 적용
+    const skip = (page - 1) * limit;
+    const paginatedComments = filteredComments.slice(skip, skip + limit);
+
+    // 정렬 기준 적용
+    paginatedComments.sort((a, b) => {
+      const dateComparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+
+      if (dateComparison !== 0) {
+        return dateComparison; // 작성순으로 정렬
+      }
+
+      // 작성일이 같을 경우: 댓글이 먼저
+      return a.type === 'comment' && b.type === 'reply' ? -1 : 1;
+    });
+
+    // 총 페이지 수 계산
+    const totalPages = Math.ceil(total / limit);
 
     return {
-      items: filteredComments,
-      totalItems: filteredComments.length,
-      totalPages: Math.ceil(filteredComments.length / limit),
+      items: paginatedComments,
+      totalItems: total,
+      totalPages: totalPages,
       currentPage: page,
     };
   }
@@ -82,13 +128,22 @@ export class CommentsService {
     paginationQueryDto: PaginationQueryDto,
   ): Promise<IPaginatedResponse<CommentsEntity>> {
     const { page = 1, limit = 10 } = paginationQueryDto;
-    const result = await this.commentsDAO.findCommentsInOnePost(boardType, postId, page, limit);
+
+    const allComments = await this.commentsDAO.findCommentsInOnePostWithoutDeleted(postId);
+
+    // 페이지네이션 적용
+    const totalItems = allComments.length;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const paginatedComments = allComments.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      items: result.items,
-      totalItems: result.totalItems, // totalItems로 변경
-      totalPages: result.totalPages, // totalPages로 변경
-      currentPage: result.currentPage, // currentPage로 변경
+      items: paginatedComments,
+      totalItems,
+      totalPages,
+      currentPage: page,
     };
   }
 

@@ -92,6 +92,29 @@ export class RepliesDAO {
     return results;
   }
 
+  // 특정 게시물의 모든 답글 조회
+  async findRepliesByPostId(postId: number): Promise<any[]> {
+    return await this.repliesRepository.find({ where: { postId, deletedAt: null } });
+  }
+
+  // 특정 댓글의 모든 답글 조회
+  async findRepliesByCommentId(commentId: number): Promise<any[]> {
+    return await this.repliesRepository
+      .createQueryBuilder('reply')
+      .leftJoinAndSelect('reply.user', 'user')
+      .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId })
+      .select([
+        'reply.replyId AS replyId',
+        'reply.content AS content',
+        'reply.createdAt AS createdAt',
+        'reply.updatedAt AS updatedAt',
+        'user.userId AS userId',
+        'user.nickname AS nickname',
+      ])
+      .orderBy('reply.createdAt', 'ASC')
+      .getRawMany();
+  }
+
   // 특정 답글 조회
   async findReply(id: number): Promise<any> {
     return this.repliesRepository
@@ -160,8 +183,12 @@ export class RepliesDAO {
     return this.repliesRepository.save(reply);
   }
 
-  // 특정 게시물에 달린 댓글 수 구하기
+  // 특정 게시물에 달린 답글 수 구하기
   async countAllrepliesByPostId(postId: number): Promise<number> {
-    return this.repliesRepository.count({ where: { postId, deletedAt: null } });
+    return this.repliesRepository
+      .createQueryBuilder('comment')
+      .where('comment.postId = :postId', { postId })
+      .andWhere('comment.deletedAt IS NULL')
+      .getCount();
   }
 }

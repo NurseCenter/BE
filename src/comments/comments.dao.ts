@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RepliesEntity } from 'src/replies/entities/replies.entity';
 import { DeleteResult, FindOneOptions, Repository } from 'typeorm';
 import { CommentsEntity } from './entities/comments.entity';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { CommentWithRepliesDto } from './dto/comment-with-replies.dto';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
 import { ESearchCommentByAdmin } from 'src/admin/enums';
 
@@ -14,8 +12,6 @@ export class CommentsDAO {
   constructor(
     @InjectRepository(CommentsEntity)
     private readonly commentsRepository: Repository<CommentsEntity>,
-    @InjectRepository(RepliesEntity)
-    private readonly repliesRepository: Repository<RepliesEntity>,
   ) {}
 
   // 댓글 ID로 댓글 조회
@@ -73,13 +69,12 @@ export class CommentsDAO {
     });
   }
 
-  // 특정 게시물의 모든 댓글 조회 (각 댓글의 답글 포함)
-  async findCommentsWithReplies(postId: number, page: number, limit: number) {
+  // 특정 게시물의 모든 댓글 조회
+  async findCommentsInOnePost(postId: number): Promise<any[]> {
     // 모든 댓글 조회
     const comments = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
-      .where('comment.postId = :postId', { postId })
       .select([
         'comment.commentId AS commentId',
         'comment.content AS content',
@@ -91,84 +86,17 @@ export class CommentsDAO {
         'user.userId AS userId',
         'user.nickname AS nickname',
       ])
+      .where('comment.postId = :postId', { postId })
       .orderBy('comment.createdAt', 'ASC')
       .getRawMany();
 
-    // 전체 댓글 수
-    const total = comments.length;
-
-    // 페이지네이션 적용
-    const skip = (page - 1) * limit;
-    const paginatedComments = comments.slice(skip, skip + limit);
-
-    // 댓글과 각 댓글에 대한 답글 조회
-    const commentsWithReplies: CommentWithRepliesDto[] = await Promise.all(
-      paginatedComments.map(async (comment) => {
-        const replies = await this.repliesRepository
-          .createQueryBuilder('reply')
-          .leftJoinAndSelect('reply.user', 'user')
-          .where('reply.commentId = :commentId AND reply.deletedAt IS NULL', { commentId: comment.commentId })
-          .select([
-            'reply.replyId AS replyId',
-            'reply.content AS content',
-            'reply.createdAt AS createdAt',
-            'reply.updatedAt AS updatedAt',
-            'user.userId AS userId',
-            'user.nickname AS nickname',
-          ])
-          .orderBy('reply.createdAt', 'ASC')
-          .getRawMany();
-
-        // 댓글 삭제 여부 확인
-        const isDeleted = !!comment.deletedAt;
-
-        return {
-          commentId: comment.commentId,
-          content: isDeleted ? '삭제된 댓글입니다.' : comment.content,
-          postId: comment.postId,
-          boardType: comment.boardType,
-          createdAt: comment.createdAt,
-          updatedAt: comment.updatedAt,
-          deletedAt: comment.deletedAt, // 삭제된 경우 Date 반환
-          userId: comment.userId,
-          nickname: comment.nickname,
-          replies: replies.map((reply) => ({
-            replyId: reply.replyId,
-            content: reply.content,
-            createdAt: reply.createdAt,
-            updatedAt: reply.updatedAt,
-            userId: reply.userId,
-            nickname: reply.nickname,
-          })),
-        };
-      }),
-    );
-
-    // 총 페이지 수 계산
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      comments: commentsWithReplies,
-      total,
-      totalPages,
-      currentPage: page,
-    };
+    return comments;
   }
 
   // 특정 게시물의 모든 댓글 조회
-  async findCommentsInOnePost(
-    boardType: EBoardType,
-    postId: number,
-    page: number,
-    limit: number,
-  ): Promise<{
-    items: CommentsEntity[];
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-  }> {
+  async findCommentsInOnePostWithoutDeleted(postId: number): Promise<any[]> {
     // 모든 댓글 조회
-    const allComments = await this.commentsRepository
+    const comments = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
       .select([
@@ -178,30 +106,16 @@ export class CommentsDAO {
         'comment.boardType AS boardType',
         'comment.createdAt AS createdAt',
         'comment.updatedAt AS updatedAt',
+        'comment.deletedAt AS deletedAt',
         'user.userId AS userId',
         'user.nickname AS nickname',
       ])
       .where('comment.postId = :postId', { postId })
-      .andWhere('comment.boardType = :boardType', { boardType })
       .andWhere('comment.deletedAt IS NULL')
       .orderBy('comment.createdAt', 'ASC')
       .getRawMany();
 
-    // 전체 댓글 수
-    const total = allComments.length;
-
-    // 페이지네이션 적용
-    const skip = (page - 1) * limit;
-    const paginatedComments = allComments.slice(skip, skip + limit);
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      items: paginatedComments,
-      totalItems: total,
-      totalPages,
-      currentPage: page,
-    };
+    return comments;
   }
 
   // 댓글 삭제
@@ -315,6 +229,10 @@ export class CommentsDAO {
 
   // 특정 게시물에 달린 댓글 수 구하기
   async countAllCommentsByPostId(postId: number): Promise<number> {
-    return this.commentsRepository.count({ where: { postId, deletedAt: null } });
+    return this.commentsRepository
+      .createQueryBuilder('comment')
+      .where('comment.postId = :postId', { postId })
+      .andWhere('comment.deletedAt IS NULL')
+      .getCount();
   }
 }

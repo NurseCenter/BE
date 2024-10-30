@@ -94,7 +94,22 @@ export class RepliesDAO {
 
   // 특정 게시물의 모든 답글 조회
   async findRepliesByPostId(postId: number): Promise<any[]> {
-    return await this.repliesRepository.find({ where: { postId, deletedAt: null } });
+    return await this.repliesRepository
+      .createQueryBuilder('reply')
+      .leftJoinAndSelect('reply.user', 'user')
+      .where('reply.postId = :postId', { postId })
+      .andWhere('reply.deletedAt IS NULL')
+      .select([
+        'reply.replyId AS replyId',
+        'reply.content AS content',
+        'reply.createdAt AS createdAt',
+        'reply.updatedAt AS updatedAt',
+        'reply.commentId AS commentId',
+        'user.userId AS userId',
+        'user.nickname AS nickname',
+      ])
+      .orderBy('reply.createdAt', 'ASC')
+      .getRawMany();
   }
 
   // 특정 댓글의 모든 답글 조회

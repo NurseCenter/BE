@@ -173,7 +173,6 @@ export class UsersService {
           boardType: post?.boardType,
           title: post?.title,
           numberOfCommentsAndReplies: total,
-          postCreatedAt: post?.createdAt,
         });
       }),
     );
@@ -194,7 +193,6 @@ export class UsersService {
           boardType: post?.boardType || '정보없음',
           title: post?.title || '정보없음',
           numberOfCommentsAndReplies: total,
-          postCreatedAt: post?.createdAt,
         });
       }),
     );
@@ -220,20 +218,16 @@ export class UsersService {
         break;
 
       case 'oldest':
-        // 작성순
+        // 작성순 (댓글/답글 기준)
         combinedResults.sort((a, b) => {
-          const aPost = postMap.get(a.postId);
-          const bPost = postMap.get(b.postId);
-          return (new Date(aPost?.createdAt).getTime() || 0) - (new Date(bPost?.createdAt).getTime() || 0);
+          return (new Date(a?.createdAt).getTime() || 0) - (new Date(b?.createdAt).getTime() || 0);
         });
         break;
 
       default:
-        // 최신순
+        // 최신순 (댓글/답글 기준)
         combinedResults.sort((a, b) => {
-          const aPost = postMap.get(a.postId);
-          const bPost = postMap.get(b.postId);
-          return (new Date(bPost?.createdAt).getTime() || 0) - (new Date(aPost?.createdAt).getTime() || 0);
+          return (new Date(b?.createdAt).getTime() || 0) - (new Date(a?.createdAt).getTime() || 0);
         });
         break;
     }

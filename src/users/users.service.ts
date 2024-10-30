@@ -199,24 +199,6 @@ export class UsersService {
 
     // 정렬 기준
     switch (sort) {
-      case 'viewCounts':
-        // 조회순
-        combinedResults.sort((a, b) => {
-          const aPost = postMap.get(a.postId);
-          const bPost = postMap.get(b.postId);
-          return (bPost?.viewCounts || 0) - (aPost?.viewCounts || 0);
-        });
-        break;
-
-      case 'popular':
-        // 공감순
-        combinedResults.sort((a, b) => {
-          const aPost = postMap.get(a.postId);
-          const bPost = postMap.get(b.postId);
-          return (bPost?.likeCounts || 0) - (aPost?.likeCounts || 0);
-        });
-        break;
-
       case 'oldest':
         // 작성순 (댓글/답글 기준)
         combinedResults.sort((a, b) => {
@@ -257,23 +239,47 @@ export class UsersService {
     }
 
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
-
+  
+    // 원 게시물 조회
+    const posts = await Promise.all(scrapedPosts.items.map(scrap => 
+      this.postsDAO.findPostEntityByPostId(scrap.postId)
+    ));
+  
+    // 정렬 기준
+    switch (sort) {
+      case 'oldest':
+        // 작성순 (원 게시물 기준)
+        posts.sort((a, b) => {
+          return (new Date(a.createdAt).getTime() || 0) - (new Date(b.createdAt).getTime() || 0);
+        });
+        break;
+  
+      default:
+        // 최신순 (원 게시물 기준)
+        posts.sort((a, b) => {
+          return (new Date(b.createdAt).getTime() || 0) - (new Date(a.createdAt).getTime() || 0);
+        });
+        break;
+    }
+  
     const formattedPosts = await Promise.all(
-      scrapedPosts.items.map(async (scrap) => {
-        const totalCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(scrap.postId);
+      posts.map(async (post) => {
+        const totalCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(post.postId);
+        const correspondingScrap = scrapedPosts.items.find(scrap => scrap.postId === post.postId);
+        
         return {
-          scrapId: scrap.scrapId, // 스크랩 ID
-          postId: scrap.postId, // 게시물 ID
-          boardType: scrap.boardType, // 게시판 카테고리
-          title: scrap.title, // 제목
-          viewCounts: scrap.viewCounts, // 조회수
-          likeCounts: scrap.likeCounts, // 좋아요수
-          createdAt: scrap.createdAt, // 작성일
+          scrapId: correspondingScrap.scrapId, // 스크랩 ID
+          postId: post.postId, // 게시물 ID
+          boardType: post.boardType, // 게시판 카테고리
+          title: post.title, // 제목
+          viewCounts: post.viewCounts, // 조회수
+          likeCounts: post.likeCounts, // 좋아요수
+          createdAt: post.createdAt, // 작성일
           numberOfCommentsAndReplies: totalCommentsAndReplies, // 댓글 및 답글 수
         };
       }),
     );
-
+  
     return {
       items: formattedPosts,
       totalItems: scrapedPosts.totalItems,

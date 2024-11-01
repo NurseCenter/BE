@@ -34,11 +34,16 @@ export class RepliesDAO {
 
   // 답글 ID로 답글 내용 조회 (100자 이상이면 축약)
   async findReplyContentByReplyId(replyId: number): Promise<string> {
-    const { content } = await this.repliesRepository.findOne({
+    const reply = await this.repliesRepository.findOne({
       where: { replyId },
     });
 
-    const summaryContent = summarizeContent(content);
+    // 답글이 없으면 null 반환
+    if (!reply) {
+      return null;
+    }
+
+    const summaryContent = summarizeContent(reply.content);
 
     return summaryContent;
   }

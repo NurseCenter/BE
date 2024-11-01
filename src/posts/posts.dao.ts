@@ -185,6 +185,39 @@ export class PostsDAO {
     return post;
   }
 
+   // 특정 게시글 조회 메소드 (삭제된 것 포함)
+   async findOnePostByPostIdWithDeleted(postId: number): Promise<PostsEntity> {
+    const post = await this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .where('post.postId = :postId', { postId })
+      .orWhere('post.deletedAt IS NOT NULL')
+      .select([
+        'post.postId', // 게시물 ID
+        'post.boardType', // 카테고리
+        'post.title', // 제목
+        'post.content', // 내용
+        'post.hospitalNames', // 병원 이름 (배열)
+        'post.likeCounts', // 좋아요수
+        'post.viewCounts', // 조회수
+        'post.scrapCounts', // 스크랩수
+        'post.createdAt', // 작성일
+        'post.updatedAt', // 수정일
+        'post.deletedAt', // 삭제일
+        'user.userId', // 작성자 ID
+        'user.nickname', // 작성자 닉네임
+      ])
+      .getOne();
+
+    // createdAt, updatedAt 변환
+    if (post) {
+      post.createdAt = post?.createdAt;
+      post.updatedAt = post?.updatedAt;
+    }
+
+    return post;
+  }
+
   // 특정 게시물의 카테고리 일치 여부 확인
   async findPostByIdAndBoardType(postId: number, boardType: EBoardType): Promise<boolean> {
     const post = await this.postsRepository.findOne({

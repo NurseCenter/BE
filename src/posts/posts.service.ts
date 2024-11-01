@@ -204,7 +204,7 @@ export class PostsService {
 
     // 아무 것도 수정되지 않은 경우
     if (!contentChanged && !boardTypeChanged && !filesChanged) {
-      return { message: '수정된 내용이 없습니다.' };
+      return { message: '수정된 내용이 없습니다.', postId };
     }
 
     // 변경된 경우에만 updatedAt에 현재 날짜 넣어주기

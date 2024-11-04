@@ -23,6 +23,10 @@ export class FilesEntity {
   // 파일의 타입
   @Column()
   fileType: string;
+  
+  // 파일의 이름
+  @Column()
+  fileName: string;
 
   // 파일이 업로드된 날짜
   @CreateDateColumn()

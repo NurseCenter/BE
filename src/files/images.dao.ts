@@ -20,7 +20,7 @@ export class ImagesDAO {
     return await this.imagesRepository.save(image);
   }
 
-  // 이미지 엔티티 삭제 (소프트 삭제)
+  // 이미지 엔티티 삭제
   async deleteImage(image: ImagesEntity): Promise<DeleteResult> {
     return await this.imagesRepository.softDelete(image);
   }

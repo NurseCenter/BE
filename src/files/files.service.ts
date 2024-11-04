@@ -9,6 +9,7 @@ import { FilesDAO } from './files.dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { FilesEntity } from './entities/files.entity';
 import { winstonLogger } from 'src/config/logger.config';
+import { getFolderForFileType } from './file-type-mapping';
 
 @Injectable()
 export class FilesService {
@@ -43,31 +44,18 @@ export class FilesService {
     const extension = getExtensionFromMime(fileType);
 
     // 폴더 결정
-    let folder: string;
-    if (['image/jpeg', 'image/png', 'image/gif'].includes(fileType)) {
-      folder = 'images';
-    } else if (
-      [
-        'application/pdf',
-        'application/x-hwp',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      ].includes(fileType)
-    ) {
-      folder = 'documents';
-    } else if (['application/zip'].includes(fileType)) {
-      folder = 'zip';
-    } else {
-      folder = 'others'; // 다른 파일 포함
-    }
+    const folder = getFolderForFileType(fileType);
     const key = `${folder}/${year}/${monthStr}/${dayStr}/${uuidv4()}.${extension}`;
+
+    // 파일 크기 조건 결정
+    const maxSize = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(fileType) ? 5242880 : 10485760; // 최대 5MB 또는 10MB
 
     try {
       const { url, fields } = await createPresignedPost(this.s3Client, {
         Bucket: this.bucket,
         Key: key,
         Conditions: [
-          ['content-length-range', 0, 52428800], // 최대 50MB
+          ['content-length-range', 0, maxSize],
           ['starts-with', '$Content-Type', fileType],
         ],
         Expires: 60, // 1분

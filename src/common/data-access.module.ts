@@ -21,6 +21,8 @@ import { DeletedUsersDAO } from 'src/admin/dao/delete-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
 import { FilesDAO } from 'src/files/files.dao';
 import { FilesEntity } from 'src/files/entities/files.entity';
+import { ImagesDAO } from 'src/files/images.dao';
+import { ImagesEntity } from 'src/files/entities/images.entity';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { FilesEntity } from 'src/files/entities/files.entity';
       ReportPostsEntity,
       ReportCommentsEntity,
       FilesEntity,
+      ImagesEntity
     ]),
   ],
   providers: [
@@ -53,6 +56,7 @@ import { FilesEntity } from 'src/files/entities/files.entity';
     ReportedPostsDAO,
     ReportedCommentsDAO,
     FilesDAO,
+    ImagesDAO
   ],
   exports: [
     UsersDAO,
@@ -66,7 +70,7 @@ import { FilesEntity } from 'src/files/entities/files.entity';
     ScrapsDAO,
     LikesDAO,
     ReportedPostsDAO,
-    ReportedCommentsDAO,
+    ReportedCommentsDAO
   ],
 })
 export class DataAccessModule {}

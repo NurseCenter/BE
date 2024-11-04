@@ -239,12 +239,12 @@ export class UsersService {
     }
 
     const scrapedPosts = await this.scrapsDAO.findMyScraps(userId, page, limit, sort);
-  
+
     // 원 게시물 조회
-    const posts = await Promise.all(scrapedPosts.items.map(scrap => 
-      this.postsDAO.findPostEntityByPostId(scrap.postId)
-    ));
-  
+    const posts = await Promise.all(
+      scrapedPosts.items.map((scrap) => this.postsDAO.findPostEntityByPostId(scrap.postId)),
+    );
+
     // 정렬 기준
     switch (sort) {
       case 'oldest':
@@ -253,7 +253,7 @@ export class UsersService {
           return (new Date(a.createdAt).getTime() || 0) - (new Date(b.createdAt).getTime() || 0);
         });
         break;
-  
+
       default:
         // 최신순 (원 게시물 기준)
         posts.sort((a, b) => {
@@ -261,12 +261,12 @@ export class UsersService {
         });
         break;
     }
-  
+
     const formattedPosts = await Promise.all(
       posts.map(async (post) => {
         const totalCommentsAndReplies = await this.postsService.getNumberOfCommentsAndReplies(post.postId);
-        const correspondingScrap = scrapedPosts.items.find(scrap => scrap.postId === post.postId);
-        
+        const correspondingScrap = scrapedPosts.items.find((scrap) => scrap.postId === post.postId);
+
         return {
           scrapId: correspondingScrap.scrapId, // 스크랩 ID
           postId: post.postId, // 게시물 ID
@@ -279,7 +279,7 @@ export class UsersService {
         };
       }),
     );
-  
+
     return {
       items: formattedPosts,
       totalItems: scrapedPosts.totalItems,

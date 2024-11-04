@@ -185,8 +185,8 @@ export class PostsDAO {
     return post;
   }
 
-   // 특정 게시글 조회 메소드 (삭제된 것 포함)
-   async findOnePostByPostIdWithDeleted(postId: number): Promise<PostsEntity> {
+  // 특정 게시글 조회 메소드 (삭제된 것 포함)
+  async findOnePostByPostIdWithDeleted(postId: number): Promise<PostsEntity> {
     const post = await this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')

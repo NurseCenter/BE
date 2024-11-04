@@ -55,8 +55,10 @@ export class FilesService {
       ].includes(fileType)
     ) {
       folder = 'documents';
+    } else if (['application/zip'].includes(fileType)) {
+      folder = 'zip';
     } else {
-      folder = 'others'; // zip 및 다른 파일 포함
+      folder = 'others'; // 다른 파일 포함
     }
     const key = `${folder}/${year}/${monthStr}/${dayStr}/${uuidv4()}.${extension}`;
 

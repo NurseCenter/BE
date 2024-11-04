@@ -1,13 +1,13 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PostsEntity } from '../../posts/entities/base-posts.entity';
 
-@Entity('files')
-export class FilesEntity {
-  // 파일의 고유 ID
+@Entity('images')
+export class ImagesEntity {
+  // 본문에 첨부한 이미지 고유 ID
   @PrimaryGeneratedColumn()
-  fileId: number;
+  imageId: number;
 
-  // 파일의 URL
+  // 이미지의 URL
   @Column()
   url: string;
 
@@ -16,13 +16,8 @@ export class FilesEntity {
   postId: number;
 
   // 이 파일이 첨부된 게시물과의 관계
-  @ManyToOne(() => PostsEntity, (post) => post.files)
-  @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
+  @ManyToOne(() => PostsEntity, (post) => post.images)
   post: PostsEntity;
-
-  // 파일의 타입
-  @Column()
-  fileType: string;
 
   // 파일이 업로드된 날짜
   @CreateDateColumn()

@@ -5,11 +5,13 @@ import { FilesDAO } from './files.dao';
 import { FilesService } from './files.service';
 import { FilesController } from './files.controller';
 import { DataAccessModule } from 'src/common/data-access.module';
+import { ImagesEntity } from './entities/images.entity';
+import { ImagesDAO } from './images.dao';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FilesEntity]), DataAccessModule],
+  imports: [TypeOrmModule.forFeature([FilesEntity, ImagesEntity]), DataAccessModule],
   controllers: [FilesController],
-  providers: [FilesService, FilesDAO],
-  exports: [FilesService, FilesDAO],
+  providers: [FilesService, FilesDAO, ImagesDAO],
+  exports: [FilesService, FilesDAO, ImagesDAO],
 })
 export class FilesModule {}

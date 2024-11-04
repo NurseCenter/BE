@@ -14,5 +14,5 @@ export interface IPostDetailResponse {
   isScraped: boolean; // 스크랩 여부
   user: any; // 작성자 정보 (회원 ID, 닉네임)
   numberOfComments: number | null; // 댓글과 답글 수
-  fileUrls: string[] | null;
+  fileUrls: IFileUrls | null; // 첨부파일
 }

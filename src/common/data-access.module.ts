@@ -19,9 +19,9 @@ import { ReportedCommentsDAO, ReportedPostsDAO } from 'src/reports/dao';
 import { RejectedUsersDAO } from 'src/admin/dao/rejected-users.dao';
 import { DeletedUsersDAO } from 'src/admin/dao/delete-users.dao';
 import { SuspendedUsersDAO } from 'src/admin/dao/suspended-users.dao';
-import { FilesDAO } from 'src/files/files.dao';
+import { FilesDAO } from 'src/files/dao/files.dao';
 import { FilesEntity } from 'src/files/entities/files.entity';
-import { ImagesDAO } from 'src/files/images.dao';
+import { ImagesDAO } from 'src/files/dao/images.dao';
 import { ImagesEntity } from 'src/files/entities/images.entity';
 
 @Module({
@@ -39,7 +39,7 @@ import { ImagesEntity } from 'src/files/entities/images.entity';
       ReportPostsEntity,
       ReportCommentsEntity,
       FilesEntity,
-      ImagesEntity
+      ImagesEntity,
     ]),
   ],
   providers: [
@@ -56,7 +56,7 @@ import { ImagesEntity } from 'src/files/entities/images.entity';
     ReportedPostsDAO,
     ReportedCommentsDAO,
     FilesDAO,
-    ImagesDAO
+    ImagesDAO,
   ],
   exports: [
     UsersDAO,
@@ -70,7 +70,7 @@ import { ImagesEntity } from 'src/files/entities/images.entity';
     ScrapsDAO,
     LikesDAO,
     ReportedPostsDAO,
-    ReportedCommentsDAO
+    ReportedCommentsDAO,
   ],
 })
 export class DataAccessModule {}

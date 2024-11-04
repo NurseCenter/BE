@@ -16,7 +16,7 @@ export class CreatePostDto extends OmitType(BasePostDto, ['postId', 'boardType']
   @IsArray()
   @IsOptional()
   @ApiProperty({ type: [String], description: '파일 URL들이 담긴 배열' })
-  fileUrls?: string[];
+  fileUrls?: IFileUrls;
 
   @IsOptional()
   @IsArray()

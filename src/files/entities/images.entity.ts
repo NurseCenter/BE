@@ -19,6 +19,10 @@ export class ImagesEntity {
   @ManyToOne(() => PostsEntity, (post) => post.images)
   post: PostsEntity;
 
+  // 파일의 타입
+  @Column()
+  fileType: string;
+
   // 파일이 업로드된 날짜
   @CreateDateColumn()
   createdAt: Date;

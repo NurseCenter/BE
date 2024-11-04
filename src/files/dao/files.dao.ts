@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
-import { FilesEntity } from './entities/files.entity';
+import { Repository } from 'typeorm';
+import { FilesEntity } from '../entities/files.entity';
 
 @Injectable()
 export class FilesDAO {
@@ -16,19 +16,24 @@ export class FilesDAO {
   }
 
   // 파일 엔티티 저장
-  async saveFile(files: FilesEntity): Promise<FilesEntity> {
-    return await this.filesRepository.save(files);
+  async saveFile(file: FilesEntity): Promise<FilesEntity> {
+    return await this.filesRepository.save(file);
   }
 
   // 파일 엔티티 삭제
-  async deleteFile(files: FilesEntity): Promise<DeleteResult> {
-    return await this.filesRepository.softDelete(files);
+  async deleteFile(file: FilesEntity): Promise<FilesEntity> {
+    const fileEntity = await this.filesRepository.findOne({ where: file });
+    fileEntity.deletedAt = new Date();
+    return await this.filesRepository.save(fileEntity);
   }
 
   // 특정 게시글에 저장된 파일 URL들 불러오기
-  async getFileUrlsInOnePost(postId: number): Promise<string[]> {
+  async getFileUrlsInOnePost(postId: number): Promise<IAttachments[]> {
     const fileEntities = await this.filesRepository.find({ where: { postId } });
-    return fileEntities.map((fileEntity) => fileEntity.url);
+    return fileEntities.map((fileEntity) => {
+      const { url, fileName } = fileEntity;
+      return { fileUrl: url, fileName };
+    });
   }
 
   // 특정 URL에 해당하는 Row 조회하기

@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DeleteResult } from "typeorm";
-import { ImagesEntity } from "./entities/images.entity";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ImagesEntity } from '../entities/images.entity';
 
 @Injectable()
 export class ImagesDAO {
@@ -21,8 +21,10 @@ export class ImagesDAO {
   }
 
   // 이미지 엔티티 삭제
-  async deleteImage(image: ImagesEntity): Promise<DeleteResult> {
-    return await this.imagesRepository.softDelete(image);
+  async deleteImage(image: ImagesEntity): Promise<ImagesEntity> {
+    const ImageEntity = await this.imagesRepository.findOne({ where: image });
+    ImageEntity.deletedAt = new Date();
+    return await this.imagesRepository.save(image);
   }
 
   // 특정 게시글에 저장된 이미지 URL들 불러오기

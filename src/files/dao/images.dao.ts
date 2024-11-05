@@ -31,10 +31,10 @@ export class ImagesDAO {
   // 여러 개의 이미지 엔티티 삭제
   async deleteImages(urls: string[]): Promise<void> {
     if (urls.length === 0) {
-      winstonLogger.error("삭제할 이미지 URL이 없습니다.");
+      winstonLogger.error('삭제할 이미지 URL이 없습니다.');
       return;
     }
-  
+
     await this.imagesRepository
       .createQueryBuilder()
       .update(ImagesEntity)

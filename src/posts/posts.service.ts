@@ -109,8 +109,6 @@ export class PostsService {
 
     const summaryContent = summarizeContent(content);
 
-    console.log('fileUrls', fileUrls);
-
     // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
     const fileCount = fileUrls
       ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
@@ -212,9 +210,44 @@ export class PostsService {
     if (fileUrls) {
       const { images, attachments } = fileUrls as IFileUrls;
       if (Array.isArray(attachments) && Array.isArray(images)) {
-        await this.filesService.uploadFiles(attachments, post.postId);
-        await this.filesService.uploadImages(images, post.postId);
-        filesChanged = true;
+
+        // 기존 파일과 비교하여 추가한 파일 테이블에 추가, 없는 건 삭제
+        const existingFiles = await this.filesDAO.getFileUrlsInOnePost(postId);
+        const existingImages = await this.imagesDAO.getImageUrlsInOnePost(postId);
+
+        // 1. 새로운 첨부파일 추가
+        const newAttachements = attachments.filter(
+          (attachment) => !existingFiles.some((file) => file.fileUrl === attachment.fileUrl),
+        );
+        if (newAttachements.length > 0) {
+          await this.filesService.uploadFiles(newAttachements, postId);
+          filesChanged = true;
+        }
+
+        // 2. 새로운 이미지 파일 추가
+        const newImages = images.filter((image) => !existingImages.some((existingImage) => existingImage === image));
+        if (newImages.length > 0) {
+          await this.filesService.uploadImages(newImages, postId);
+          filesChanged = true;
+        }
+
+        // 3. 기존 파일 중 삭제된 파일 처리
+        const deletedAttachments = existingFiles.filter(
+          (file) => !attachments.some((attachment) => attachment.fileUrl === file.fileUrl),
+        );
+        const deletedImages = existingImages.filter((image) => !images.some((img) => img === image));
+
+        // 첨부파일 삭제 처리
+        if (deletedAttachments.length > 0) {
+          await this.filesDAO.deleteFiles(deletedAttachments.map((file) => file.fileUrl));
+          filesChanged = true;
+        }
+
+        // 이미지 삭제 처리
+        if (deletedImages.length > 0) {
+          await this.imagesDAO.deleteImages(deletedImages);
+          filesChanged = true;
+        }
       } else {
         throw new BadRequestException('attachments와 images는 배열이어야 합니다.');
       }
@@ -284,22 +317,22 @@ export class PostsService {
 
       const failedDeletions: string[] = [];
 
-    // 첨부파일 삭제
-    try {
-      await this.filesDAO.deleteFiles(allFileUrls);
-    } catch (err) {
-      winstonLogger.error("삭제 실패한 첨부파일 URL: ", allFileUrls, err);
-    }
+      // 첨부파일 삭제
+      try {
+        await this.filesDAO.deleteFiles(allFileUrls);
+      } catch (err) {
+        winstonLogger.error('삭제 실패한 첨부파일 URL: ', allFileUrls, err);
+      }
 
-    // 이미지 삭제
-    try {
-      await this.imagesDAO.deleteImages(allImageUrls);
-    } catch (err) {
-      winstonLogger.error("삭제 실패한 이미지파일 URL: ", allImageUrls, err);
-      failedDeletions.push(...allImageUrls);
-    }
+      // 이미지 삭제
+      try {
+        await this.imagesDAO.deleteImages(allImageUrls);
+      } catch (err) {
+        winstonLogger.error('삭제 실패한 이미지파일 URL: ', allImageUrls, err);
+        failedDeletions.push(...allImageUrls);
+      }
 
-    // 게시물 삭제
+      // 게시물 삭제
       const result = await this.postsDAO.deletePost(postId);
       if (result.affected === 0) {
         throw new InternalServerErrorException(`게시물 삭제 중 에러가 발생하였습니다.`);

@@ -32,10 +32,10 @@ export class FilesDAO {
   // 여러 개의 파일 엔티티 삭제
   async deleteFiles(urls: string[]): Promise<void> {
     if (urls.length === 0) {
-      winstonLogger.error("삭제할 첨부파일 URL이 없습니다.");
+      winstonLogger.error('삭제할 첨부파일 URL이 없습니다.');
       return;
     }
-    
+
     await this.filesRepository
       .createQueryBuilder()
       .update(FilesEntity)

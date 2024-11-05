@@ -164,11 +164,22 @@ export class PostsController {
           nickname: '닉넴뭐하지',
         },
         numberOfComments: 25,
-        fileUrls: [
-          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png',
-          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample2.png',
-          'https://example.s3.ap-northeast-2.amazonaws.com/images/sample3.png',
-        ],
+        fileUrls: {
+          "images": [
+            "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
+            "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+          ],
+          "attachments": [
+            {
+              "fileName": "문서1.pdf",
+              "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+            },
+            {
+              "fileName": "압축파일.zip",
+              "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
+            }
+          ]
+        },
       },
     },
   })
@@ -275,10 +286,22 @@ export class PostsController {
         value: {
           title: '새 게시글 제목',
           content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
-          fileUrls: [
-            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2psdlksg.png',
-            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2ps20395230961ksg.png',
-          ],
+          fileUrls: {
+            "images": [
+              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
+              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+            ],
+            "attachments": [
+              {
+                "fileName": "문서1.pdf",
+                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+              },
+              {
+                "fileName": "압축파일.zip",
+                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
+              }
+            ]
+          },
           hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
       },
@@ -295,6 +318,7 @@ export class PostsController {
         content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
+        fileUrls: '본문 이미지 파일 3개, 첨부파일 5개'
       },
     },
   })
@@ -352,10 +376,22 @@ export class PostsController {
           example: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         },
         fileUrls: {
-          type: 'array',
-          items: {
-            type: 'string',
-            example: 'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png',
+          type: 'object',
+          properties: {
+            images: {
+              type: 'array',
+              items: { type: 'string', example: 'https://example.s3.ap-northeast-2.amazonaws.com/images/sample.png' },
+            },
+            attachments: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  fileName: { type: 'string', example: '문서1.pdf' },
+                  fileUrl: { type: 'string', example: 'https://example.s3.ap-northeast-2.amazonaws.com/documents/sample.pdf' },
+                },
+              },
+            },
           },
         },
         hospitalNames: {
@@ -396,10 +432,22 @@ export class PostsController {
         value: {
           title: '수정된 게시글 제목',
           content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
-          fileUrls: [
-            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2psdlksg.png',
-            'https://example.s3.ap-northeast-2.amazonaws.com/images/2024/10/13/sl2ps20395230961ksg.png',
-          ],
+          fileUrls: {
+            "images": [
+              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
+              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+            ],
+            "attachments": [
+              {
+                "fileName": "문서1.pdf",
+                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+              },
+              {
+                "fileName": "압축파일.zip",
+                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
+              }
+            ]
+          },
           hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
       },
@@ -418,6 +466,7 @@ export class PostsController {
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
         updatedAt: '2024-10-22T09:35:01.805Z',
+        fileUrls: '본문 이미지 파일 2개, 첨부파일 2개'
       },
     },
   })
@@ -495,23 +544,10 @@ export class PostsController {
     status: 200,
     description: '게시글 삭제 성공',
     schema: {
-      examples: {
-        '게시물 및 첨부파일 삭제 성공': {
-          summary: '게시물 및 첨부파일도 성공적으로 삭제된 경우',
-          value: {
-            message: '게시물이 삭제되었습니다.',
-          },
-        },
-        '게시물 삭제 성공, 첨부파일 삭제 오류': {
-          summary: '게시물은 성공적으로 삭제되었으나, 특정 첨부파일이 삭제되지 않은 경우',
-          value: {
-            message: '게시물이 삭제되었습니다.',
-            errors: [
-              'URL: http://example.com/file1.jpg는 삭제되지 않았습니다.',
-              'URL: http://example.com/file2.jpg는 삭제되지 않았습니다.',
-            ],
-          },
-        },
+      example: {
+        message: '게시물이 삭제되었습니다.',
+        postId: 2,
+        errors: '다음 URL(s)은 삭제되지 않았습니다: https://example.s3.ap-northeast-2.amazonaws.com/images/sample1.png',
       },
     },
   })

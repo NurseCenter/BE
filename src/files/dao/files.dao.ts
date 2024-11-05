@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FilesEntity } from '../entities/files.entity';
+import { IAttachments } from '../interfaces/attachments.interface';
+import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class FilesDAO {
@@ -22,9 +24,24 @@ export class FilesDAO {
 
   // 파일 엔티티 삭제
   async deleteFile(file: FilesEntity): Promise<FilesEntity> {
-    const fileEntity = await this.filesRepository.findOne({ where: file });
+    const fileEntity = await this.filesRepository.findOne({ where: { fileId: file.fileId } });
     fileEntity.deletedAt = new Date();
     return await this.filesRepository.save(fileEntity);
+  }
+
+  // 여러 개의 파일 엔티티 삭제
+  async deleteFiles(urls: string[]): Promise<void> {
+    if (urls.length === 0) {
+      winstonLogger.error("삭제할 첨부파일 URL이 없습니다.");
+      return;
+    }
+    
+    await this.filesRepository
+      .createQueryBuilder()
+      .update(FilesEntity)
+      .set({ deletedAt: new Date() })
+      .where('url IN (:...urls)', { urls })
+      .execute();
   }
 
   // 특정 게시글에 저장된 파일 URL들 불러오기
@@ -34,10 +51,5 @@ export class FilesDAO {
       const { url, fileName } = fileEntity;
       return { fileUrl: url, fileName };
     });
-  }
-
-  // 특정 URL에 해당하는 Row 조회하기
-  async getOneFileUrl(url: string): Promise<FilesEntity> {
-    return await this.filesRepository.findOne({ where: { url } });
   }
 }

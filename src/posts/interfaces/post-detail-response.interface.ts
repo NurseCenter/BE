@@ -1,3 +1,4 @@
+import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
 import { EBoardType } from '../enum/board-type.enum';
 
 export interface IPostDetailResponse {

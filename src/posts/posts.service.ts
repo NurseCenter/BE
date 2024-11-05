@@ -31,6 +31,8 @@ import { IUser } from 'src/auth/interfaces';
 import { FilesService } from 'src/files/files.service';
 import { FilesDAO } from 'src/files/dao/files.dao';
 import { ImagesDAO } from 'src/files/dao/images.dao';
+import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
+import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class PostsService {
@@ -96,7 +98,7 @@ export class PostsService {
     await this.postsDAO.savePost(createdPost);
 
     if (fileUrls) {
-      const { images = [], attachments = [] } = fileUrls as IFileUrls;
+      const { images, attachments } = fileUrls as IFileUrls;
       if (Array.isArray(attachments) && Array.isArray(images)) {
         await this.filesService.uploadFiles(attachments, createdPost.postId);
         await this.filesService.uploadImages(images, createdPost.postId);
@@ -106,6 +108,8 @@ export class PostsService {
     }
 
     const summaryContent = summarizeContent(content);
+
+    console.log('fileUrls', fileUrls);
 
     // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
     const fileCount = fileUrls
@@ -204,6 +208,7 @@ export class PostsService {
       boardTypeChanged = true;
     }
 
+    // 파일 처리
     if (fileUrls) {
       const { images, attachments } = fileUrls as IFileUrls;
       if (Array.isArray(attachments) && Array.isArray(images)) {
@@ -249,7 +254,11 @@ export class PostsService {
   }
 
   // 게시글 삭제
-  async deletePost(boardType: EBoardType, postId: number, sessionUser: IUser): Promise<{ message: string }> {
+  async deletePost(
+    boardType: EBoardType,
+    postId: number,
+    sessionUser: IUser,
+  ): Promise<{ message: string; postId: number }> {
     try {
       const { userId } = sessionUser;
       const post = await this.postsDAO.findOnePostByPostId(postId);
@@ -268,19 +277,29 @@ export class PostsService {
 
       // 첨부파일 URL 조회
       const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
+      const allFileUrls = fileUrls.map((file) => file.fileUrl);
+
+      // 본문 이미지 파일 조회
+      const allImageUrls = await this.imagesDAO.getImageUrlsInOnePost(postId);
+
       const failedDeletions: string[] = [];
 
-      // 반복문으로 URL을 하나씩 찾아서 삭제
-      for (const attachment of fileUrls) {
-        const fileToDelete = await this.filesDAO.getOneFileUrl(attachment.fileUrl);
-        if (fileToDelete) {
-          const deletedFile = await this.filesDAO.deleteFile(fileToDelete);
-          if (!deletedFile || !deletedFile.deletedAt) {
-            failedDeletions.push(attachment.fileUrl);
-          }
-        }
-      }
+    // 첨부파일 삭제
+    try {
+      await this.filesDAO.deleteFiles(allFileUrls);
+    } catch (err) {
+      winstonLogger.error("삭제 실패한 첨부파일 URL: ", allFileUrls, err);
+    }
 
+    // 이미지 삭제
+    try {
+      await this.imagesDAO.deleteImages(allImageUrls);
+    } catch (err) {
+      winstonLogger.error("삭제 실패한 이미지파일 URL: ", allImageUrls, err);
+      failedDeletions.push(...allImageUrls);
+    }
+
+    // 게시물 삭제
       const result = await this.postsDAO.deletePost(postId);
       if (result.affected === 0) {
         throw new InternalServerErrorException(`게시물 삭제 중 에러가 발생하였습니다.`);
@@ -292,7 +311,11 @@ export class PostsService {
         deletionErrorMessage = `다음 URL(s)은 삭제되지 않았습니다: ${failedDeletions.join(', ')}`;
       }
 
-      return { message: '게시물이 삭제되었습니다.', ...(deletionErrorMessage && { errors: deletionErrorMessage }) };
+      return {
+        message: '게시물이 삭제되었습니다.',
+        postId,
+        ...(deletionErrorMessage && { errors: deletionErrorMessage }),
+      };
     } catch (err) {
       throw err;
     }

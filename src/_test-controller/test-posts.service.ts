@@ -17,6 +17,7 @@ import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
 import { PostsDAO } from 'src/posts/posts.dao';
 import { ImagesDAO } from 'src/files/dao/images.dao';
 import { FilesDAO } from 'src/files/dao/files.dao';
+import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
 
 @Injectable()
 export class TestPostsService {
@@ -27,7 +28,7 @@ export class TestPostsService {
     private readonly repliesDAO: RepliesDAO,
     private readonly filesService: FilesService,
     private readonly filesDAO: FilesDAO,
-    private readonly imagesDAO: ImagesDAO
+    private readonly imagesDAO: ImagesDAO,
   ) {}
 
   // 게시물 생성
@@ -50,10 +51,10 @@ export class TestPostsService {
 
     const summaryContent = summarizeContent(content);
 
-        // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
-        const fileCount = fileUrls
-        ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
-        : '첨부파일 없음';
+    // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
+    const fileCount = fileUrls
+      ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
+      : '첨부파일 없음';
 
     return {
       postId: createdPost.postId, // 게시물 ID
@@ -154,7 +155,6 @@ export class TestPostsService {
       filesChanged = false;
     }
 
-
     // 아무 것도 수정되지 않은 경우
     if (!contentChanged && !boardTypeChanged && !filesChanged) {
       return { message: '수정된 내용이 없습니다.' };
@@ -168,10 +168,10 @@ export class TestPostsService {
     const updatedPost = await this.postsDAO.savePost(post);
     const summaryContent = summarizeContent(updatedPost.content);
 
-        // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
-        const fileCount = fileUrls
-        ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
-        : '첨부파일 없음';
+    // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
+    const fileCount = fileUrls
+      ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
+      : '첨부파일 없음';
 
     return {
       postId: updatedPost.postId, // 게시물 ID
@@ -205,19 +205,19 @@ export class TestPostsService {
       }
 
       // 첨부파일 URL 조회
-      const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
+      // const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
       const failedDeletions: string[] = [];
 
-      // 반복문으로 URL을 하나씩 찾아서 삭제
-      for (const attachment of fileUrls) {
-        const fileToDelete = await this.filesDAO.getOneFileUrl(attachment.fileUrl);
-        if (fileToDelete) {
-          const deletedFile = await this.filesDAO.deleteFile(fileToDelete);
-          if (!deletedFile || !deletedFile.deletedAt) {
-            failedDeletions.push(attachment.fileUrl);
-          }
-        }
-      }
+      // // 반복문으로 URL을 하나씩 찾아서 삭제
+      // for (const attachment of fileUrls) {
+      //   const fileToDelete = await this.filesDAO.getOneFileUrl(attachment.fileUrl);
+      //   if (fileToDelete) {
+      //     const deletedFile = await this.filesDAO.deleteFile(fileToDelete);
+      //     if (!deletedFile || !deletedFile.deletedAt) {
+      //       failedDeletions.push(attachment.fileUrl);
+      //     }
+      //   }
+      // }
 
       const result = await this.postsDAO.deletePost(postId);
       if (result.affected === 0) {

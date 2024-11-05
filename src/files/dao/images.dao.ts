@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ImagesEntity } from '../entities/images.entity';
+import { winstonLogger } from 'src/config/logger.config';
 
 @Injectable()
 export class ImagesDAO {
@@ -27,14 +28,24 @@ export class ImagesDAO {
     return await this.imagesRepository.save(image);
   }
 
+  // 여러 개의 이미지 엔티티 삭제
+  async deleteImages(urls: string[]): Promise<void> {
+    if (urls.length === 0) {
+      winstonLogger.error("삭제할 이미지 URL이 없습니다.");
+      return;
+    }
+  
+    await this.imagesRepository
+      .createQueryBuilder()
+      .update(ImagesEntity)
+      .set({ deletedAt: new Date() })
+      .where('url IN (:...urls)', { urls })
+      .execute();
+  }
+
   // 특정 게시글에 저장된 이미지 URL들 불러오기
   async getImageUrlsInOnePost(postId: number): Promise<string[]> {
     const imageEntities = await this.imagesRepository.find({ where: { postId } });
     return imageEntities.map((imageEntity) => imageEntity.url);
-  }
-
-  // 특정 URL에 해당하는 Row 조회하기
-  async getOneImageUrl(url: string): Promise<ImagesEntity> {
-    return await this.imagesRepository.findOne({ where: { url } });
   }
 }

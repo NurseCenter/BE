@@ -1,6 +1,7 @@
 import { IsArray, IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { EBoardType } from '../enum/board-type.enum';
+import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
 
 export class UpdatePostDto {
   @IsOptional()
@@ -19,9 +20,11 @@ export class UpdatePostDto {
   @ApiProperty({ description: '변경 후 게시판 카테고리', required: false })
   afterBoardType?: EBoardType;
 
-  @IsArray()
   @IsOptional()
-  @ApiProperty({ type: [String], description: '파일 URL들이 담긴 배열' })
+  @ApiProperty({
+    type: `IFileUrls`,
+    description: 'images(본문에 넣은 이미지 파일 배열), attachments(첨부파일로 넣은 여러 가지 파일들)',
+  })
   fileUrls?: IFileUrls;
 
   @IsOptional()

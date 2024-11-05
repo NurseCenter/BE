@@ -1,4 +1,4 @@
-interface IAttachments {
+export interface IAttachments {
   fileName: string;
   fileUrl: string;
 }

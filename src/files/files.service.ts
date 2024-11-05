@@ -12,6 +12,7 @@ import { winstonLogger } from 'src/config/logger.config';
 import { fileTypeMappings, getFolderForFileType } from './file-type-mapping';
 import { ImagesDAO } from './dao/images.dao';
 import { ImagesEntity } from './entities/images.entity';
+import { IAttachments } from './interfaces/attachments.interface';
 
 @Injectable()
 export class FilesService {

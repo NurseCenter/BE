@@ -17,6 +17,7 @@ import { ReportPostsEntity } from 'src/reports/entities';
 import { LikesEntity } from 'src/likes/entities/likes.entity';
 import { FilesEntity } from 'src/files/entities/files.entity';
 import { RepliesEntity } from 'src/replies/entities/replies.entity';
+import { ImagesEntity } from 'src/files/entities/images.entity';
 
 /*
 [이론정보] theory.entity.ts -> TheoryEntity
@@ -124,4 +125,9 @@ export class PostsEntity {
   // 하나의 게시글에 여러 개의 파일이 첨부될 수 있음
   @OneToMany(() => FilesEntity, (file) => file.post)
   files: FilesEntity[];
+
+  // 본문에 첨부한 이미지 파일과의 관계 설정
+  // 하나의 게시글에 여러 개의 이미지 파일이 본문에 첨부될 수 있음
+  @OneToMany(() => ImagesEntity, (image) => image.post)
+  images: ImagesEntity[];
 }

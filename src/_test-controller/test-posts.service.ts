@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -9,12 +10,14 @@ import { CommentsDAO } from 'src/comments/comments.dao';
 import { RepliesDAO } from 'src/replies/replies.dao';
 import { summarizeContent } from 'src/common/utils/summarize.utils';
 import { FilesService } from 'src/files/files.service';
-import { FilesDAO } from 'src/files/files.dao';
 import { CreatePostDto, UpdatePostDto } from 'src/posts/dto';
 import { EBoardType } from 'src/posts/enum/board-type.enum';
 import { IPostResponse } from 'src/posts/interfaces';
 import { PostsMetricsDAO } from 'src/posts/metrics/posts-metrics-dao';
 import { PostsDAO } from 'src/posts/posts.dao';
+import { ImagesDAO } from 'src/files/dao/images.dao';
+import { FilesDAO } from 'src/files/dao/files.dao';
+import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
 
 @Injectable()
 export class TestPostsService {
@@ -25,6 +28,7 @@ export class TestPostsService {
     private readonly repliesDAO: RepliesDAO,
     private readonly filesService: FilesService,
     private readonly filesDAO: FilesDAO,
+    private readonly imagesDAO: ImagesDAO,
   ) {}
 
   // 게시물 생성
@@ -35,9 +39,22 @@ export class TestPostsService {
     const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
-    await this.filesService.uploadFiles(fileUrls, createdPost.postId);
+    if (fileUrls) {
+      const { images = [], attachments = [] } = fileUrls as IFileUrls;
+      if (Array.isArray(attachments) && Array.isArray(images)) {
+        await this.filesService.uploadFiles(attachments, createdPost.postId);
+        await this.filesService.uploadImages(images, createdPost.postId);
+      } else {
+        throw new BadRequestException('attachments와 images는 배열이어야 합니다.');
+      }
+    }
 
     const summaryContent = summarizeContent(content);
+
+    // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
+    const fileCount = fileUrls
+      ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
+      : '첨부파일 없음';
 
     return {
       postId: createdPost.postId, // 게시물 ID
@@ -47,6 +64,7 @@ export class TestPostsService {
       content: summaryContent, // 내용 (요약본)
       hospitalNames: createdPost.hospitalNames, // 게시물과 관련된 병원 이름 (배열)
       createdAt: createdPost.createdAt, // 작성일
+      fileUrls: fileCount, // 첨부파일 개수
     };
   }
 
@@ -62,7 +80,8 @@ export class TestPostsService {
 
     await this.postsMetricsDAO.increaseViewCount(postId);
 
-    const urlArray = await this.filesDAO.getFileUrlsInOnePost(postId);
+    const filesArray = await this.filesDAO.getFileUrlsInOnePost(postId);
+    const imagesArray = await this.imagesDAO.getImageUrlsInOnePost(postId);
 
     return {
       postId: post.postId, // 게시물 ID
@@ -76,7 +95,7 @@ export class TestPostsService {
       updatedAt: post.updatedAt, // 수정일 (업데이트 유무 렌더링)
       user: post.user, // 작성자 정보
       numberOfComments: numberOfCommentsAndReplies, // 댓글과 답글 수
-      fileUrls: urlArray, // 게시글에 첨부된 파일 URL들
+      fileUrls: { images: imagesArray, attachments: filesArray }, // 게시글에 첨부된 파일 URL들
     };
   }
 
@@ -123,15 +142,17 @@ export class TestPostsService {
     }
 
     // 업로드한 파일 URL 배열 변경
-    if (fileUrls !== undefined) {
-      if (fileUrls.length > 0) {
-        const fileEntities = await this.filesService.uploadFiles(fileUrls, postId);
-        post.files = fileEntities;
+    if (fileUrls) {
+      const { images, attachments } = fileUrls as IFileUrls;
+      if (Array.isArray(attachments) && Array.isArray(images)) {
+        await this.filesService.uploadFiles(attachments, post.postId);
+        await this.filesService.uploadImages(images, post.postId);
         filesChanged = true;
       } else {
-        post.files = [];
-        filesChanged = true;
+        throw new BadRequestException('attachments와 images는 배열이어야 합니다.');
       }
+    } else {
+      filesChanged = false;
     }
 
     // 아무 것도 수정되지 않은 경우
@@ -147,6 +168,11 @@ export class TestPostsService {
     const updatedPost = await this.postsDAO.savePost(post);
     const summaryContent = summarizeContent(updatedPost.content);
 
+    // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
+    const fileCount = fileUrls
+      ? `본문 이미지 파일 ${fileUrls?.images?.length || 0}개, 첨부파일 ${fileUrls?.attachments?.length || 0}개`
+      : '첨부파일 없음';
+
     return {
       postId: updatedPost.postId, // 게시물 ID
       category: updatedPost.boardType, // 게시물 카테고리
@@ -156,6 +182,7 @@ export class TestPostsService {
       hospitalNames: updatedPost.hospitalNames, // 병원 이름
       createdAt: updatedPost.createdAt, // 작성일
       updatedAt: updatedPost.updatedAt, // 수정일
+      fileUrls: fileCount, // 첨부파일 개수
     };
   }
 
@@ -178,26 +205,32 @@ export class TestPostsService {
       }
 
       // 첨부파일 URL 조회
-      const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
-      const deletionErrors: string[] = [];
+      // const fileUrls = await this.filesDAO.getFileUrlsInOnePost(postId);
+      const failedDeletions: string[] = [];
 
-      // 반복문으로 URL을 하나씩 찾아서 삭제
-      for (const url of fileUrls) {
-        const fileToDelete = await this.filesDAO.getOneFileUrl(url);
-        if (fileToDelete) {
-          const deleteResult = await this.filesDAO.deleteFile(fileToDelete);
-          if (deleteResult.affected === 0) {
-            deletionErrors.push(`URL: ${url}는 삭제되지 않았습니다.`);
-          }
-        }
-      }
+      // // 반복문으로 URL을 하나씩 찾아서 삭제
+      // for (const attachment of fileUrls) {
+      //   const fileToDelete = await this.filesDAO.getOneFileUrl(attachment.fileUrl);
+      //   if (fileToDelete) {
+      //     const deletedFile = await this.filesDAO.deleteFile(fileToDelete);
+      //     if (!deletedFile || !deletedFile.deletedAt) {
+      //       failedDeletions.push(attachment.fileUrl);
+      //     }
+      //   }
+      // }
 
       const result = await this.postsDAO.deletePost(postId);
       if (result.affected === 0) {
         throw new InternalServerErrorException(`게시물 삭제 중 에러가 발생하였습니다.`);
       }
 
-      return { message: '게시물이 삭제되었습니다.', ...(deletionErrors.length > 0 && { errors: deletionErrors }) };
+      // 실패한 삭제가 있는 경우 메시지 생성
+      let deletionErrorMessage = '';
+      if (failedDeletions.length > 0) {
+        deletionErrorMessage = `다음 URL(s)은 삭제되지 않았습니다: ${failedDeletions.join(', ')}`;
+      }
+
+      return { message: '게시물이 삭제되었습니다.', ...(deletionErrorMessage && { errors: deletionErrorMessage }) };
     } catch (err) {
       throw err;
     }

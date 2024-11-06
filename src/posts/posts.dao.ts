@@ -133,7 +133,7 @@ export class PostsDAO {
         query.orderBy('post.viewCounts', sortOrder);
         break;
       default:
-        query.orderBy('post.createdAt', sortOrder);
+        query.orderBy('post.createdAt', sortOrder || 'DESC');
         break;
     }
     query.addOrderBy('post.postId', sortOrder);

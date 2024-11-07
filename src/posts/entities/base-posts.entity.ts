@@ -48,8 +48,8 @@ export class PostsEntity {
   @Column({ type: 'varchar', length: 50 })
   title: string;
 
-  // 글 내용
-  @Column({ type: 'varchar'})
+  // 글 내용 (html 태그 제외 5000자)
+  @Column({ type: 'text'})
   content: string;
 
   // 병원 이름

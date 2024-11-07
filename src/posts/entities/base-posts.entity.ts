@@ -49,7 +49,7 @@ export class PostsEntity {
   title: string;
 
   // 글 내용
-  @Column({ type: 'varchar', length: 2000 })
+  @Column({ type: 'varchar'})
   content: string;
 
   // 병원 이름

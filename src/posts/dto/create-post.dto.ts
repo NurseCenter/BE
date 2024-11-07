@@ -9,7 +9,6 @@ export class CreatePostDto extends OmitType(BasePostDto, ['postId', 'boardType']
   @ApiProperty({ description: '게시글 제목' })
   title: string;
 
-  // @Length(1, 2000)
   @IsString()
   @ApiProperty({ description: '게시글 내용' })
   content: string;

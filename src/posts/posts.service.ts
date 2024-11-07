@@ -33,6 +33,7 @@ import { FilesDAO } from 'src/files/dao/files.dao';
 import { ImagesDAO } from 'src/files/dao/images.dao';
 import { IFileUrls } from 'src/files/interfaces/file-urls.interface';
 import { winstonLogger } from 'src/config/logger.config';
+import { processContent } from 'src/common/utils/text-utils';
 
 @Injectable()
 export class PostsService {
@@ -83,6 +84,8 @@ export class PostsService {
     const { title, content, fileUrls, hospitalNames } = createPostDto;
     const { userId } = sessionUser;
 
+    const processedContent = processContent(content);
+
     const user = await this.usersDAO.findUserByUserId(userId);
     if (!user) {
       throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
@@ -94,7 +97,7 @@ export class PostsService {
       );
     }
 
-    const createdPost = await this.postsDAO.createPost(title, content, userId, hospitalNames, boardType);
+    const createdPost = await this.postsDAO.createPost(title, processedContent, userId, hospitalNames, boardType);
     await this.postsDAO.savePost(createdPost);
 
     if (fileUrls) {
@@ -107,7 +110,7 @@ export class PostsService {
       }
     }
 
-    const summaryContent = summarizeContent(content);
+    const summaryContent = summarizeContent(processedContent);
 
     // fileUrls가 있으면 개수 세기, 없으면 "첨부파일 없음" 표시
     const fileCount = fileUrls
@@ -173,6 +176,8 @@ export class PostsService {
     const { userId } = sessionUser;
     const { title, content, afterBoardType, fileUrls } = updatePostDto;
 
+    const processedContent = processContent(content);
+    
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
@@ -195,8 +200,8 @@ export class PostsService {
     }
 
     // 본문 내용 변경
-    if (content !== null && content !== undefined && post.content !== content) {
-      post.content = content;
+    if (content !== null && content !== undefined && post.content !== processedContent) {
+      post.content = processedContent;
       contentChanged = true;
     }
 

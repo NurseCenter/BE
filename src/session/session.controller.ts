@@ -30,17 +30,22 @@ export class SessionController {
   async monitorSession(@Req() req: Request, @Res() res: Response): Promise<any> {
     try {
       const cookie = req.headers?.cookie;
-      let sessionId: string;
 
-      if (cookie) {
-        // 쿠키에서 sessionId 추출
-        sessionId = extractSessionIdFromCookie(cookie);
+      // 쿠키가 없으면 400 상태 코드 반환 
+      // => 프론트엔드에서 세션 만료 알림
+      if (!cookie) {
+        return res.status(400).json({ error: '쿠키가 없습니다. 세션 ID를 찾을 수 없습니다.'})
       }
 
+      let sessionId = extractSessionIdFromCookie(cookie);
+
+      // 세션 ID가 쿠키에 없어도 400 상태 코드 반환
       if (!sessionId) {
         return res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
       }
 
+      sessionId = extractSessionIdFromCookie(cookie);
+      
       // 세션 모니터링 시작
       this.sessionService.monitorSession(sessionId);
 

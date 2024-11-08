@@ -165,20 +165,20 @@ export class PostsController {
         },
         numberOfComments: 25,
         fileUrls: {
-          "images": [
-            "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
-            "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+          images: [
+            'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png',
+            'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png',
           ],
-          "attachments": [
+          attachments: [
             {
-              "fileName": "문서1.pdf",
-              "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+              fileName: '문서1.pdf',
+              fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf',
             },
             {
-              "fileName": "압축파일.zip",
-              "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
-            }
-          ]
+              fileName: '압축파일.zip',
+              fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip',
+            },
+          ],
         },
       },
     },
@@ -287,20 +287,20 @@ export class PostsController {
           title: '새 게시글 제목',
           content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
           fileUrls: {
-            "images": [
-              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
-              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+            images: [
+              'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png',
+              'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png',
             ],
-            "attachments": [
+            attachments: [
               {
-                "fileName": "문서1.pdf",
-                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+                fileName: '문서1.pdf',
+                fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf',
               },
               {
-                "fileName": "압축파일.zip",
-                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
-              }
-            ]
+                fileName: '압축파일.zip',
+                fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip',
+              },
+            ],
           },
           hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
@@ -318,7 +318,7 @@ export class PostsController {
         content: '<p>새 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
-        fileUrls: '본문 이미지 파일 3개, 첨부파일 5개'
+        fileUrls: '본문 이미지 파일 3개, 첨부파일 5개',
       },
     },
   })
@@ -388,7 +388,10 @@ export class PostsController {
                 type: 'object',
                 properties: {
                   fileName: { type: 'string', example: '문서1.pdf' },
-                  fileUrl: { type: 'string', example: 'https://example.s3.ap-northeast-2.amazonaws.com/documents/sample.pdf' },
+                  fileUrl: {
+                    type: 'string',
+                    example: 'https://example.s3.ap-northeast-2.amazonaws.com/documents/sample.pdf',
+                  },
                 },
               },
             },
@@ -433,20 +436,20 @@ export class PostsController {
           title: '수정된 게시글 제목',
           content: '<p>수정된 게시글 내용입니다. <strong>간호사 취업 잘 하는 방법</strong>은 무엇일까요?</p>',
           fileUrls: {
-            "images": [
-              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png",
-              "https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png"
+            images: [
+              'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/05366059-f4aa-4ee6-b47d-08c9bc58ddd1.png',
+              'https://caugannies.s3.ap-northeast-2.amazonaws.com/images/2024/10/16/12345678-abcd-4ee6-b47d-08c9bc58abcd2.png',
             ],
-            "attachments": [
+            attachments: [
               {
-                "fileName": "문서1.pdf",
-                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf"
+                fileName: '문서1.pdf',
+                fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/document1.pdf',
               },
               {
-                "fileName": "압축파일.zip",
-                "fileUrl": "https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip"
-              }
-            ]
+                fileName: '압축파일.zip',
+                fileUrl: 'https://caugannies.s3.ap-northeast-2.amazonaws.com/documents/2024/10/16/archive.zip',
+              },
+            ],
           },
           hospitalNames: ['서울대학교병원', '서울성모병원'],
         },
@@ -466,7 +469,7 @@ export class PostsController {
         hospitalNames: ['서울대학교병원'],
         createdAt: '2024-01-02T00:00:00.000Z',
         updatedAt: '2024-10-22T09:35:01.805Z',
-        fileUrls: '본문 이미지 파일 2개, 첨부파일 2개'
+        fileUrls: '본문 이미지 파일 2개, 첨부파일 2개',
       },
     },
   })

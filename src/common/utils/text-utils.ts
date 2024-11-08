@@ -5,11 +5,11 @@
  * @returns 글자 수가 제한된 텍스트
  */
 export function processContent(content: string, maxLength: number = 5000): string {
-    // 1) HTML 태그 제거
-    const textOnly = content.replace(/<[^>]*>/g, '');
+  // 1) HTML 태그 제거
+  const textOnly = content.replace(/<[^>]*>/g, '');
 
-    // console.log('HTML 포함 길이:', content.length);
-    // console.log('HTML 미포함 길이:', textOnly.length);
+  // console.log('HTML 포함 길이:', content.length);
+  // console.log('HTML 미포함 길이:', textOnly.length);
 
   // 2) 텍스트의 길이가 maxLength를 넘으면 자르기
   if (textOnly.length > maxLength) {
@@ -25,27 +25,27 @@ export function processContent(content: string, maxLength: number = 5000): strin
       if (char === '<') {
         insideTag = true;
         result += char; // 태그 시작을 그대로 추가
-      } 
+      }
       // 태그의 끝 부분
       else if (char === '>') {
         insideTag = false;
         result += char; // 태그 끝을 그대로 추가
-      } 
+      }
       // 텍스트 부분
       else if (!insideTag) {
         if (textCount < maxLength) {
           result += char; // 텍스트를 그대로 추가
           // 텍스트 길이를 계산하면서 증가
           if (textOnly[textCount] !== ' ' && textOnly[textCount] !== '\n') {
-            textCount++; 
+            textCount++;
           }
         } else {
-          break; 
+          break;
         }
-      } 
+      }
       // 태그 내부일 경우
       else {
-        result += char; 
+        result += char;
       }
     }
 

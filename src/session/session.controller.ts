@@ -31,8 +31,6 @@ export class SessionController {
     try {
       const cookie = req.headers?.cookie;
 
-      // 쿠키가 없으면 400 상태 코드 반환
-      // => 프론트엔드에서 세션 만료 알림
       if (!cookie) {
         return res.status(400).json({ error: '쿠키가 없습니다. 세션 ID를 찾을 수 없습니다.' });
       }
@@ -43,9 +41,7 @@ export class SessionController {
       if (!sessionId) {
         return res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
       }
-
-      sessionId = extractSessionIdFromCookie(cookie);
-
+      
       // 세션 모니터링 시작
       this.sessionService.monitorSession(sessionId);
 

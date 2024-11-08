@@ -25,7 +25,7 @@ export class LoggerMiddleware implements NestMiddleware {
       return next(new Error('Request에서 userId가 없습니다.'));
     }
 
-    const sessionId = extractSessionIdFromCookie(cookie);
+    const sessionId = decodeURIComponent(extractSessionIdFromCookie(cookie));
 
     try {
       const userString = await this.redisClient.get(`sess:${sessionId}`);

@@ -177,7 +177,7 @@ export class PostsService {
     const { title, content, afterBoardType, fileUrls } = updatePostDto;
 
     const processedContent = processContent(content);
-    
+
     const post = await this.postsDAO.findOnePostByPostId(postId);
     const existsInBoardType = await this.postsDAO.findPostByIdAndBoardType(postId, boardType);
 
@@ -215,7 +215,6 @@ export class PostsService {
     if (fileUrls) {
       const { images, attachments } = fileUrls as IFileUrls;
       if (Array.isArray(attachments) && Array.isArray(images)) {
-
         // 기존 파일과 비교하여 추가한 파일 테이블에 추가, 없는 건 삭제
         const existingFiles = await this.filesDAO.getFileUrlsInOnePost(postId);
         const existingImages = await this.imagesDAO.getImageUrlsInOnePost(postId);

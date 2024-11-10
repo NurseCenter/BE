@@ -127,10 +127,10 @@ export class PostsDAO {
     // 정렬
     switch (sortType) {
       case ESortType.LIKES:
-        query.orderBy('post.likeCounts', sortOrder);
+        query.orderBy('post.likeCounts', sortOrder || 'DESC');
         break;
       case ESortType.VIEWCOUNTS:
-        query.orderBy('post.viewCounts', sortOrder);
+        query.orderBy('post.viewCounts', sortOrder || 'DESC');
         break;
       default:
         query.orderBy('post.createdAt', sortOrder || 'DESC');

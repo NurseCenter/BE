@@ -45,7 +45,14 @@ export class ImagesDAO {
 
   // 특정 게시글에 저장된 이미지 URL들 불러오기
   async getImageUrlsInOnePost(postId: number): Promise<string[]> {
-    const imageEntities = await this.imagesRepository.find({ where: { postId } });
-    return imageEntities.map((imageEntity) => imageEntity.url);
+    const queryBuilder = this.imagesRepository.createQueryBuilder('file')
+      .where('file.postId = :postId', { postId })
+      .andWhere('file.deletedAt IS NULL'); // 삭제되지 않은 것만 조회
+      
+    const imageEntities = await queryBuilder.getMany();
+
+    return imageEntities.map((imageEntity) => {
+      return imageEntity.url;
+    })
   }
 }

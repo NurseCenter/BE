@@ -46,7 +46,12 @@ export class FilesDAO {
 
   // 특정 게시글에 저장된 파일 URL들 불러오기
   async getFileUrlsInOnePost(postId: number): Promise<IAttachments[]> {
-    const fileEntities = await this.filesRepository.find({ where: { postId } });
+    const queryBuilder = this.filesRepository.createQueryBuilder('file')
+      .where('file.postId = :postId', { postId })
+      .andWhere('file.deletedAt IS NULL');  // 삭제되지 않은 것만 조회
+  
+    const fileEntities = await queryBuilder.getMany();
+
     return fileEntities.map((fileEntity) => {
       const { url, fileName } = fileEntity;
       return { fileUrl: url, fileName };

@@ -41,7 +41,7 @@ export class SessionController {
       if (!sessionId) {
         return res.status(400).json({ error: '세션 ID를 찾을 수 없습니다.' });
       }
-      
+
       // 세션 모니터링 시작
       this.sessionService.monitorSession(sessionId);
 

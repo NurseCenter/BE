@@ -69,12 +69,16 @@ export class RepliesDAO {
   async findAllReplies(type: ESearchCommentByAdmin, search: string): Promise<any[]> {
     const queryBuilder = this.repliesRepository
       .createQueryBuilder('reply')
+      .leftJoinAndSelect('reply.post', 'post')
       .leftJoinAndSelect('reply.user', 'replyUser')
       .select([
         'reply.replyId', // 답글 ID
         'reply.content', // 답글 내용
         'reply.createdAt', // 작성일
         'replyUser.nickname', // 답글 작성자 닉네임
+        'post.postId', // 원 게시물 ID
+        'post.title', // 게시물 제목
+        'post.boardType', // 게시물 카테고리
       ])
       .where('reply.deletedAt IS NULL');
 
@@ -88,6 +92,9 @@ export class RepliesDAO {
           break;
         case ESearchCommentByAdmin.COMMENT_AUTHOR:
           queryBuilder.andWhere('replyUser.nickname LIKE :search', { search: `%${search}%` });
+          break;
+        case ESearchCommentByAdmin.POST_TITLE:
+          queryBuilder.andWhere('post.title LIKE :search', { search: `%${search}%` });
           break;
       }
     }

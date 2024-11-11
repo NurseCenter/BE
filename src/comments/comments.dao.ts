@@ -200,11 +200,13 @@ export class CommentsDAO {
         case ESearchCommentByAdmin.COMMENT_AUTHOR:
           queryBuilder.andWhere('commentUser.nickname LIKE :search', { search: `%${search}%` });
           break;
+        case ESearchCommentByAdmin.POST_TITLE:
+          queryBuilder.andWhere('post.title LIKE :search', { search: `%${search}%` });
+          break;
       }
     }
 
     const results = await queryBuilder.getMany();
-    // console.log('댓글 조회 결과:', results);
     return results;
   }
 

@@ -457,7 +457,7 @@ export class AdminService {
 
     // 댓글과 답글을 합침
     const combinedPromises = comments.map(async (comment) => {
-      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.post.postId);
+      const post = comment.post ? await this.postsDAO.findPostEntityByPostIdWithDeleted(comment.post.postId) : null;
 
       return {
         id: comment.commentId, // 댓글 ID
@@ -472,7 +472,7 @@ export class AdminService {
     });
 
     const replyPromises = replies.map(async (reply) => {
-      const post = await this.postsDAO.findPostEntityByPostIdWithDeleted(reply.post.postId);
+      const post = reply.post ? await this.postsDAO.findPostEntityByPostIdWithDeleted(reply.post.postId) : null;
 
       return {
         id: reply.replyId, // 답글 ID

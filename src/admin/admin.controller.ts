@@ -761,6 +761,8 @@ export class AdminController {
         return this.adminService.sendAccountSuspensionEmail(userId);
       case 'approval':
         return this.adminService.sendApprovalEmail(userId);
+      case 'suspensionCancel':
+        return this.adminService.sendSuspensionCancelEmail(userId);
       default:
         throw new NotFoundException('지원하지 않는 이메일 유형입니다.');
     }

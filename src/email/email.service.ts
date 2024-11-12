@@ -91,6 +91,12 @@ export class EmailService {
     await this.send(to, '중간이들 계정 활동 정지 안내', 'member-suspension-email', data);
   }
 
+  // 계정 활동 정지 취소(해제) 이메일 발송
+  async sendSuspensionCancelEmail(to: string, nickname: string): Promise<void> {
+    const data = { nickname };
+    await this.send(to, '중간이들 계정 활동 정지 해제 안내', 'member-suspension-cancel-email', data);
+  }
+
   // 강제 탈퇴 안내 이메일 발송
   async sendForcedWithdrawalEmail(to: string, nickname: string, deletionReason: string): Promise<void> {
     const data = { nickname, deletionReason };

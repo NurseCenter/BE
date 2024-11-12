@@ -3,4 +3,5 @@ export enum EEmailType {
   WITHDRAWAL = 'withdrawal',
   SUSPENSION = 'suspension',
   APPROVAL = 'approval',
+  SUSPENSION_CANCEL = 'suspensionCancel',
 }

@@ -219,6 +219,20 @@ export class AdminService {
     return { message: '회원 정지 취소가 완료되었습니다.', userId };
   }
 
+  // 회원 계정 정지 취소/해제 안내 이메일
+  async sendSuspensionCancelEmail(userId: number): Promise<{ message: string; email: string }> {
+    const user = await this.usersDAO.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException(`ID가 ${userId}인 회원이 존재하지 않습니다.`);
+    }
+
+    const { email, nickname } = user;
+
+    await this.emailService.sendSuspensionCancelEmail(email, nickname);
+
+    return { message: '활동 정지 해제 안내 메일이 발송되었습니다.', email };
+  }
+
   // 모든 회원 조회
   async fetchAllUsersByAdmin(
     page: number = 1,

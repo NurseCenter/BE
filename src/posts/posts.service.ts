@@ -414,11 +414,6 @@ export class PostsService {
     };
   }
 
-  // 게시판 카테고리별 게시물 수 조회
-  async getPostsCountByCategory(boardType?: EBoardType): Promise<{ boardType: EBoardType; count: number }[]> {
-    return this.postsDAO.countPostsByCategory(boardType);
-  }
-
   // 한 게시물에 달린 댓글과 답글 수 구하기
   async getNumberOfCommentsAndReplies(postId: number): Promise<number> {
     const numberOfComments = (await this.commentsDAO.countAllCommentsByPostId(postId)) || 0;

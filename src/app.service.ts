@@ -7,10 +7,7 @@ export class AppService {
     const { toKST } = ConversionUtil;
     const now = new Date();
     const nowInSeoul = toKST(now);
-
-    // console.log("now", now, "type of now", typeof now);
-    // console.log("nowInSeoul", nowInSeoul, "type of nowInSeoul", typeof nowInSeoul);
-
+    
     const message = `😝 Welcome To Caugannies Server!, Date and time now in Seoul: ${nowInSeoul}, UTC: ${now.toISOString()}`;
 
     return { message };

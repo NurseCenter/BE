@@ -141,11 +141,154 @@
 
 ## 1) 세션 관리 이슈
 
-## 2) 데이터 쿼리 최적화
+### ① 커스텀 데코레이터를 활용한 사용자 인증 로직 개선
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • express의 Request 객체를 인자로 받아온 @Req() 데코레이터를 사용 <br> → 직접 쿠키의 세션 ID를 추출하여 회원 확인 <br> • 코드가 반복적이고 복잡해짐.                  |
+| 문제   | • 매 요청마다 세션 ID 추출 과정 반복 <br> • 회원 세션 정보 접근 시 매번 비슷한 코드 작성 필요 <br> • 보안에 민감한 비밀번호 필드도 세션에 항상 포함되어 저장됨. |
+| 해결   | • <b>커스텀 데코레이터 생성</b> <br> - 세션에서 사용자 정보 자동 추출 <br> - 비밀번호 필드 제외 <br> - 타입 안정성을 위한 인터페이스 정의 |                                        
+| 개선된 점 | • 코드 중복 제거 <br> • 보안성 향상 (비밀번호 필드 제외하여 저장) <br> • 타입 안정성 확보 <br> • 사용성 개선 |
+
+<details>
+<summary><i>개선 전 - express의 Request 객체를 인자로 받아온 @Req() 데코레이터를 사용</i></summary>
+<div markdown="1">
+
+```
+  // 사용자 상태 확인
+  @Get('status')
+  @HttpCode(HttpStatus.OK)
+  async getStatus(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+    const sessionId = req.cookies['connect.sid'];
+    await this.authService.sendStatus(sessionId);
+    return { message: '로그아웃에 성공하였습니다.' };
+  }
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 회원 세션 정보의 타입 안정성을 제공하는 IUser 인터페이스</i></summary>
+<div markdown="1">
+
+src/auth/interfaces/session-decorator.interface.ts
+
+```
+export interface IUser {
+  userId: number;
+  username: string | null;
+  nickname: string;
+  phoneNumber: string;
+  email: string;
+  isTempPassword: boolean | null;
+  membershipStatus: number;
+  studentStatus: 'current_student' | 'graduated_student' ; 
+  isAdmin: boolean;
+  certificationDocumentUrl: string;
+  rejected: boolean;
+  createdAt: Date;
+  suspensionEndDate: Date | null;
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 커스텀 데코레이터 SessionUser를 생성하여, 비밀번호를 제외한 사용자 정보에 쉽게 접근</i></summary>
+<div markdown="1">
+
+/src/auth/decorators/get-user.decorator.ts
+
+```
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Request } from 'express';
+import { IUser } from '../interfaces';
+
+declare module 'express-session' {
+  interface SessionData {
+    passport: {
+      user: IUser
+    }
+  }
+}
+
+export const SessionUser = createParamDecorator((data: string, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<Request>();
+  const user = request.session.passport.user;
+
+  if (!user) {
+    return null;
+  }
+
+  // 비밀번호 필드를 제외한 새로운 객체 생성
+  const { password, ...safeUserData } = user;
+
+  if (data) {
+    return data === 'password' ? undefined : safeUserData[data as keyof typeof safeUserData];
+  }
+
+  return safeUserData;
+});
+```
+
+</div>
+</details>
+
+<br>
+
+### ② 세션 정보 최적화로 회원 정보 일관성 유지 및 Redis 데이터 용량 절감
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 로그인한 상태에서 회원 정보가 바뀌는 경우<i>(예: 이메일 인증 완료, 탈퇴 등)</i> 또는 관리자가 회원 정보를 업데이트하는 경우<i>(예: 회원 정지, 탈퇴 등)</i>, DB에는 정보가 업데이트되지만 Redis에 저장된 세션 정보는 업데이트되지 않음.               |
+| 문제   | • 이로 인해 정보 불일치가 발생하여 큰 문제가 발생할 수 있음. |
+| 해결   | • 아래 두 가지 방법 중 두 번째 방법을 선택함. <br> 1) 사용자 정보 변경 시 Redis에 저장된 세션 정보도 함께 업데이트 <br> 2) 세션 정보에는 불변하는 정보<i>(예: 이메일, id)</i>만 저장하고, 나머지 정보<i>(예: 닉네임, 회원 상태 등)</i>는 DB에서 조회하도록 로직 변경 |                                        
+| 개선된 점 | • 변하는 정보는 DB에서 조회되므로, 회원 정보 일관성 확보 <br> • Redis의 세션 데이터 용량 개당 약 60% 감소 <i>(728B → 312B)</i> |
+
+<details>
+<summary><i>개선 전 - Redis에 저장된 회원 세션</i></summary>
+<div markdown="1">
+
+![화면 캡처 2024-08-30 160938](https://github.com/user-attachments/assets/18d50312-5d6f-45e7-921b-46a4da8c0faf)
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 불변 데이터만 Redis의 세션 정보로 저장하도록 함</i></summary>
+<div markdown="1">
+
+src/auth/interfaces/user-interface.ts
+
+```
+export interface IUser {
+  userId: number; // 회원 ID
+  email: string; // 이메일
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 후 - Redis에 저장된 회원 세션</i></summary>
+<div markdown="1">
+
+![세션변경후Redis로그인](https://github.com/user-attachments/assets/fe8875ed-a77f-4b2f-8c0b-54f4ff9fc583)
+
+</div>
+</details>
+
+<br>
+
+
+## 2) 데이터베이스 성능 개선 및 쿼리 최적화
 
 ## 3) 배포 프로세스 개선
 
-## 4) 테스트 자동화 및 품질 보증
+## 4) 테스트 자동화
 
 ## 5) 기타
 

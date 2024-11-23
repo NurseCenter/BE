@@ -283,6 +283,102 @@ export interface IUser {
 
 <br>
 
+### ③ 세션 쿠키 동적 설정을 위한 자동 로그인 구현 전략
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 자동 로그인 기능 구현 시 약 2주 정도의 세션 만료 기한 필요 <br> • 로그인 요청 시 이메일, 비밀번호와 함께 autoLogin 여부를 request body로 전송       |
+| 문제   | • 컨트롤러에서 @Query로 autoLogin을 받을 경우의 단점 <br> - 세션 옵션을 동적으로 설정하기 어려움 (환경변수와 쿼리에 따른 유연한 대응 제한) <br> - 세션 미들웨어가 이미 적용된 후에 쿼리를 처리하므로 타이밍 이슈 발생 가능 <br> • Request body로 받을 때의 잠재적 문제점 <br> - REST API 설계 관점에서 URL 파라미터로 표현하는 것이 더 명확할 수 있음. <br> - 로그인 요청 시마다 body에 추가 필드를 포함해야 하는 번거로움 <br> - 프론트엔드에서 별도의 데이터 구조 관리 필요 |
+| 해결   | • 메인 애플리케이션 설정(main.ts)에서 미들웨어를 통해 request query의 autoLogin 값에 따라 세션 옵션을 동적으로 생성하여 적용하도록 구성함.  |                                        
+| 개선된 점 | • 로그인 컨트롤러에서 별도로 쿠키 옵션을 처리하지 않아도 되며, 쿼리 파라미터에 따라 세션 옵션(만료기간 등)을 동적으로 설정할 수 있게 됨. <br> • API 엔드포인트도 더 RESTful한 형태로 유지 가능 |
+
+<details>
+<summary><i>개선 후 - 동적 세션 옵션 설정</i></summary>
+<div markdown="1">
+
+src/main.ts
+
+```
+  app.use(cookieParser());
+  app.use((req, res, next) => {
+    const autoLogin = req.query.autoLogin === 'true';
+    const sessionOptions = sessionConfigService.createSessionOptions(autoLogin);
+    session(sessionOptions)(req, res, next);
+  });
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 세션 옵션 및 생성 및 구성 서비스</i></summary>
+<div markdown="1">
+
+src/config/session.config.ts
+
+```
+import { Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import RedisStore from 'connect-redis';
+import Redis from 'ioredis';
+import { sendCookieOptions } from 'src/auth/services';
+import { ConversionUtil } from 'src/common/utils/conversion.utils';
+
+export class SessionConfigService {
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+    private readonly configService: ConfigService,
+  ) {}
+
+  createSessionOptions(autoLogin: boolean) {
+    const redisStore = new RedisStore({ client: this.redisClient });
+
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions = {
+      ...sendCookieOptions(),
+      maxAge: autoLogin
+        ? 14 * 24 * 60 * 60 * 1000 // 자동 로그인 기한: 2주
+        : isProduction
+          ? 2 * 60 * 60 * 1000 // 배포 환경: 2시간
+          : 24 * 60 * 60 * 1000, // 로컬 환경: 24시간
+    };
+
+    return {
+      store: redisStore,
+      secret: this.configService.get<string>('SESSION_SECRET') || 'gannies_session_default',
+      resave: ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_RESAVE')) || false,
+      saveUninitialized:
+        ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_SAVE_UNINITIALIZED')) || false,
+      cookie: cookieOptions,
+    };
+  }
+}
+```
+
+
+### ④ 리버스 프록시 환경에서의 쿠키 전송 문제 해결
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 배포 서버에서 클라이언트 브라우저로 express-session의 쿠키 전송이 실패하는 현상 발생함. <br> • 로컬 환경에서는 정상 작동하며, 서버에서 직접 발급하는 쿠키는 정상적으로 전송됨.       |
+| 문제   | • AWS EC2와 같은 배포 환경에서 Nginx나 AWS ELB와 같은 리버스 프록시를 사용할 때, Express 애플리케이션이 프록시 설정을 인식하지 못해 express-session의 쿠키 설정이 실패함. |
+| 해결   | • main.ts에 app.set('trust proxy', 1); 코드를 추가하여 Express 애플리케이션이 리버스 프록시를 신뢰하도록 설정함.  |                                        
+| 개선된 점 | • express-session에서 발급하는 쿠키가 리버스 프록시 환경에서도 정상적으로 클라이언트에 전송되어 세션 관리가 가능해짐. |
+
+<details>
+<summary><i>개선 후 - 배포 브랜치에서 리버스 프록시를 신뢰하도록 설정</i></summary>
+<div markdown="1">
+
+src/main.ts
+
+```
+  app.set('trust proxy', 1);
+```
+
+</div>
+</details>
+
 
 ## 2) 데이터베이스 성능 개선 및 쿼리 최적화
 

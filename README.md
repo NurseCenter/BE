@@ -355,7 +355,9 @@ export class SessionConfigService {
   }
 }
 ```
+</details>
 
+<br>
 
 ### ④ 리버스 프록시 환경에서의 쿠키 전송 문제 해결
 
@@ -378,9 +380,186 @@ src/main.ts
 
 </div>
 </details>
+<details>
+<summary><i>참고 링크 - express-session</i></summary>
+<div markdown="1">
+
+https://www.npmjs.com/package/express-session#cookiesecure
+
+</div>
+</details>
 
 
 ## 2) 데이터베이스 성능 개선 및 쿼리 최적화
+
+### ① 파일 및 이미지 엔티티 분리를 통한 게시물 관리 최적화
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 게시물 작성 시 본문에 삽입되는 이미지와 첨부파일을 단일 File 엔티티로 관리하고 있었음. <br> • 하지만 프론트엔드에서 이 두 유형의 파일을 구분하여 처리해야 할 필요성이 제기됨. |
+| 문제   | • 단일 File 엔티티로는 본문 이미지와 첨부파일의 특성을 각각 효과적으로 관리하기 어려웠고, 게시물 수정/삭제 시 파일 처리 로직이 복잡해짐. <br> • 또한 프론트엔드에서 두 유형의 파일을 구분하여 렌더링하는 데 추가적인 로직이 필요했음. |
+| 해결   | • File 엔티티를 Image와 File 두 개의 독립적인 엔티티로 분리하여 설계함. <br> - Image 엔티티는 본문에 inline으로 삽입되는 이미지를, File 엔티티는 다운로드 가능한 첨부파일을 관리하도록 구조화함. |                                        
+| 개선된 점 | • 파일 유형별(본문 이미지/첨부파일) 데이터 관리가 명확해짐. <br> • 프론트엔드에서 각 용도에 맞는 파일 데이터를 별도로 받아 처리 가능 <br> • 게시물 수정/삭제 시 파일 종류별 처리 로직 구분이 용이해짐. |
+
+<details>
+<summary><i>개선 전 - 본문 삽입 이미지 및 첨부파일은 단일 file 엔티티로 관리</i></summary>
+<div markdown="1">
+
+src/files/entities/files.entity.ts
+
+```
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
+
+@Entity('files')
+export class FilesEntity {
+  // 파일의 고유 ID
+  @PrimaryGeneratedColumn()
+  fileId: number;
+
+  // 파일의 URL
+  @Column()
+  url: string;
+
+  // 이 파일이 첨부된 게시물 ID
+  @Column()
+  postId: number;
+
+  // 이 파일이 첨부된 게시물과의 관계
+  @ManyToOne(() => PostsEntity, (post) => post.files)
+  @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
+  post: PostsEntity;
+
+  // 파일의 타입
+  @Column()
+  fileType: string;
+
+  // 파일의 이름
+  @Column()
+  fileName: string;
+
+  // 파일이 업로드된 날짜
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // 파일이 삭제된 날짜
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 후 - Image Entity 파일 생성하여 본문에 inline으로 삽입되는 이미지 테이블 별도 관리</i></summary>
+<div markdown="1">
+
+src/files/entities/images.entity.ts
+
+```
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
+
+@Entity('images')
+export class ImagesEntity {
+  // 본문에 첨부한 이미지 고유 ID
+  @PrimaryGeneratedColumn()
+  imageId: number;
+
+  // 이미지의 URL
+  @Column()
+  url: string;
+
+  // 이 파일이 첨부된 게시물 ID
+  @Column()
+  postId: number;
+
+  // 이 파일이 첨부된 게시물과의 관계
+  @ManyToOne(() => PostsEntity, (post) => post.images)
+  post: PostsEntity;
+
+  // 파일의 타입
+  @Column()
+  fileType: string;
+
+  // 파일이 업로드된 날짜
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // 파일이 삭제된 날짜
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 전후 - request body로 보내는 json 데이터 내용</i></summary>
+<div markdown="1">
+
+### 변경 전
+```
+{
+  "title": 'New Post Title', // 제목
+  "content": 'New Post Content', // 에디터 본문 (HTML, 파일은 S3 버킷 URL들이 들어감)
+  "hospitalNames": ["string"], // 선택한 병원 이름
+  "fileUrls": ['https://caugannies.aws어쩌구.png'] // S3 버킷의 파일 URL들
+}
+```
+
+### 변경 후
+```
+{
+  "title": 'New Post Title', // 제목
+  "content": 'New Post Content', // 에디터 본문 (HTML, 파일은 S3 버킷 URL들이 들어감)
+  "hospitalNames": ["string"], // 선택한 병원 이름
+  fileUrls: {
+// 본문 이미지
+    images: [
+      "https://s3-url-1.jpg",
+      "https://s3-url-2.jpg"
+    ],
+// 첨부 파일
+    attachments: [
+      {
+        fileName: "문서1.pdf",
+        fileUrl: "https://s3-url-3.pdf"
+      },
+      {
+        fileName: "압축파일.zip",
+        fileUrl: "https://s3-url-4.zip"
+      }
+    ]
+  }
+}
+```
+
+</div>
+</details>
+
+<br>
+
+
+### ② S3 파일 삭제 실패 처리를 위한 배치 작업 구현
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • S3에서 파일 삭제 시 간헐적으로 실패하는 케이스가 발생하여, 이를 효율적으로 처리할 수 있는 방안이 필요했음. <br> • 특히 게시물 수정이나 삭제 시 연관된 파일들의 안정적인 삭제 처리가 중요한 이슈였음. |
+| 문제   | • 파일 삭제 실패 시 해당 URL을 추적하고 관리하는 로직이 없어, S3에 불필요한 파일이 누적될 수 있는 위험이 있었음. <br> • 또한 삭제 실패 시 즉각적인 재시도 로직이 없어서 데이터 정합성 이슈가 발생할 수 있었음. |
+| 해결   | • Redis를 활용하여 삭제 실패한 URL들을 저장하고, 스케줄링된 배치 작업을 통해 주기적으로 삭제를 재시도하는 방식을 구현함. <br> - 특히 당일 데이터만을 처리하도록 하여 성능을 최적화함. |                                        
+| 개선된 점 | • 파일 삭제 실패에 대한 추적 및 관리가 가능해짐 <br> • 주기적인 배치 작업으로 시스템 부하 분산 <br> • 실패한 파일 삭제 처리의 자동화로 운영 효율성 증가 <br> • S3의 불필요한 파일 누적 방지 |
+
+<details>
+<summary><i></i></summary>
+<div markdown="1">
+</div>
+</details>
+<details>
+<summary><i></i></summary>
+<div markdown="1">
+</div>
+</details>
 
 ## 3) 배포 프로세스 개선
 

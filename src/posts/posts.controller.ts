@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGu
 import { EBoardType } from './enum/board-type.enum';
 import { PostsService } from './posts.service';
 import { SessionUser } from '../auth/decorators/get-user.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { RegularMemberGuard } from '../auth/guards';
 import { IPaginatedResponse } from 'src/common/interfaces';
 import { GetPostsQueryDto, CreatePostDto, UpdatePostDto, ReportDto, BasePostDto } from './dto';
@@ -16,63 +16,6 @@ import { IUser } from 'src/auth/interfaces';
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
-
-  // 총 게시물 수를 포함한 게시판별 게시물 수 조회 API
-  @Get('count-by-category')
-  @ApiOperation({ summary: '전체 게시판별 게시물 수 조회 (총 게시물 수 포함)' })
-  @ApiOkResponse({
-    description: '게시판별 게시물 수 조회',
-    isArray: true,
-    example: {
-      '게시판별 게시물 수 예시': {
-        summary: '게시판별 게시물 수',
-        value: [
-          { boardType: 'employment', count: 2 },
-          { boardType: 'event', count: 0 },
-          { boardType: 'exam', count: 1 },
-          { boardType: 'job', count: 13 },
-          { boardType: 'notice', count: 2 },
-          { boardType: 'practice', count: 1 },
-          { boardType: 'theory', count: 1 },
-          { boardType: 'all', count: 20 },
-        ],
-      },
-    },
-  })
-  async getAllPostsCountByCategory(): Promise<{ boardType: EBoardType; count: number }[]> {
-    return this.postsService.getPostsCountByCategory();
-  }
-
-  // 특정 게시판의 게시물 수 조회 API
-  @Get('count-by-category/:boardType')
-  @ApiOperation({ summary: '특정 게시판의 게시물 수 조회' })
-  @ApiResponse({
-    status: 200,
-    description: '특정 게시판의 게시물 수 조회',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              boardType: {
-                type: 'string',
-                enum: Object.values(EBoardType),
-              },
-              count: { type: 'integer' },
-            },
-          },
-        },
-        example: [{ boardType: 'all', count: 230 }],
-      },
-    },
-  })
-  async getPostsCountByCategory(
-    @Param('boardType') boardType?: EBoardType,
-  ): Promise<{ boardType: EBoardType; count: number }[]> {
-    return this.postsService.getPostsCountByCategory(boardType);
-  }
 
   // 게시글 전체 및 검색 조회
   @Get(':boardType')

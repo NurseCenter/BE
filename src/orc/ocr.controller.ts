@@ -10,17 +10,17 @@ export class OcrController {
   @Post('detect-text')
   @ApiOperation({ summary: '이미지 URI를 업로드하면 해당 이미지에서 텍스트(증명서의 실명)를 추출' })
   @ApiBody({
-    type: Object,
     description: 'S3 버킷에 저장된 이미지의 URI',
     schema: {
       type: 'object',
       properties: {
-        imageUri: { type: 'string', description: 'S3 버킷 이미지 URI' },
+        imageUri: {
+          type: 'string',
+          description: 'S3 버킷 이미지 URI',
+          example: 'https://your-s3-bucket-url/image.jpg',
+        },
       },
       required: ['imageUri'],
-      example: {
-        imageUri: 'https://your-s3-bucket-url/image.jpg',
-      },
     },
   })
   @ApiResponse({

@@ -1,23 +1,30 @@
 # 💉중간이들 BackEnd Repository
-"중앙대학교 간호학과 동문들을 위한 커뮤니티" 
-<br>
 
-> 📌 <b>중간이들 사이트 URL</b> : https://www.caugannies.com [예정] <br>
-
-> 📌 <b>중간이들 소개 ReadMe</b> : https://github.com/Gannies <br>
-
-> 📌 <b>중간이들 BackEnd Github</b> : https://github.com/Gannies/Gannies_BackEnd <br>
+> ### **"중앙대 간호학과 동문 커뮤니티"**
+>
+> **재학생부터 현직 간호사까지,**
+> **중앙대 간호인의 지식과 경험이 모이는 공간입니다.**
+>
+> - 학업 및 실습 정보 공유
+> - 취업/진로 멘토링
+> - 동문 네트워킹
+>
+> 함께 성장하는 중앙대 간호인들의 커뮤니티에 오신 것을 환영합니다.
+> 
+> ### 👉 <b>https://www.caugannies.com</b>
+> 
+>  ![리드미최상위메인](https://github.com/user-attachments/assets/cbd8f449-1c93-40b9-9213-d6ddc3f0a3bb)
 
 ---
 
 ## 바로가기
 
-#### 1. [프로젝트 개요](#1-프로젝트-개요)
-#### 2. [프로젝트 아키텍쳐](#2-프로젝트-아키텍쳐)
-#### 3. [구현 내용](#3-구현-내용)
-#### 4. [이슈 해결](#4-이슈-해결)
-#### 5. [배포](#5-배포)
-#### 6. [느낀점](#6-느낀점)
+### 1. [프로젝트 개요](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#1-프로젝트-개요-1)
+### 2. [프로젝트 아키텍쳐](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#2-프로젝트-아키텍쳐-1)
+### 3. [구현 내용](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#3-구현-내용-1)
+### 4. [이슈 해결](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#4-이슈-해결-1)
+### 5. [배포](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#5-배포-1)
+### 6. [느낀점](https://github.com/Gannies/Gannies_BackEnd?tab=readme-ov-file#6-느낀점-1)
 
 ---
 
@@ -29,32 +36,59 @@
 |----------------------------------|-----------------------|---------------|
 | <b>기획 / 디자인 / 팀 결성</b>                    | 24.07.04 - 24.08.11   | 4주           |
 | <b> 개발</b>                             | 24.08.12 - 24.09.20   | 5주           |
-| <b>마무리 (배포/문서화/리팩토링 등)</b> | 24.09.21 - 24.10.19   | 4주           |
+| <b>마무리 (배포/문서화 등)</b> | 24.09.21 - 24.10.19   | 4주           |
 
 ## 2) 인원 및 역할
 
-- 1인 <i>(초기 2인에서 24.09.15 이후 1인으로 변경됨.)</i>
+- <b>1인</b>
+  - [프로젝트 초반부,연락 두절로 인해 협업 종료 (24.09.13 이후)](https://github.com/Gannies/Gannies_BackEnd/wiki/%EA%B9%80%EC%9E%AC%EC%97%B0%EB%8B%98%EA%B3%BC%EC%9D%98-%ED%98%91%EC%97%85-%EC%A4%91%EB%8B%A8-%EA%B2%BD%EC%9C%84%EC%84%9C)
 
-| **담당자** | **역할**                                                                                              |
-|----------|----------------------------------------------------------------------------------------------------------|
-| <b>이가린</b> <br> <i>(devellybutton)</i>     | • 프로젝트 테이블 Entity 1차 설계 <br> • Auth, Users, Email, Files, Admin, Reports 모듈 기능 구현 <br> • Posts, Comments, Replies, Scraps, Likes 모듈: 오류 수정 및 비즈니스 로직 고도화 <br> • 모든 모듈에 DAO 추가: DB와 서비스 계층 사이의 데이터 CRUD 전담 계층 구축 <br> • AWS PM2 및 Docker를 활용한 서버 배포 자동화 <br> • Mock data 테스트 코드 작성 및 테스트 자동화 <br>  |
-| <b>김재연</b> <br> <i>(APD-Kim)</i>     | • 1차 설계된 테이블 엔티티에 관계 설정 <br> • Posts, Comments, Replies, Scraps, Likes 모듈: 초기 CRUD 구현 <br> • Files 모듈: S3 presigned URL 생성 기능 구현 <br> • 24.09.13 이후로 연락 두절 <br> → 지속적인 팀 규칙 미이행 및 건강 문제(만성폐쇄성폐질환, 2주간 입원)로 중도 하차 <br>  |
-
-
-<details>
-<summary>모듈 기능 구현 세부 사항</summary>
-
-- **Auth**: Redis를 활용한 세션 인증, 외부 API를 통한 SMS 인증
-- **Users**: 마이페이지 기능 구현 <i>(본인 정보 조회 및 수정, 작성한/스크랩한 게시물 혹은 댓글 조회)</i>
-- **Email**: Nodemailer를 활용한 이메일 발송 및 SSR 렌더링을 위한 템플릿 제작
-- **Files**: S3 presigned URL을 통해 프론트엔드와 서버 간의 데이터 전송 로직 개선
-- **Admin, Reports**: 관리자 페이지 및 신고 관련 기능 구현 <i>(회원 관리, 전체 게시물 관리, 신고된 게시물 및 댓글 관리)</i>
-
-</details>
+    | **담당자** | **역할**                                                                                              |
+    |----------|----------------------------------------------------------------------------------------------------------|
+    | <b>이가린</b> <br> [<i>(devellybutton)</i>](https://github.com/devellybutton)     | • 프로젝트 테이블 Entity 1차 설계 <br> • Auth, Users, Email, Files, Admin, Reports 모듈 기능 구현 <br> • Posts, Comments, Replies, Scraps, Likes 모듈: 오류 수정 및 비즈니스 로직 고도화 <br> • 모든 모듈에 DAO 추가: DB와 서비스 계층 사이의 데이터 CRUD 전담 계층 구축 <br> • 서버 배포 및 클라우드 DB 연결 <br> • Mock data 테스트 코드 작성 및 테스트 자동화 [예정] <br>  |
 
 ## 3) 기술스택
 
+<div align="center">
+  <!-- Node.js -->
+  <img src="https://img.shields.io/badge/nodedotjs-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white">
+  <!-- NestJS -->
+  <img src="https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white">
+  <!-- TypeORM -->
+  <img src="https://img.shields.io/badge/typeorm-FE0803?style=for-the-badge&logo=typeorm&logoColor=white">
+  <!-- TypeScript -->
+  <img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+  <br>
+  <!-- MySQL -->
+  <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+  <!-- Redis Cloud -->
+  <img src="https://img.shields.io/badge/redis%20cloud-D93B4A?style=for-the-badge&logo=redis&logoColor=white">
+  <!-- AWS RDB (Amazon RDS) -->
+  <img src="https://img.shields.io/badge/aws%20rds-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <br>
+  <!-- EC2 -->
+  <img src="https://img.shields.io/badge/aws%20ec2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <!-- CloudWatch -->
+  <img src="https://img.shields.io/badge/aws%20cloudwatch-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <!-- S3 -->
+  <img src="https://img.shields.io/badge/aws%20s3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <!-- PM2 -->
+  <img src="https://img.shields.io/badge/pm2-2B547E?style=for-the-badge&logo=pm2&logoColor=white">
+  <!-- Socket.io -->
+  <img src="https://img.shields.io/badge/socket.io-010101?style=for-the-badge&logo=socket-dot-io&logoColor=white">
+</div>
 
+- 기술 및 선택 이유
+<br>
+
+  | 기술         | 선택 이유                                                                                           |
+  |--------------|----------------------------------------------------------------------------------------------------|
+  | **NestJS**   | - 서비스 확장성을 고려한 구조화된 아키텍처와 객체 지향 설계 필요 <br> - 구조화된 프로젝트로 유지보수 및 확장성 용이 <br> - 의존성 주입(DI)로 테스트 용이 |
+  | **TypeORM**  | - 타입 안정성 제공, Active Record/Data Mapper 패턴을 지원하여 유연한 DB 작업 가능 <br> - 마이그레이션 및 버전 관리 용이 <br> -  복잡한 쿼리도 타입 안정성 보장하며 구현 가능 |
+  | **MySQL**    | - 관계형 모델이므로 데이터 일관성 보장 <br> - NoSQL에 비해 ACID 특성으로 트랜잭션 안정성 확보 <br> - 데이터 정합성 관리가 용이하고 강력한 인덱싱 기능으로 복잡한 쿼리 최적화 가능 |
+  | **Redis**    | - 메모리 DB를 활용한 빠른 인증 기능<i>(가입 시 이메일 인증 링크, 세션 정보 저장)</i> <br> - 세션 클러스터링 지원 <br> - 임시 데이터 처리에 최적화되어 서버 부하 감소 |
+  | **PM2**      | - 무중단 배포, 자동 프로세스 관리, 실시간 모니터링 기능 제공 <br> - VM 배포의 단점으로 배포 방법을 변경할 예정 |
+  | **Socket.io**| - 세션 확장을 위한 양방향 실시간 통신 기능 필요 <br> - 네트워크 불안정 상황에서도 자동 재연결 <br> - 클라이언트와 서버 간 효율적인 이벤트 처리 및 룸/네임스페이스 관리 기능 도입 |
 
 
 ## 4) 개발환경
@@ -63,33 +97,44 @@
 - <b>NestJS</b> : @nestjs/core@10.4.1 
 - <b>TypeORM</b> : typeorm@0.3.20
 - <b>TypeScript</b> : typescript@5.6.2
-- <b>MySQL</b> :
-- <b>Redis</b> :
-- <b>PM2</b> :
-- <b>Docke</b>r :
+- <b>MySQL</b> : 8.0.39
+- <b>Redis</b> : (Cloud)
+- <b>PM2</b> : 5.4.2
+- <b>Docker</b> : [예정]
 - <b>npm</b> : 10.1.0
-
-## 5) 라이브러리
-
-| **분류**                | **라이브러리**                                                             |
-|-----------------------|-------------------------------------------------------------------------|
-| **주요 라이브러리**        | `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/typeorm`, `@nestjs/config`, `@nestjs/swagger`, `@nestjs/schedule`, `@nestjs/serve-static`, `@nestjs-modules/mailer` |
-| **데이터베이스 및 ORM**  | `mysql2`, `typeorm`, `@nestjs/typeorm`, `connect-redis`, `redis`, `ioredis` |
-| **인증 및 보안**         | `bcrypt`, `passport`, `passport-local`, `express-session`, `@nestjs/passport` |
-| **API 및 네트워킹**      | `axios`, `twilio`, `@google-cloud/vision`                             |
-| **파일 및 데이터 전송**   | `@aws-sdk/client-s3`, `@aws-sdk/s3-presigned-post`, `nodemailer`     |
-| **유틸리티**             | `dayjs`, `moment-timezone`, `lodash.camelcase`, `uuidv4`, `phone`    |
-| **개발 관련 라이브러리**   | `jest`, `supertest`, `class-validator`, `class-transformer`, `@nestjs/testing` |
-| **타입스크립트 관련**     | `typescript`, `ts-jest`, `ts-loader`, `ts-node`, `tsconfig-paths`    |
-| **코드 품질 및 스타일**    | `eslint`, `prettier`, `eslint-config-prettier`, `eslint-plugin-prettier`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` |
+- <b>socket.io</b> : 10.4.4
 
 ---
 
 # 2. 프로젝트 아키텍쳐
 
+## 1) 전체 프로젝트 구조
+
+## 2) ERD
+
+![page2_1](https://github.com/user-attachments/assets/68ec4ded-fee4-4c3e-81d5-44db7501b7f3)
+
+- Tool : dbdiagram.io
+- Link : https://dbdiagram.io/d/Caugannies_ver-2-67400c7de9daa85aca54d321
+
+## 3) 인증 시퀀스 다이어그램
+
+## 4) 게시물 파일 업로드 시퀀스 다이어그램
+
 ---
 
 # 3. 구현 내용
+
+| 항목 | 설명 | 기술 스택 | 세부 구현 |
+|--------|------|------------|-----------|
+| **인증 시스템** | 세션 기반 인증 및 관리 | Express-session<br>connect-redis<br>Socket.io | - 환경별 동적 세션 쿠키 생성<br>- Redis 기반 세션 클러스터링<br>- 소켓 기반 세션 자동 연장<br>- 관리자 세션 강제 종료 기능 |
+| **아키텍처 설계** | 모듈화 및 계층 분리 | NestJS | - 중앙 집중식 DAO 모듈<br>- 단일 책임 원칙 기반 서비스 계층<br>- 모듈 순환 참조 방지 설계 |
+| **에러 처리** | 계층별 에러 처리 전략 | NestJS Exception Filter<br>Custom Exceptions | - API 별 커스텀 에러 클래스<br>- Exception Filter로 DB 에러 처리<br>- 클라이언트/서버 로그 분리 |
+| **로깅 시스템** | 중앙화된 로그 관리 | Winston Logger<br>AWS CloudWatch | - 요청/응답 로깅<br>- 에러 로깅<br>- 레벨별 로그 분류 |
+| **배치 프로세스** | 주기적 데이터 동기화 | NestJS Scheduler | - 좋아요 수 집계 (1분)<br>- S3-DB URL 동기화 (1일) |
+| **인프라** | AWS 클라우드 인프라 | AWS EC2<br>RDS<br>S3<br>CloudWatch | - EC2 애플리케이션 서버<br>- RDS MySQL 데이터베이스<br>- S3 파일 스토리지<br>- CloudWatch 모니터링 |
+| **외부 서비스** | 외부 API 통합 | Google Vision API<br>Twilio API | - OCR 기능 구현<br>- SMS 인증 구현 |
+| **성능 최적화** | 서버 부하 분산 | Redis<br>AWS S3 | - Redis 세션 스토어<br>- 클라우드 스토리지 활용 |
 
 ---
 
@@ -97,11 +142,429 @@
 
 ## 1) 세션 관리 이슈
 
-## 2) 데이터 쿼리 최적화
+### ① 커스텀 데코레이터를 활용한 사용자 인증 로직 개선
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • express의 Request 객체를 인자로 받아온 @Req() 데코레이터를 사용 <br> → 직접 쿠키의 세션 ID를 추출하여 회원 확인 <br> • 코드가 반복적이고 복잡해짐.                  |
+| 문제   | • 매 요청마다 세션 ID 추출 과정 반복 <br> • 회원 세션 정보 접근 시 매번 비슷한 코드 작성 필요 <br> • 보안에 민감한 비밀번호 필드도 세션에 항상 포함되어 저장됨. |
+| 해결   | • <b>커스텀 데코레이터 생성</b> <br> - 세션에서 사용자 정보 자동 추출 <br> - 비밀번호 필드 제외 <br> - 타입 안정성을 위한 인터페이스 정의 |                                        
+| 개선된 점 | • 코드 중복 제거 <br> • 보안성 향상 (비밀번호 필드 제외하여 저장) <br> • 타입 안정성 확보 <br> • 사용성 개선 |
+
+<details>
+<summary><i>개선 전 - express의 Request 객체를 인자로 받아온 @Req() 데코레이터를 사용</i></summary>
+<div markdown="1">
+
+```
+  // 사용자 상태 확인
+  @Get('status')
+  @HttpCode(HttpStatus.OK)
+  async getStatus(@Req() req: Request, @Res() res: Response): Promise<{ message: string }> {
+    const sessionId = req.cookies['connect.sid'];
+    await this.authService.sendStatus(sessionId);
+    return { message: '로그아웃에 성공하였습니다.' };
+  }
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 회원 세션 정보의 타입 안정성을 제공하는 IUser 인터페이스</i></summary>
+<div markdown="1">
+
+src/auth/interfaces/session-decorator.interface.ts
+
+```
+export interface IUser {
+  userId: number;
+  username: string | null;
+  nickname: string;
+  phoneNumber: string;
+  email: string;
+  isTempPassword: boolean | null;
+  membershipStatus: number;
+  studentStatus: 'current_student' | 'graduated_student' ; 
+  isAdmin: boolean;
+  certificationDocumentUrl: string;
+  rejected: boolean;
+  createdAt: Date;
+  suspensionEndDate: Date | null;
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 커스텀 데코레이터 SessionUser를 생성하여, 비밀번호를 제외한 사용자 정보에 쉽게 접근</i></summary>
+<div markdown="1">
+
+/src/auth/decorators/get-user.decorator.ts
+
+```
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Request } from 'express';
+import { IUser } from '../interfaces';
+
+declare module 'express-session' {
+  interface SessionData {
+    passport: {
+      user: IUser
+    }
+  }
+}
+
+export const SessionUser = createParamDecorator((data: string, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<Request>();
+  const user = request.session.passport.user;
+
+  if (!user) {
+    return null;
+  }
+
+  // 비밀번호 필드를 제외한 새로운 객체 생성
+  const { password, ...safeUserData } = user;
+
+  if (data) {
+    return data === 'password' ? undefined : safeUserData[data as keyof typeof safeUserData];
+  }
+
+  return safeUserData;
+});
+```
+
+</div>
+</details>
+
+<br>
+
+### ② 세션 정보 최적화로 회원 정보 일관성 유지 및 Redis 데이터 용량 절감
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 로그인한 상태에서 회원 정보가 바뀌는 경우<i>(예: 이메일 인증 완료, 탈퇴 등)</i> 또는 관리자가 회원 정보를 업데이트하는 경우<i>(예: 회원 정지, 탈퇴 등)</i>, DB에는 정보가 업데이트되지만 Redis에 저장된 세션 정보는 업데이트되지 않음.               |
+| 문제   | • 이로 인해 정보 불일치가 발생하여 큰 문제가 발생할 수 있음. |
+| 해결   | • 아래 두 가지 방법 중 두 번째 방법을 선택함. <br> 1) 사용자 정보 변경 시 Redis에 저장된 세션 정보도 함께 업데이트 <br> 2) 세션 정보에는 불변하는 정보<i>(예: 이메일, id)</i>만 저장하고, 나머지 정보<i>(예: 닉네임, 회원 상태 등)</i>는 DB에서 조회하도록 로직 변경 |                                        
+| 개선된 점 | • 변하는 정보는 DB에서 조회되므로, 회원 정보 일관성 확보 <br> • Redis의 세션 데이터 용량 개당 약 60% 감소 <i>(728B → 312B)</i> |
+
+<details>
+<summary><i>개선 전 - Redis에 저장된 회원 세션</i></summary>
+<div markdown="1">
+
+![화면 캡처 2024-08-30 160938](https://github.com/user-attachments/assets/18d50312-5d6f-45e7-921b-46a4da8c0faf)
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 불변 데이터만 Redis의 세션 정보로 저장하도록 함</i></summary>
+<div markdown="1">
+
+src/auth/interfaces/user-interface.ts
+
+```
+export interface IUser {
+  userId: number; // 회원 ID
+  email: string; // 이메일
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 후 - Redis에 저장된 회원 세션</i></summary>
+<div markdown="1">
+
+![세션변경후Redis로그인](https://github.com/user-attachments/assets/fe8875ed-a77f-4b2f-8c0b-54f4ff9fc583)
+
+</div>
+</details>
+
+<br>
+
+### ③ 세션 쿠키 동적 설정을 위한 자동 로그인 구현 전략
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 자동 로그인 기능 구현 시 약 2주 정도의 세션 만료 기한 필요 <br> • 로그인 요청 시 이메일, 비밀번호와 함께 autoLogin 여부를 request body로 전송       |
+| 문제   | • 컨트롤러에서 @Query로 autoLogin을 받을 경우의 단점 <br> - 세션 옵션을 동적으로 설정하기 어려움 (환경변수와 쿼리에 따른 유연한 대응 제한) <br> - 세션 미들웨어가 이미 적용된 후에 쿼리를 처리하므로 타이밍 이슈 발생 가능 <br> • Request body로 받을 때의 잠재적 문제점 <br> - REST API 설계 관점에서 URL 파라미터로 표현하는 것이 더 명확할 수 있음. <br> - 로그인 요청 시마다 body에 추가 필드를 포함해야 하는 번거로움 <br> - 프론트엔드에서 별도의 데이터 구조 관리 필요 |
+| 해결   | • 메인 애플리케이션 설정(main.ts)에서 미들웨어를 통해 request query의 autoLogin 값에 따라 세션 옵션을 동적으로 생성하여 적용하도록 구성함.  |                                        
+| 개선된 점 | • 로그인 컨트롤러에서 별도로 쿠키 옵션을 처리하지 않아도 되며, 쿼리 파라미터에 따라 세션 옵션(만료기간 등)을 동적으로 설정할 수 있게 됨. <br> • API 엔드포인트도 더 RESTful한 형태로 유지 가능 |
+
+<details>
+<summary><i>개선 후 - 동적 세션 옵션 설정</i></summary>
+<div markdown="1">
+
+src/main.ts
+
+```
+  app.use(cookieParser());
+  app.use((req, res, next) => {
+    const autoLogin = req.query.autoLogin === 'true';
+    const sessionOptions = sessionConfigService.createSessionOptions(autoLogin);
+    session(sessionOptions)(req, res, next);
+  });
+```
+
+</div>
+</details>
+
+<details>
+<summary><i>개선 후 - 세션 옵션 및 생성 및 구성 서비스</i></summary>
+<div markdown="1">
+
+src/config/session.config.ts
+
+```
+import { Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import RedisStore from 'connect-redis';
+import Redis from 'ioredis';
+import { sendCookieOptions } from 'src/auth/services';
+import { ConversionUtil } from 'src/common/utils/conversion.utils';
+
+export class SessionConfigService {
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+    private readonly configService: ConfigService,
+  ) {}
+
+  createSessionOptions(autoLogin: boolean) {
+    const redisStore = new RedisStore({ client: this.redisClient });
+
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions = {
+      ...sendCookieOptions(),
+      maxAge: autoLogin
+        ? 14 * 24 * 60 * 60 * 1000 // 자동 로그인 기한: 2주
+        : isProduction
+          ? 2 * 60 * 60 * 1000 // 배포 환경: 2시간
+          : 24 * 60 * 60 * 1000, // 로컬 환경: 24시간
+    };
+
+    return {
+      store: redisStore,
+      secret: this.configService.get<string>('SESSION_SECRET') || 'gannies_session_default',
+      resave: ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_RESAVE')) || false,
+      saveUninitialized:
+        ConversionUtil.stringToBoolean(this.configService.get<string>('SESSION_SAVE_UNINITIALIZED')) || false,
+      cookie: cookieOptions,
+    };
+  }
+}
+```
+</details>
+
+<br>
+
+### ④ 리버스 프록시 환경에서의 쿠키 전송 문제 해결
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 배포 서버에서 클라이언트 브라우저로 express-session의 쿠키 전송이 실패하는 현상 발생함. <br> • 로컬 환경에서는 정상 작동하며, 서버에서 직접 발급하는 쿠키는 정상적으로 전송됨.       |
+| 문제   | • AWS EC2와 같은 배포 환경에서 Nginx나 AWS ELB와 같은 리버스 프록시를 사용할 때, Express 애플리케이션이 프록시 설정을 인식하지 못해 express-session의 쿠키 설정이 실패함. |
+| 해결   | • main.ts에 app.set('trust proxy', 1); 코드를 추가하여 Express 애플리케이션이 리버스 프록시를 신뢰하도록 설정함.  |                                        
+| 개선된 점 | • express-session에서 발급하는 쿠키가 리버스 프록시 환경에서도 정상적으로 클라이언트에 전송되어 세션 관리가 가능해짐. |
+
+<details>
+<summary><i>개선 후 - 배포 브랜치에서 리버스 프록시를 신뢰하도록 설정</i></summary>
+<div markdown="1">
+
+src/main.ts
+
+```
+  app.set('trust proxy', 1);
+```
+
+</div>
+</details>
+<details>
+<summary><i>참고 링크 - express-session</i></summary>
+<div markdown="1">
+
+https://www.npmjs.com/package/express-session#cookiesecure
+
+</div>
+</details>
+
+
+## 2) 데이터베이스 성능 개선 및 쿼리 최적화
+
+### ① 파일 및 이미지 엔티티 분리를 통한 게시물 관리 최적화
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • 게시물 작성 시 본문에 삽입되는 이미지와 첨부파일을 단일 File 엔티티로 관리하고 있었음. <br> • 하지만 프론트엔드에서 이 두 유형의 파일을 구분하여 처리해야 할 필요성이 제기됨. |
+| 문제   | • 단일 File 엔티티로는 본문 이미지와 첨부파일의 특성을 각각 효과적으로 관리하기 어려웠고, 게시물 수정/삭제 시 파일 처리 로직이 복잡해짐. <br> • 또한 프론트엔드에서 두 유형의 파일을 구분하여 렌더링하는 데 추가적인 로직이 필요했음. |
+| 해결   | • File 엔티티를 Image와 File 두 개의 독립적인 엔티티로 분리하여 설계함. <br> - Image 엔티티는 본문에 inline으로 삽입되는 이미지를, File 엔티티는 다운로드 가능한 첨부파일을 관리하도록 구조화함. |                                        
+| 개선된 점 | • 파일 유형별(본문 이미지/첨부파일) 데이터 관리가 명확해짐. <br> • 프론트엔드에서 각 용도에 맞는 파일 데이터를 별도로 받아 처리 가능 <br> • 게시물 수정/삭제 시 파일 종류별 처리 로직 구분이 용이해짐. |
+
+<details>
+<summary><i>개선 전 - 본문 삽입 이미지 및 첨부파일은 단일 file 엔티티로 관리</i></summary>
+<div markdown="1">
+
+src/files/entities/files.entity.ts
+
+```
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
+
+@Entity('files')
+export class FilesEntity {
+  // 파일의 고유 ID
+  @PrimaryGeneratedColumn()
+  fileId: number;
+
+  // 파일의 URL
+  @Column()
+  url: string;
+
+  // 이 파일이 첨부된 게시물 ID
+  @Column()
+  postId: number;
+
+  // 이 파일이 첨부된 게시물과의 관계
+  @ManyToOne(() => PostsEntity, (post) => post.files)
+  @JoinColumn({ name: 'postId', referencedColumnName: 'postId' })
+  post: PostsEntity;
+
+  // 파일의 타입
+  @Column()
+  fileType: string;
+
+  // 파일의 이름
+  @Column()
+  fileName: string;
+
+  // 파일이 업로드된 날짜
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // 파일이 삭제된 날짜
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 후 - Image Entity 파일 생성하여 본문에 inline으로 삽입되는 이미지 테이블 별도 관리</i></summary>
+<div markdown="1">
+
+src/files/entities/images.entity.ts
+
+```
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PostsEntity } from '../../posts/entities/base-posts.entity';
+
+@Entity('images')
+export class ImagesEntity {
+  // 본문에 첨부한 이미지 고유 ID
+  @PrimaryGeneratedColumn()
+  imageId: number;
+
+  // 이미지의 URL
+  @Column()
+  url: string;
+
+  // 이 파일이 첨부된 게시물 ID
+  @Column()
+  postId: number;
+
+  // 이 파일이 첨부된 게시물과의 관계
+  @ManyToOne(() => PostsEntity, (post) => post.images)
+  post: PostsEntity;
+
+  // 파일의 타입
+  @Column()
+  fileType: string;
+
+  // 파일이 업로드된 날짜
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // 파일이 삭제된 날짜
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+}
+```
+
+</div>
+</details>
+<details>
+<summary><i>개선 전후 - request body로 보내는 json 데이터 내용</i></summary>
+<div markdown="1">
+
+### 변경 전
+```
+{
+  "title": 'New Post Title', // 제목
+  "content": 'New Post Content', // 에디터 본문 (HTML, 파일은 S3 버킷 URL들이 들어감)
+  "hospitalNames": ["string"], // 선택한 병원 이름
+  "fileUrls": ['https://caugannies.aws어쩌구.png'] // S3 버킷의 파일 URL들
+}
+```
+
+### 변경 후
+```
+{
+  "title": 'New Post Title', // 제목
+  "content": 'New Post Content', // 에디터 본문 (HTML, 파일은 S3 버킷 URL들이 들어감)
+  "hospitalNames": ["string"], // 선택한 병원 이름
+  fileUrls: {
+// 본문 이미지
+    images: [
+      "https://s3-url-1.jpg",
+      "https://s3-url-2.jpg"
+    ],
+// 첨부 파일
+    attachments: [
+      {
+        fileName: "문서1.pdf",
+        fileUrl: "https://s3-url-3.pdf"
+      },
+      {
+        fileName: "압축파일.zip",
+        fileUrl: "https://s3-url-4.zip"
+      }
+    ]
+  }
+}
+```
+
+</div>
+</details>
+
+<br>
+
+
+### ② S3 파일 삭제 실패 처리를 위한 배치 작업 구현
+
+| 항목   | 내용                                                                                                                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 상황   | • S3에서 파일 삭제 시 간헐적으로 실패하는 케이스가 발생하여, 이를 효율적으로 처리할 수 있는 방안이 필요했음. <br> • 특히 게시물 수정이나 삭제 시 연관된 파일들의 안정적인 삭제 처리가 중요한 이슈였음. |
+| 문제   | • 파일 삭제 실패 시 해당 URL을 추적하고 관리하는 로직이 없어, S3에 불필요한 파일이 누적될 수 있는 위험이 있었음. <br> • 또한 삭제 실패 시 즉각적인 재시도 로직이 없어서 데이터 정합성 이슈가 발생할 수 있었음. |
+| 해결   | • Redis를 활용하여 삭제 실패한 URL들을 저장하고, 스케줄링된 배치 작업을 통해 주기적으로 삭제를 재시도하는 방식을 구현함. <br> - 특히 당일 데이터만을 처리하도록 하여 성능을 최적화함. |                                        
+| 개선된 점 | • 파일 삭제 실패에 대한 추적 및 관리가 가능해짐 <br> • 주기적인 배치 작업으로 시스템 부하 분산 <br> • 실패한 파일 삭제 처리의 자동화로 운영 효율성 증가 <br> • S3의 불필요한 파일 누적 방지 |
+
+<details>
+<summary><i></i></summary>
+<div markdown="1">
+</div>
+</details>
+<details>
+<summary><i></i></summary>
+<div markdown="1">
+</div>
+</details>
 
 ## 3) 배포 프로세스 개선
 
-## 4) 테스트 자동화 및 품질 보증
+## 4) 테스트 자동화
 
 ## 5) 기타
 
@@ -113,3 +576,20 @@
 
 # 6. 느낀점
 
+- ## 1) 기술 선택의 새로운 기준으로 안전성을 생각하게 됨
+
+    - 혼자 서버를 만들면서 개발 과정에서 발생하는 <b>`인적 오류의 위험성`</b>을 느꼈음. 
+    - 성능과 편의성도 중요하지만, 개발 초기 단계부터 <b>`실수를 방지할 수 있는 방법`</b>을 고려하는게 더 중요하다고 생각함. 
+    - <b>`인적 실수를 방지`</b>할 수 있는 기술을 선택하며, <b>`체계적인 설계`</b>를 통해 오류를 예방하고, 지속적인 테스트를 수행하여 안정적인 시스템을 구축하는 것이 중요할 것 같음.
+
+- ## 2) 네트워킹에 대한 폭넓은 이해의 필요성을 느낌.
+
+    - 효과적인 의사소통을 위해서는 <b>`도식 활용`</b>이 도움이 됨
+    - 이번 프로젝트에서 다른 개발자들과 협업을 할 때 의사소통 해야할 일이 굉장히 많았음. 
+    - 데이터 구조와 단일 API의 기능까지 기술적 아이디어를 전달할 때 시퀀스 다이어그램과 같은 도식을 활용하면 복잡한 로직을 명확하게 시각화할 수 있음.
+    - 이는 <b>`논리적 오류를 줄이고`</b> 팀원들과 <b>`원활한 소통`</b>을 가능하게 하였음.
+
+- ## 3) 프로그래밍은 궁극적인 목표를 달성하기 위한 도구
+
+    - 간호학과 커뮤니티 사이트를 개발하면서, 개발할 때 기술적인 내용도 신경을 써야하지만 실제 사용자에게 제공되는 서비스 콘텐츠가 더 중요하다는 것을 깨달았음.
+    - 즉, 프로그래밍은 서비스를 구현하기 위한 도구라는 것을 이해하게 되었고, <b>`비즈니스 로직에 집중`</b>해야 한다는 것을 깨달았음.

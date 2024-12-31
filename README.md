@@ -42,8 +42,7 @@
 
     | **담당자** | **역할**                                                                                              |
     |----------|----------------------------------------------------------------------------------------------------------|
-    | <b>이가린</b> <br> [<i>(devellybutton)</i>](https://github.com/devellybutton)     | • 데이터베이스 설계 <br> • API 설계 및 구현 <br> • 서버 구축 및 배포
-  |
+    | <b>이가린</b> <br> [<i>(devellybutton)</i>](https://github.com/devellybutton)     | • 데이터베이스 설계 <br> • API 설계 및 구현 <br> • 서버 구축 및 배포 |
 
 ## 3) 기술스택
 
@@ -203,6 +202,14 @@ export class SessionConfigService {
 ---
 
 # 5. 배포
+
+  1. EC2 인스턴스 생성
+  2. HTTPS용 로드 밸런서(Elastic Load Balancer, ELB) 설정
+  3. EC2에 Node.js 및 PM2 설치
+  4. Github Action에 appleboy/ssh-action을 사용하여 EC2 접속
+  5. Github에서 소스코드를 가져옴.
+  6. npm i 후 NestJS 프로젝트를 빌드
+  7. pm2로 서버 코드 실행
 
 ---
 
